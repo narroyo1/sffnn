@@ -6,7 +6,7 @@ Neural networks are [universal function approximators][UAT]. Which means that ha
 
 |                                                              |
 | :----------------------------------------------------------: |
-| <img src="D:\research\sffnn\images\fig1.png" alt="fig1" style="zoom:80%;" /> |
+| <img src="images\fig1.png" alt="fig1" style="zoom:80%;" /> |
 | **Fig. 1** Approximation of $ax^3 + bx^2 + cx + d$ with added normal noise |
 
 
