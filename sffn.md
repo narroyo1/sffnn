@@ -6,7 +6,7 @@ Neural networks are [universal function approximators][UAT]. Which means that ha
 
 |                                                              |
 | :----------------------------------------------------------: |
-| <img src="D:\research\sffnn\images\fig1.png" alt="fig1" style="zoom:80%;" /> |
+| <img src="images\fig1.png" alt="fig1" style="zoom:80%;" /> |
 | **Fig. 1** Approximation of <img src="https://render.githubusercontent.com/render/math?math=ax%5E3%20%2B%20bx%5E2%20%2B%20cx%20%2B%20d"> with added normal noise |
 
 
@@ -43,7 +43,7 @@ At every point <img src="https://render.githubusercontent.com/render/math?math=x
 
 |                                                              |
 | :----------------------------------------------------------: |
-| <img src="D:\research\sffnn\images\fig_x2_uniform.gif" alt="const_uniform" style="zoom:66%;" /> |
+| <img src="images\fig_x2_uniform.gif" alt="const_uniform" style="zoom:66%;" /> |
 | **Fig 2** An animation of the training to match <img src="https://render.githubusercontent.com/render/math?math=x%5E2"> with added uniform noise. |
 
 In **Fig 2** we can see how the trained model output stretches and shrinks little by little on each epoch until it matches target function.
@@ -55,14 +55,14 @@ We'll start by putting 1 pin in any given latitude of the fabric and at the midp
 For every observed point, we'll move the pin position in the underlying fabric a small predefined distance downwards if the observed point is below its current position, and we'll move it upwards if it is above it. This means that if there are more observed points above the pin's position in the underlying fabric the total movement will be upwards and vice versa if there are more observed points below it. If we repeat this process enough times, the pin's position in the underlying fabric will settle in a place that divides the observed points by half, that is the same amount of observed points are above it as below it.
 |                                                              |
 | ------------------------------------------------------------ |
-| <img src="D:\research\sffnn\images\fig3.gif" alt="fig3" style="zoom:50%;" /> |
+| <img src="images\fig3.gif" alt="fig3" style="zoom:50%;" /> |
 | **Fig 3** Moving 1 pins towards observed points until it settles. |
 
 The pin comes to a stable position dividing all data points in half because the amount of movement for every observation is equal for data points above and below. If the predefined distance of movement for observations above is different from the predefined distance of movement for observations below then the pin would settle in a position dividing the data points by a different ratio (different than half). For example, let's try having 2 pins instead of 1, the first one will move 1 distance for observations above it and 0.5 distance for observations below, the second one will do the opposite. After enough iterations the first one should settle at a position that divides the data points by <img src="https://render.githubusercontent.com/render/math?math=1/3"> above and <img src="https://render.githubusercontent.com/render/math?math=2/3"> below while the second pin will divide by <img src="https://render.githubusercontent.com/render/math?math=2/3"> above and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below. This means we'll have <img src="https://render.githubusercontent.com/render/math?math=1/3"> above the first pin, <img src="https://render.githubusercontent.com/render/math?math=1/3"> between both pins and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below the second pin.
 
 |                                                              |
 | ------------------------------------------------------------ |
-| <img src="D:\research\sffnn\images\fig4.gif" alt="fig4" style="zoom:50%;" /> |
+| <img src="images\fig4.gif" alt="fig4" style="zoom:50%;" /> |
 | **Fig 4** Moving 2 pins towards observed points until they settle. |
 
 If  a pin divides the observed data points in 2 groups of sizes <img src="https://render.githubusercontent.com/render/math?math=a"> and <img src="https://render.githubusercontent.com/render/math?math=b"> and after training its fixed position settles in the underlying fabric in the <img src="https://render.githubusercontent.com/render/math?math=a/%28a%2Bb%29"> longitude from the top, we have a single point mapping between the 2 fabrics, that is at this latitude the densities above and below the pin are equal in both pieces of fabric. We can extrapolate this concept and create as many pins as we want in order to create a finer mapping between the 2 pieces of fabric.
@@ -186,7 +186,7 @@ Using EMD we can obtain an indicator of how similar <img src="https://render.git
 
 |      |
 | ---- |
-|   <img src="D:\research\sffnn\images\fig5.png" alt="fig5" style="zoom:50%;" />   |
+|   <img src="images\fig5.png" alt="fig5" style="zoom:50%;" />   |
 | **Fig 5** EMD testing. |
 
 ### Testing the training goals
@@ -210,7 +210,7 @@ We will create a number of such vicinities and call each error as the local erro
 
 |      |
 | ---- |
-|   <img src="D:\research\sffnn\images\fig6.png" alt="fig6" style="zoom:50%;" />   |
+|   <img src="images\fig6.png" alt="fig6" style="zoom:50%;" />   |
 | **Fig 6** Training goal 1 testing. |
 
 
@@ -236,7 +236,7 @@ On the right panel, you can see a plot of the global goal1 error (above) and glo
 
 |      |      |
 | ---- | ---- |
-|   <img src="D:\research\sffnn\images\x2_normal_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="D:\research\sffnn\images\fig_x2norm_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
+|   <img src="images\x2_normal_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_x2norm_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
 | **Fig 7** Training goal 1 testing. |  |
 
 ### <img src="https://render.githubusercontent.com/render/math?math=ax%5E3%20%2B%20bx%5E2%20%2B%20cx%20%2B%20d"> plus truncated gaussian noise
@@ -245,7 +245,7 @@ This one is a bit more complicated. An order 3 polynomial with added truncated g
 
 |      |      |
 | ---- | ---- |
-|   <img src="D:\research\sffnn\images\x3x2_trunc_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="D:\research\sffnn\images\fig_x3x2trunc_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
+|   <img src="images\x3x2_trunc_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_x3x2trunc_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
 | **Fig 8** Training goal 1 testing. |  |
 
 ### Double <img src="https://render.githubusercontent.com/render/math?math=sin%28x%29"> plus gaussian noise multiplied by sin(x)
@@ -257,7 +257,7 @@ This one is quite more interesting. 2 mirroring <img src="https://render.githubu
 
 |      |      |
 | ---- | ---- |
-|   <img src="D:\research\sffnn\images\sin_sin_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="D:\research\sffnn\images\fig_sinsin_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
+|   <img src="images\sin_sin_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_sinsin_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
 | \ |  |
 
 ### Branching function plus gaussian noise
@@ -266,7 +266,7 @@ This one adds branching.
 
 |      |      |
 | ---- | ---- |
-|   <img src="D:\research\sffnn\images\branch_norm_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="D:\research\sffnn\images\fig_branchnorm_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
+|   <img src="images\branch_norm_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_branchnorm_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
 | **Fig 10** Training goal 1 testing. |  |
 
 ### <img src="https://render.githubusercontent.com/render/math?math=x_%7B2%7D"> in one dimension <img src="https://render.githubusercontent.com/render/math?math=x_%7B3%7D"> in another plus absolute normal
@@ -275,9 +275,9 @@ The next example has 2 dimensions of input. <img src="https://render.githubuserc
 
 |      |
 | :--: |
-|<img src="D:\research\sffnn\images\x3_x2_absnormal_plots_res_0.gif" alt="fig10_0" style="zoom:80%;" />|
-|<img src="D:\research\sffnn\images\x3_x2_absnormal_plots_res_1.gif" alt="fig10_1" style="zoom:80%;" />|
-|<img src="D:\research\sffnn\images\fig_x3x2abs_tensorboard.png" alt="fig7" style="zoom:50%;" />|
+|<img src="images\x3_x2_absnormal_plots_res_0.gif" alt="fig10_0" style="zoom:80%;" />|
+|<img src="images\x3_x2_absnormal_plots_res_1.gif" alt="fig10_1" style="zoom:80%;" />|
+|<img src="images\fig_x3x2abs_tensorboard.png" alt="fig7" style="zoom:50%;" />|
 | **Fig 10** Training goal 1 testing. |
 
 ### California housing dataset
@@ -286,15 +286,15 @@ This is the classic California housing dataset.
 
 |      |
 | ---- |
-|<img src="D:\research\sffnn\images\california_housing_plots_res_0.gif" alt="fig10_0" style="zoom:66%;" />|
-|<img src="D:\research\sffnn\images\california_housing_plots_res_1.gif" alt="fig10_1" style="zoom:66%;" />|
-|<img src="D:\research\sffnn\images\california_housing_plots_res_2.gif" alt="fig10_1" style="zoom:66%;" />|
-|<img src="D:\research\sffnn\images\california_housing_plots_res_3.gif" alt="fig10_1" style="zoom:66%;" />|
-|<img src="D:\research\sffnn\images\california_housing_plots_res_4.gif" alt="fig10_1" style="zoom:66%;" />|
-|<img src="D:\research\sffnn\images\california_housing_plots_res_5.gif" alt="fig10_1" style="zoom:66%;" />|
-|<img src="D:\research\sffnn\images\california_housing_plots_res_6.gif" alt="fig10_1" style="zoom:66%;" />|
-|<img src="D:\research\sffnn\images\california_housing_plots_res_7.gif" alt="fig10_1" style="zoom:66%;" />|
-|<img src="D:\research\sffnn\images\fig_cal_tensorboard.png" alt="fig7" style="zoom:50%;" />|
+|<img src="images\california_housing_plots_res_0.gif" alt="fig10_0" style="zoom:66%;" />|
+|<img src="images\california_housing_plots_res_1.gif" alt="fig10_1" style="zoom:66%;" />|
+|<img src="images\california_housing_plots_res_2.gif" alt="fig10_1" style="zoom:66%;" />|
+|<img src="images\california_housing_plots_res_3.gif" alt="fig10_1" style="zoom:66%;" />|
+|<img src="images\california_housing_plots_res_4.gif" alt="fig10_1" style="zoom:66%;" />|
+|<img src="images\california_housing_plots_res_5.gif" alt="fig10_1" style="zoom:66%;" />|
+|<img src="images\california_housing_plots_res_6.gif" alt="fig10_1" style="zoom:66%;" />|
+|<img src="images\california_housing_plots_res_7.gif" alt="fig10_1" style="zoom:66%;" />|
+|<img src="images\fig_cal_tensorboard.png" alt="fig7" style="zoom:50%;" />|
 | **Fig 10** Training goal 1 testing. |
 
 ## Conclusion
