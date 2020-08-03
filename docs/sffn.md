@@ -16,11 +16,11 @@ Because of this it is useful to a have a model that instead of producing a singl
 
 ## The Method
 
-Given that the function producing the data has a specific distribution <img src="https://render.githubusercontent.com/render/math?math=Y"> at input <img src="https://render.githubusercontent.com/render/math?math=x%20%5Cin%20X"> [^1] we can define the target function, or the function we actually want to approximate, as <img src="https://render.githubusercontent.com/render/math?math=y%20%5Csim%20Y_%7Bx%7D">. We want to create an algorithm capable of sampling an arbitrary number of data points from <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> [^2] for any given <img src="https://render.githubusercontent.com/render/math?math=x%20%5Cin%20X">.
+Given that the function producing the data has a specific distribution <img src="https://render.githubusercontent.com/render/math?math=Y"> at input <img src="https://render.githubusercontent.com/render/math?math=x%27%20%5Cin%20X"> [^1] we can define the target function, or the function we actually want to approximate, as <img src="https://render.githubusercontent.com/render/math?math=y%20%5Csim%20Y_%7Bx%27%7D">. We want to create an algorithm capable of sampling an arbitrary number of data points from <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%27%7D"> [^2] for any given <img src="https://render.githubusercontent.com/render/math?math=x%27%20%5Cin%20X">.
 
-To do this we introduce a secondary input <img src="https://render.githubusercontent.com/render/math?math=z"> that can be sampled from uniformly distributed space <img src="https://render.githubusercontent.com/render/math?math=Z"> [^3] by the algorithm and fed to a deterministic function <img src="https://render.githubusercontent.com/render/math?math=f%28x%2C%20z%29%20%3D%20y"> where <img src="https://render.githubusercontent.com/render/math?math=y"> is a possible value of the target function with probability <img src="https://render.githubusercontent.com/render/math?math=Pr%28Z%3Dz%29">. That is <img src="https://render.githubusercontent.com/render/math?math=Pr%28Y_%7Bx%7D%3Df%28x%2C%20Z%3Dz%29%29%20%3D%20Pr%28Z%3Dz%29">.
+To do this we introduce a secondary input <img src="https://render.githubusercontent.com/render/math?math=z"> that can be sampled from uniformly distributed space <img src="https://render.githubusercontent.com/render/math?math=Z"> [^3] by the algorithm and fed to a deterministic function <img src="https://render.githubusercontent.com/render/math?math=g%28x%27%2C%20z%29%20%3D%20y"> where <img src="https://render.githubusercontent.com/render/math?math=y"> is a possible value of the target function with probability <img src="https://render.githubusercontent.com/render/math?math=f_%7BZ%7D%28z%29">. That is <img src="https://render.githubusercontent.com/render/math?math=f_%7BY_%7Bx%27%7D%2C%20Z%7D%28g%28x%27%2C%20z%29%2C%20z%29%20%3D%20f_%7BZ%7D%28z%29">.
 
-Or put another way, we want a deterministic function that maps an input <img src="https://render.githubusercontent.com/render/math?math=x">, a random (but uniform) variable <img src="https://render.githubusercontent.com/render/math?math=Z"> to a dependent random variable <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">.
+Or put another way, we want a deterministic function that for any given input <img src="https://render.githubusercontent.com/render/math?math=x%27">, maps a random (but uniform) variable <img src="https://render.githubusercontent.com/render/math?math=Z"> to a dependent random variable <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%27%7D">.
 
 [^1]: <img src="https://render.githubusercontent.com/render/math?math=X"> is the n-dimensional continuous domain of the target function.
 [^2]: <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is a dependent random variable in an n-dimensional continuous space. The probability function must be continuous on <img src="https://render.githubusercontent.com/render/math?math=x">. In this article and the provided source code <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is assumed to be 1-dimensional.  
@@ -31,12 +31,9 @@ Or put another way, we want a deterministic function that maps an input <img src
 
 The proposed model to approximate <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is an ordinary feed forward neural network that in addition to an input <img src="https://render.githubusercontent.com/render/math?math=x"> also takes an input <img src="https://render.githubusercontent.com/render/math?math=z"> that can be sampled from <img src="https://render.githubusercontent.com/render/math?math=Z">.
 
-```mermaid
-graph LR
-A(x) --> B(neural network) --> C(y)
-D(z-sample) --> B
-```
-
+|                                                              |
+| :----------------------------------------------------------: |
+| <img src="images\model.png" alt="model" /> |
 ### Overview
 
 At every point <img src="https://render.githubusercontent.com/render/math?math=x%20%5Cin%20X"> we want <img src="https://render.githubusercontent.com/render/math?math=f%28x%2C%20z%20%5Csim%20Z%29"> to approximate the <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> distribution to an arbitrary precision. Let's picture <img src="https://render.githubusercontent.com/render/math?math=f%28x%2C%20z%20%5Csim%20Z%29"> and <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> as 2-dimensional (in the case where <img src="https://render.githubusercontent.com/render/math?math=X"> and <img src="https://render.githubusercontent.com/render/math?math=Z"> are both 1-dimensional) pieces of fabric, they can stretch and shrink in different measures at different regions, decreasing or increasing it's density respectively. We want a mechanism that stretches and shrinks <img src="https://render.githubusercontent.com/render/math?math=f%28x%2C%20z%20%5Csim%20Z%29"> in a way that matches the shrinks and stretches in <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">.
@@ -54,14 +51,14 @@ We'll start by putting 1 pin in any given latitude of the fabric and at the midp
 
 For every observed point, we'll move the pin position in the underlying fabric a small predefined distance downwards if the observed point is below its current position, and we'll move it upwards if it is above it. This means that if there are more observed points above the pin's position in the underlying fabric the total movement will be upwards and vice versa if there are more observed points below it. If we repeat this process enough times, the pin's position in the underlying fabric will settle in a place that divides the observed points by half, that is the same amount of observed points are above it as below it.
 |                                                              |
-| ------------------------------------------------------------ |
+| :-: |
 | <img src="images\fig3.gif" alt="fig3" style="zoom:50%;" /> |
 | **Fig 3** Moving 1 pins towards observed points until it settles. |
 
 The pin comes to a stable position dividing all data points in half because the amount of movement for every observation is equal for data points above and below. If the predefined distance of movement for observations above is different from the predefined distance of movement for observations below then the pin would settle in a position dividing the data points by a different ratio (different than half). For example, let's try having 2 pins instead of 1, the first one will move 1 distance for observations above it and 0.5 distance for observations below, the second one will do the opposite. After enough iterations the first one should settle at a position that divides the data points by <img src="https://render.githubusercontent.com/render/math?math=1/3"> above and <img src="https://render.githubusercontent.com/render/math?math=2/3"> below while the second pin will divide by <img src="https://render.githubusercontent.com/render/math?math=2/3"> above and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below. This means we'll have <img src="https://render.githubusercontent.com/render/math?math=1/3"> above the first pin, <img src="https://render.githubusercontent.com/render/math?math=1/3"> between both pins and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below the second pin.
 
 |                                                              |
-| ------------------------------------------------------------ |
+| :-: |
 | <img src="images\fig4.gif" alt="fig4" style="zoom:50%;" /> |
 | **Fig 4** Moving 2 pins towards observed points until they settle. |
 
@@ -75,13 +72,17 @@ And we define our goals to train <img src="https://render.githubusercontent.com/
 
 ###### Goal 1
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%20%5Cin%20z_%7Bsamples%7D%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%20%3E%3D%20Z%29%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%20%5Cin%20z_%7Bsamples%7D%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%20%3E%3D%20Z%29%0A">|
 
 In other words, we want that for every <img src="https://render.githubusercontent.com/render/math?math=z"> in <img src="https://render.githubusercontent.com/render/math?math=z_%7Bsamples%7D"> and across the entire <img src="https://render.githubusercontent.com/render/math?math=X"> input space the cumulative distribution functions <img src="https://render.githubusercontent.com/render/math?math=F_%7BY_%7Bx%7D%7D%28f%28x%2C%20z%27%29%29"> and <img src="https://render.githubusercontent.com/render/math?math=F_%7BZ%7D%28z%27%29"> have the same value. This first goal gives us a discrete finite mapping between the ***z-samples*** set and <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">. Although it doesn't say anything about all the points <img src="https://render.githubusercontent.com/render/math?math=%5Chat%7Bz%7D"> in <img src="https://render.githubusercontent.com/render/math?math=Z"> that are not in <img src="https://render.githubusercontent.com/render/math?math=z_%7Bsamples%7D">.
 
 ###### Goal 2
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%2C%20z%27%27%20%5Cin%20Z%20%5Cspace%20s.t.%20%5Cspace%20z%27%20%3C%20z%27%27%3A%20f%28x%2C%20z%27%29%20%3C%20f%28x%2C%20z%27%27%29%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%2C%20z%27%27%20%5Cin%20Z%20%5Cspace%20s.t.%20%5Cspace%20z%27%20%3C%20z%27%27%3A%20f%28x%2C%20z%27%29%20%3C%20f%28x%2C%20z%27%27%29%0A">|
 
 This second goal gives us that for any given <img src="https://render.githubusercontent.com/render/math?math=x"> in <img src="https://render.githubusercontent.com/render/math?math=X"> <img src="https://render.githubusercontent.com/render/math?math=f"> is monotonically increasing function in <img src="https://render.githubusercontent.com/render/math?math=Z">.
 
@@ -89,19 +90,27 @@ Both of these goals will be tested empirically during the testing step of the tr
 
 If we assume that these goals are met we have that for any point <img src="https://render.githubusercontent.com/render/math?math=z%20%5Csim%20Z"> and with <img src="https://render.githubusercontent.com/render/math?math=z%27"> and <img src="https://render.githubusercontent.com/render/math?math=z%27%27"> being the points in the ***z-samples*** set that are immediately smaller and greater respectively we have that:
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%20%3E%3D%20Z%29%20%3C%20%5Cmathbf%7BPr%28z%20%3E%3D%20Z%29%7D%20%3C%20Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%27%20%3E%3D%20Z%29%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%20%3E%3D%20Z%29%20%3C%20%5Cmathbf%7BPr%28z%20%3E%3D%20Z%29%7D%20%3C%20Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%27%20%3E%3D%20Z%29%0A">|
 
 and
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%20%3E%3D%20Z%29%20%3C%20%5Cmathbf%7BPr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7D%20%3C%20Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%27%20%3E%3D%20Z%29%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%20%3E%3D%20Z%29%20%3C%20%5Cmathbf%7BPr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7D%20%3C%20Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%27%20%3E%3D%20Z%29%0A">|
 
 From this we have that:
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20%7CPr%28z%20%3E%3D%20Z%29%20-%20Pr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7C%20%3C%20Pr%28z%27%27%20%3E%3D%20Z%29%20-%20Pr%28z%27%20%3E%3D%20Z%29%20%3D%20Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20-%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20%7CPr%28z%20%3E%3D%20Z%29%20-%20Pr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7C%20%3C%20Pr%28z%27%27%20%3E%3D%20Z%29%20-%20Pr%28z%27%20%3E%3D%20Z%29%20%3D%20Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20-%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%0A">|
 
 What this means is that for any point <img src="https://render.githubusercontent.com/render/math?math=z%20%5Csim%20Z"> the error of <img src="https://render.githubusercontent.com/render/math?math=f">, which an be defined as <img src="https://render.githubusercontent.com/render/math?math=%7CPr%28z%20%3E%3D%20Z%29%20-%20Pr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7C">, is always smaller than <img src="https://render.githubusercontent.com/render/math?math=Pr%28z%27%27%20%3E%3D%20Z%29%20-%20Pr%28z%27%20%3E%3D%20Z%29"> or <img src="https://render.githubusercontent.com/render/math?math=Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20-%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29"> which (since <img src="https://render.githubusercontent.com/render/math?math=f"> is monotonically increasing in <img src="https://render.githubusercontent.com/render/math?math=z"> for any given <img src="https://render.githubusercontent.com/render/math?math=x"> ) can be minimized by making <img src="https://render.githubusercontent.com/render/math?math=z%27%27%20-%20z%27"> smaller. This can be achieved by increasing the number of ***z-samples*** or <img src="https://render.githubusercontent.com/render/math?math=S">. In other words the maximum error of <img src="https://render.githubusercontent.com/render/math?math=f"> can be arbitrarily minimized by a sufficiently large <img src="https://render.githubusercontent.com/render/math?math=S">.
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cexists%20z_%7Bsamples%7D%20%5Csubset%20Z%2C%20%5Cforall%20%5Cepsilon%20%3A%20%7CPr%28z%20%3E%3D%20Z%29%20-%20Pr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7C%20%3C%20%5Cepsilon%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cexists%20z_%7Bsamples%7D%20%5Csubset%20Z%2C%20%5Cforall%20%5Cepsilon%20%3A%20%7CPr%28z%20%3E%3D%20Z%29%20-%20Pr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7C%20%3C%20%5Cepsilon%0A">|
 
 
 Having defined our goals and what will they buy us, we move to show how we will achieve [Goal 1](#Goal-1). For simplicity we will use a ***z-samples*** set that is evenly distributed in <img src="https://render.githubusercontent.com/render/math?math=Z">, that is: <img src="https://render.githubusercontent.com/render/math?math=%5C%7Bz_0%2C%20z_%7B1%7D%2C%20...%20%2C%20z_%7BS%20-%201%7D%5C%7D%20%5Cin%20Z%20s.t.%20z_%7B0%7D%20%3C%20z_%7B1%7D%2C%20...%20%2C%20%3C%20z_%7BS%7D%20%5Cand%20Pr%28z_%7B1%7D%20%3E%20Z%20%3E%20z_%7B0%7D%29%20%3D%20Pr%28z_%7B2%7D%20%3E%20Z%20%3E%20z_%7B1%7D%29%2C%20...%20%2C%20Pr%28z_%7Bs%7D%20%3E%20Z%20%3E%20z_%7Bs-1%7D%29">.
@@ -114,27 +123,39 @@ If instead of being <img src="https://render.githubusercontent.com/render/math?m
 
 Let's say that <img src="https://render.githubusercontent.com/render/math?math=a"> is the distance between <img src="https://render.githubusercontent.com/render/math?math=z%27"> and the smallest number in <img src="https://render.githubusercontent.com/render/math?math=Z"> or <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmin%7D">, and <img src="https://render.githubusercontent.com/render/math?math=b"> the distance between <img src="https://render.githubusercontent.com/render/math?math=z%27"> and <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmax%7D">.
 
-<img src="https://render.githubusercontent.com/render/math?math=a%20%3D%20z%27%20-%20Z_%7Bmin%7D%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=a%20%3D%20z%27%20-%20Z_%7Bmin%7D%0A">|
 
-<img src="https://render.githubusercontent.com/render/math?math=b%20%3D%20Z_%7Bmax%7D%20-%20z%27%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=b%20%3D%20Z_%7Bmax%7D%20-%20z%27%0A">|
 
 
 
 Since <img src="https://render.githubusercontent.com/render/math?math=a"> represents the amount of training examples we hope to find smaller than <img src="https://render.githubusercontent.com/render/math?math=z%27"> and <img src="https://render.githubusercontent.com/render/math?math=b"> the amount of training examples greater than <img src="https://render.githubusercontent.com/render/math?math=z%27"> we need 2 scalars <img src="https://render.githubusercontent.com/render/math?math=%5Calpha"> and <img src="https://render.githubusercontent.com/render/math?math=%5Cbeta"> to satisfy the following equations:
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Calpha%20a%20%3D%20%5Cbeta%20b%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Calpha%20a%20%3D%20%5Cbeta%20b%0A">|
 
 These scalars will be the multipliers to be used with the constant movement <img src="https://render.githubusercontent.com/render/math?math=M"> on every observed point smaller and greater than <img src="https://render.githubusercontent.com/render/math?math=z%27"> respectively. This first equation assures that the total movement when <img src="https://render.githubusercontent.com/render/math?math=z%27"> is situated at <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmin%7D%20%2B%20a"> or <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmax%7D%20-%20b"> will be 0.
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Calpha%20a%20%2B%20%5Cbeta%20b%20%3D%201%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Calpha%20a%20%2B%20%5Cbeta%20b%20%3D%201%0A">|
 
 This second equation normalizes the scalars so that the total movement for all <img src="https://render.githubusercontent.com/render/math?math=z"> in <img src="https://render.githubusercontent.com/render/math?math=z_%7Bsamples%7D"> have the same total movement.
 
 Which gives us:
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Calpha%20%3D%201%20/%20%282%20%20a%29%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Calpha%20%3D%201%20/%20%282%20%20a%29%0A">|
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cbeta%20%3D%201%20/%20%282%20b%29%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cbeta%20%3D%201%20/%20%282%20b%29%0A">|
 
 This logic however, breaks at the edges, that is when a *z-sample* is equal to <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmin%7D"> or <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmax%7D">. At these values either <img src="https://render.githubusercontent.com/render/math?math=a"> or <img src="https://render.githubusercontent.com/render/math?math=b"> is 0 and if either of them is 0 then one of <img src="https://render.githubusercontent.com/render/math?math=%5Calpha"> or <img src="https://render.githubusercontent.com/render/math?math=%5Cbeta"> is undefined.
 
@@ -150,27 +171,37 @@ For example if <img src="https://render.githubusercontent.com/render/math?math=Z
 
 First we select a batch of data from the training data with size <img src="https://render.githubusercontent.com/render/math?math=n">, for every data point in the batch, we evaluate the current model on every *z-sample*. This gives us the prediction matrix:
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Af%28x_%7B0%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B1%7D%2C%20z_%7B0%7D%29%2C%20...%2C%20f%28x_%7B0%7D%2C%20z_%7BS%7D%29%5C%5C%0Af%28x_%7B1%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B1%7D%2C%20z_%7B1%7D%29%2C%20...%2C%20f%28x_%7B1%7D%2C%20z_%7BS%7D%29%5C%5C%0A...%5C%5C%0Af%28x_%7Bn%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bn%7D%2C%20z_%7B1%7D%29%2C%20...%2C%20f%28x_%7Bn%7D%2C%20z_%7BS%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Af%28x_%7B0%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B1%7D%2C%20z_%7B0%7D%29%2C%20...%2C%20f%28x_%7B0%7D%2C%20z_%7BS%7D%29%5C%5C%0Af%28x_%7B1%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B1%7D%2C%20z_%7B1%7D%29%2C%20...%2C%20f%28x_%7B1%7D%2C%20z_%7BS%7D%29%5C%5C%0A...%5C%5C%0Af%28x_%7Bn%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bn%7D%2C%20z_%7B1%7D%29%2C%20...%2C%20f%28x_%7Bn%7D%2C%20z_%7BS%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">|
 
 For every data point <img src="https://render.githubusercontent.com/render/math?math=%28x_%7Bi%7D%2C%20y_%7Bi%7D%29"> in the batch, we take the output value <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> and compare it with every value of its corresponding row in the prediction matrix (i.e. <img src="https://render.githubusercontent.com/render/math?math=%5Bf%28x_%7Bi%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bi%7D%2C%20z_%7B0%7D%29%2C%20...%2C%20f%28x_%7Bi%7D%2C%20z_%7B8%7D%29%5D">). After determining if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is greater or smaller than each predicted value, we produce 2 values for every element in the matrix:
 
 ###### Weight
 The weight is the scalar <img src="https://render.githubusercontent.com/render/math?math=%5Calpha_%7Bz-sample%7D"> if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is smaller than the prediction and <img src="https://render.githubusercontent.com/render/math?math=%5Cbeta_%7Bz-sample%7D"> if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is greater.
 
-<img src="https://render.githubusercontent.com/render/math?math=w_%7Bi%2C%20z-sample%7D%20%3D%20%5Cleft%5C%7B%0A%5Cbegin%7Barray%7D%7Bll%7D%0A%5Calpha_%7Bz-sample%7D%20%26%20y_%7Bi%7D%20%3C%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cbeta_%7Bz-sample%7D%20%26%20y_%7Bi%7D%20%3E%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cend%7Barray%7D%0A%5Cright.%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=w_%7Bi%2C%20z-sample%7D%20%3D%20%5Cleft%5C%7B%0A%5Cbegin%7Barray%7D%7Bll%7D%0A%5Calpha_%7Bz-sample%7D%20%26%20y_%7Bi%7D%20%3C%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cbeta_%7Bz-sample%7D%20%26%20y_%7Bi%7D%20%3E%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cend%7Barray%7D%0A%5Cright.%0A">|
 
 ###### Target Value
 The target value is the prediction itself plus the preselected movement constant <img src="https://render.githubusercontent.com/render/math?math=M"> multiplied by -1 if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is smaller than the prediction and 1 if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is greater. You can think of target values as the "where we want the prediction to be" value.
 
-<img src="https://render.githubusercontent.com/render/math?math=t_%7Bi%2C%20z-sample%7D%20%3D%20%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%0Af%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%20%2B%20M%20%26%20y_%7Bi%7D%20%3C%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0Af%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%20-%20M%20%26%20y_%7Bi%7D%20%3E%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cend%7Barray%7D%5Cright.%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=t_%7Bi%2C%20z-sample%7D%20%3D%20%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%0Af%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%20%2B%20M%20%26%20y_%7Bi%7D%20%3C%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0Af%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%20-%20M%20%26%20y_%7Bi%7D%20%3E%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cend%7Barray%7D%5Cright.%0A">|
 
 After calculating these 2 values we are ready to assemble the matrix to be used during backpropagation.
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0A%28w_%7B0%2C0%7D%2C%20t_%7B0%2C0%7D%29%2C%20%28w_%7B0%2C1%7D%2C%20t_%7B0%2C1%7D%29%2C%20...%20%2C%20%28w_%7B0%2CS%7D%2C%20t_%7B0%2CS%7D%29%5C%5C%0A%28w_%7B1%2C0%7D%2C%20t_%7B1%2C0%7D%29%2C%20%28w_%7B1%2C1%7D%2C%20t_%7B1%2C1%7D%29%2C%20...%20%2C%20%28w_%7B1%2CS%7D%2C%20t_%7B1%2CS%7D%29%5C%5C%0A...%5C%5C%0A%28w_%7Bn%2C0%7D%2C%20t_%7Bn%2C0%7D%29%2C%20%28w_%7Bn%2C1%7D%2C%20t_%7Bn%2C1%7D%29%2C%20...%20%2C%20%28w_%7Bn%2CS%7D%2C%20t_%7Bn%2CS%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0A%28w_%7B0%2C0%7D%2C%20t_%7B0%2C0%7D%29%2C%20%28w_%7B0%2C1%7D%2C%20t_%7B0%2C1%7D%29%2C%20...%20%2C%20%28w_%7B0%2CS%7D%2C%20t_%7B0%2CS%7D%29%5C%5C%0A%28w_%7B1%2C0%7D%2C%20t_%7B1%2C0%7D%29%2C%20%28w_%7B1%2C1%7D%2C%20t_%7B1%2C1%7D%29%2C%20...%20%2C%20%28w_%7B1%2CS%7D%2C%20t_%7B1%2CS%7D%29%5C%5C%0A...%5C%5C%0A%28w_%7Bn%2C0%7D%2C%20t_%7Bn%2C0%7D%29%2C%20%28w_%7Bn%2C1%7D%2C%20t_%7Bn%2C1%7D%29%2C%20...%20%2C%20%28w_%7Bn%2CS%7D%2C%20t_%7Bn%2CS%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">|
 
 We pass the prediction matrix results in a addition to this matrix to a Weighted Mean Squared Error loss function (WMSE). The loss will look like this:
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Csum_%7Bj%3D0%7D%5E%7BS%7D%5Csum_%7Bi%3D0%7D%5E%7Bn%7D%28f%28x_%7Bi%7D%2C%20z_%7Bj%7D%29%20-%20t_%7Bi%2Cj%7D%29%5E2%20%2A%20w_%7Bi%2Cj%7D%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Csum_%7Bj%3D0%7D%5E%7BS%7D%5Csum_%7Bi%3D0%7D%5E%7Bn%7D%28f%28x_%7Bi%7D%2C%20z_%7Bj%7D%29%20-%20t_%7Bi%2Cj%7D%29%5E2%20%2A%20w_%7Bi%2Cj%7D%0A">|
 
 
 
@@ -185,7 +216,7 @@ The Mean Squared Error (MSE) loss function works to train the model using backpr
 Using EMD we can obtain an indicator of how similar <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20y%20%5Csim%20Y_%7Bx%7D"> and <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%3A%20f%28x%2C%20z%20%5Csim%20Z%29"> are. It can be calculated by comparing every <img src="https://render.githubusercontent.com/render/math?math=%28x%2C%20y%29"> data point in the test data and prediction data sets and finding way to transform one into the other that requires the smallest total movement.
 
 |      |
-| ---- |
+| :-: |
 |   <img src="images\fig5.png" alt="fig5" style="zoom:50%;" />   |
 | **Fig 5** EMD testing. |
 
@@ -198,18 +229,22 @@ We start by creating an ordering (an array of indices) <img src="https://render.
 
 Now we can evaluate <img src="https://render.githubusercontent.com/render/math?math=f"> for every <img src="https://render.githubusercontent.com/render/math?math=x_%7Bo%27%7D%20%5Cmid%20o%27%20%5Cin%20G"> on every <img src="https://render.githubusercontent.com/render/math?math=z-sample"> which gives us the matrix:
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Af%28x_%7Bo_%7B0%7D%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bo_%7B0%7D%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7Bo_%7B0%7D%7D%2C%20z_%7BS%7D%29%5C%5C%0Af%28x_%7Bo_%7B1%7D%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bo_%7B1%7D%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7Bo_%7B1%7D%7D%2C%20z_%7BS%7D%29%5C%5C%0A...%5C%5C%0Af%28x_%7Bo_%7BV%7D%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bo_%7BV%7D%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7Bo_%7BV%7D%7D%2C%20z_%7BS%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Af%28x_%7Bo_%7B0%7D%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bo_%7B0%7D%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7Bo_%7B0%7D%7D%2C%20z_%7BS%7D%29%5C%5C%0Af%28x_%7Bo_%7B1%7D%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bo_%7B1%7D%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7Bo_%7B1%7D%7D%2C%20z_%7BS%7D%29%5C%5C%0A...%5C%5C%0Af%28x_%7Bo_%7BV%7D%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bo_%7BV%7D%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7Bo_%7BV%7D%7D%2C%20z_%7BS%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">|
 
 We then proceed to compare each row with the outputs <img src="https://render.githubusercontent.com/render/math?math=y_%7Bo%27%7D%20%5Cmid%20o%27%20%5Cin%20G">
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Ay_%7Bo_%7B0%7D%7D%5C%5C%0Ay_%7Bo_%7B1%7D%7D%5C%5C%0A...%5C%5C%0Ay_%7Bo_%7BV%7D%7D%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Ay_%7Bo_%7B0%7D%7D%5C%5C%0Ay_%7Bo_%7B1%7D%7D%5C%5C%0A...%5C%5C%0Ay_%7Bo_%7BV%7D%7D%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">|
 
 and create *smaller than counts* (i.e. <img src="https://render.githubusercontent.com/render/math?math=Pr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29">) which we can then compare with the canonical counts for every <img src="https://render.githubusercontent.com/render/math?math=z-sample"> (i.e. <img src="https://render.githubusercontent.com/render/math?math=Pr%28z%20%3E%3D%20Z%29">) to measure the error in the selected vicinity.
 
 We will create a number of such vicinities and call each error as the local errors and a vicinity covering all <img src="https://render.githubusercontent.com/render/math?math=X_%7Btest%7D"> and call its error the mean error.
 
 |      |
-| ---- |
+| :-: |
 |   <img src="images\fig6.png" alt="fig6" style="zoom:50%;" />   |
 | **Fig 6** Training goal 1 testing. |
 
@@ -219,7 +254,9 @@ We will create a number of such vicinities and call each error as the local erro
 
 In order to test [Goal 2](#Goal-2) <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%2C%20z%27%27%20%5Cin%20z_%7Bsamples%7D%20%5Cspace%20s.t.%20%5Cspace%20z%27%20%3C%20z%27%27%3A%20f%28x%2C%20z%27%29%20%3C%20f%28x%2C%20z%27%27%29"> we select some random points in <img src="https://render.githubusercontent.com/render/math?math=X"> and a set of random points in <img src="https://render.githubusercontent.com/render/math?math=Z">, we run them in our model and get result matrix:
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Af%28x_%7B0%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B0%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7B0%7D%2C%20z_%7Bn%7D%29%5C%5C%0Af%28x_%7B1%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B1%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7B1%7D%2C%20z_%7Bn%7D%29%5C%5C%0A...%5C%5C%0Af%28x_%7Bm%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bm%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7Bm%7D%2C%20z_%7Bn%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Af%28x_%7B0%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B0%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7B0%7D%2C%20z_%7Bn%7D%29%5C%5C%0Af%28x_%7B1%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B1%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7B1%7D%2C%20z_%7Bn%7D%29%5C%5C%0A...%5C%5C%0Af%28x_%7Bm%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bm%7D%2C%20z_%7B1%7D%29%2C%20...%20%2C%20f%28x_%7Bm%7D%2C%20z_%7Bn%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">|
 
 
 From here it is trivial to check that each row is monotonically increasing. To increase the quality of the check we can increment the sizes of the test point set in <img src="https://render.githubusercontent.com/render/math?math=X"> and the test point set in <img src="https://render.githubusercontent.com/render/math?math=Z">.
@@ -228,7 +265,7 @@ From here it is trivial to check that each row is monotonically increasing. To i
 
 The following are various experiments done on different datasets.
 
-### <img src="https://render.githubusercontent.com/render/math?math=x%5E2"> plus gaussian noise
+### <img src="https://render.githubusercontent.com/render/math?math=%7B%5Clarge%20x%5E2%7D"> plus gaussian noise
 
 Let's start with a simple example. The function <img src="https://render.githubusercontent.com/render/math?math=x_%7B2%7D"> with added gaussian noise. On the left panel you can see the training evolving over the course of 180 epochs. On the top left corner of this panel you can see the goal 1 error localized over <img src="https://render.githubusercontent.com/render/math?math=X">, at the end of the training you can see that the highest local error is around 2% and the global error is around 0.5%. On the top right corner of the same panel you can see the local Earth Mover's Distance (EMD). On the bottom left corner you can see a plot of the original test dataset (in blue) and the <img src="https://render.githubusercontent.com/render/math?math=z-lines"> (in orange), you can see how they represent the predicted space's mapping on the real data. On the bottom right you can see a plot of the original test dataset (in blue) and random predictions (with <img src="https://render.githubusercontent.com/render/math?math=z%20%5Csim%20Z">), you can see as the predicted results slowly conform to the real data.
 
@@ -239,7 +276,7 @@ On the right panel, you can see a plot of the global goal1 error (above) and glo
 |   <img src="images\x2_normal_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_x2norm_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
 | **Fig 7** Training goal 1 testing. |  |
 
-### <img src="https://render.githubusercontent.com/render/math?math=ax%5E3%20%2B%20bx%5E2%20%2B%20cx%20%2B%20d"> plus truncated gaussian noise
+### <img src="https://render.githubusercontent.com/render/math?math=%7B%5Clarge%20a%20x%5E3%20%2B%20bx%5E2%20%2B%20cx%20%2B%20d%7D"> plus truncated gaussian noise
 
 This one is a bit more complicated. An order 3 polynomial with added truncated gaussian noise, that is a normal distribution clipped at specific points.
 
@@ -248,17 +285,19 @@ This one is a bit more complicated. An order 3 polynomial with added truncated g
 |   <img src="images\x3x2_trunc_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_x3x2trunc_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
 | **Fig 8** Training goal 1 testing. |  |
 
-### Double <img src="https://render.githubusercontent.com/render/math?math=sin%28x%29"> plus gaussian noise multiplied by sin(x)
+### Double <img src="https://render.githubusercontent.com/render/math?math=%7B%5Clarge%20sin%28x%29%7D"> plus gaussian noise multiplied by sin(x)
 
 This one is quite more interesting. 2 mirroring <img src="https://render.githubusercontent.com/render/math?math=sin%28x%29"> functions with gaussian noise scaled by <img src="https://render.githubusercontent.com/render/math?math=sin%28x%29"> itself.
 
-<img src="https://render.githubusercontent.com/render/math?math=f%20%3D%20%5Cleft%5C%7B%5Cbegin%7Barray%7D%7B11%7D%0Asin%28x%29%20%2B%20%5Cmathcal%7BN%7D%20%2A%20sin%28x%29%20%26%20U%280%2C1%29%20%3C%3D%200.5%5C%5C%0A-sin%28x%29%20%2B%20%5Cmathcal%7BN%7D%20%2A%20sin%28x%29%20%26%20U%280%2C1%29%20%3E%200.5%5C%5C%0A%5Cend%7Barray%7D%5Cright.%0A">
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=f%20%3D%20%5Cleft%5C%7B%5Cbegin%7Barray%7D%7B11%7D%0Asin%28x%29%20%2B%20%5Cmathcal%7BN%7D%20%2A%20sin%28x%29%20%26%20U%280%2C1%29%20%3C%3D%200.5%5C%5C%0A-sin%28x%29%20%2B%20%5Cmathcal%7BN%7D%20%2A%20sin%28x%29%20%26%20U%280%2C1%29%20%3E%200.5%5C%5C%0A%5Cend%7Barray%7D%5Cright.%0A">|
 
 
 |      |      |
 | ---- | ---- |
 |   <img src="images\sin_sin_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_sinsin_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
-| \ |  |
+| **Fig 9** |  |
 
 ### Branching function plus gaussian noise
 
@@ -269,20 +308,20 @@ This one adds branching.
 |   <img src="images\branch_norm_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_branchnorm_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
 | **Fig 10** Training goal 1 testing. |  |
 
-### <img src="https://render.githubusercontent.com/render/math?math=x_%7B2%7D"> in one dimension <img src="https://render.githubusercontent.com/render/math?math=x_%7B3%7D"> in another plus absolute normal
+### <img src="https://render.githubusercontent.com/render/math?math=x_%7B2%7D"> in one dimension <img src="https://render.githubusercontent.com/render/math?math=%7B%5Clarge%20x_%7B3%7D%7D"> in another plus absolute normal
 
 The next example has 2 dimensions of input. <img src="https://render.githubusercontent.com/render/math?math=X_%7B0%7D"> (the first dimension) is <img src="https://render.githubusercontent.com/render/math?math=x%5E2"> and <img src="https://render.githubusercontent.com/render/math?math=X_%7B1%7D"> (the second dimension) is <img src="https://render.githubusercontent.com/render/math?math=x%5E3">.
 
 |      |
-| :--: |
+| ---- |
 |<img src="images\x3_x2_absnormal_plots_res_0.gif" alt="fig10_0" style="zoom:80%;" />|
 |<img src="images\x3_x2_absnormal_plots_res_1.gif" alt="fig10_1" style="zoom:80%;" />|
 |<img src="images\fig_x3x2abs_tensorboard.png" alt="fig7" style="zoom:50%;" />|
-| **Fig 10** Training goal 1 testing. |
+| **Fig 11** Training goal 1 testing. |
 
 ### California housing dataset
 
-This is the classic California housing dataset.
+This is the classic California housing dataset. It has 8 input dimensions.
 
 |      |
 | ---- |
@@ -295,7 +334,9 @@ This is the classic California housing dataset.
 |<img src="images\california_housing_plots_res_6.gif" alt="fig10_1" style="zoom:66%;" />|
 |<img src="images\california_housing_plots_res_7.gif" alt="fig10_1" style="zoom:66%;" />|
 |<img src="images\fig_cal_tensorboard.png" alt="fig7" style="zoom:50%;" />|
-| **Fig 10** Training goal 1 testing. |
+| **Fig 12** Training goal 1 testing. |
 
 ## Conclusion
+
+This method allows to approximate stochastic data sets.
 
