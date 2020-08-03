@@ -1,5 +1,5 @@
 """
-This module contains class Train.
+This module contains class Trainer.
 """
 
 import numpy as np
@@ -11,7 +11,7 @@ from torch import optim
 # pylint: disable=bad-continuation, not-callable
 
 # %%
-class Train:
+class Trainer:
     """
     This class implements a mechanism to train a neural network that produces
     stochastic outputs.

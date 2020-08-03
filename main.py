@@ -17,7 +17,7 @@ import torch
 from scipy.stats import truncnorm
 
 from model import StochasticFFNN
-from train import Train
+from trainer import Trainer
 from tester import Tester
 from zsamples import ZSamples
 from datasets import DataSets
@@ -248,7 +248,7 @@ LEARNING_RATE = 1e-2 / 12  # exp 1, 2, 3, 4, 5
 MOVEMENT = 10.0  # exp 1, 2, 3, 4, 5
 # MOVEMENT = 1.0  # exp 6
 
-train = Train(
+trainer = Trainer(
     z_samples=z_samples,
     movement=MOVEMENT,
     model=stochastic_ffnn,
@@ -274,7 +274,7 @@ train = Train(
 tester = Tester(
     z_samples=z_samples,
     datasets=datasets,
-    trainer=train,
+    trainer=trainer,
     model=stochastic_ffnn,
     device=device,
     test_s=0.9,
@@ -296,11 +296,11 @@ for epoch in range(0, NUM_EPOCHS):
     start = time.time()
 
     for x, y in datasets.data_loader_train:
-        train.batch(
+        trainer.batch(
             x_pt=x, y_pt=y,
         )
 
-    train.step(epoch=epoch)
+    trainer.step(epoch=epoch)
 
     tester.step(epoch=epoch)
 
