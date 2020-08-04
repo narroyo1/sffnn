@@ -27,7 +27,7 @@ To do this we introduce a secondary input <img src="https://render.githubusercon
 Or put another way, we want a deterministic function that for any given input <img src="https://render.githubusercontent.com/render/math?math=x%27">, maps a random (but uniform) variable <img src="https://render.githubusercontent.com/render/math?math=Z"> to a dependent random variable <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%27%7D">.
 
 [^1]: <img src="https://render.githubusercontent.com/render/math?math=X"> is the n-dimensional continuous domain of the target function.
-[^2]: <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is a dependent random variable in an n-dimensional continuous space. The probability function must be continuous on <img src="https://render.githubusercontent.com/render/math?math=x">. In this article and the provided source code <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is assumed to be 1-dimensional.  
+[^2]: <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is a dependent random variable in an n-dimensional continuous space. The probability function must be continuous on <img src="https://render.githubusercontent.com/render/math?math=x">. In this article and the provided source code <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is assumed to be 1-dimensional.
 [^3]: <img src="https://render.githubusercontent.com/render/math?math=Z"> is a uniformly distributed random variable in an n-dimensional continuous space with a predefined range, however in this article and the provided code <img src="https://render.githubusercontent.com/render/math?math=Z"> is always assumed to be 1-dimensional.
 
 
@@ -36,7 +36,7 @@ Or put another way, we want a deterministic function that for any given input <i
 The proposed model to approximate <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is an ordinary feed forward neural network that in addition to an input <img src="https://render.githubusercontent.com/render/math?math=x"> also takes an input <img src="https://render.githubusercontent.com/render/math?math=z"> that can be sampled from <img src="https://render.githubusercontent.com/render/math?math=Z">.
 
 |                                                              |
-| :----------------------------------------------------------: |
+| :-: |
 | <img src="images\model.png" alt="model" /> |
 ### Overview
 
