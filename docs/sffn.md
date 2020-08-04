@@ -85,7 +85,7 @@ In other words, we want that for every <img src="https://render.githubuserconten
 ###### Goal 2
 
 |   |
-|:-:|
+|--:|
 |<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%2C%20z%27%27%20%5Cin%20Z%20%5Cspace%20s.t.%20%5Cspace%20z%27%20%3C%20z%27%27%3A%20f%28x%2C%20z%27%29%20%3C%20f%28x%2C%20z%27%27%29%0A">|
 
 This second goal gives us that for any given <img src="https://render.githubusercontent.com/render/math?math=x"> in <img src="https://render.githubusercontent.com/render/math?math=X"> <img src="https://render.githubusercontent.com/render/math?math=f"> is monotonically increasing function in <img src="https://render.githubusercontent.com/render/math?math=Z">.
