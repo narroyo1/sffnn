@@ -26,7 +26,7 @@ To do this we introduce a secondary input <img src="https://render.githubusercon
 
 Or put another way, we want a deterministic function that for any given input <img src="https://render.githubusercontent.com/render/math?math=x%27">, maps a random (but uniform) variable <img src="https://render.githubusercontent.com/render/math?math=Z"> to a dependent random variable <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%27%7D">.
 
-[^1]: <img src="https://render.githubusercontent.com/render/math?math=X"> is the n-dimensional continuous domain of the target function.
+[^1]: <img src="https://render.githubusercontent.com/render/math?math=X"> is the n-dimensional continuous domain of the target function.  
 [^2]: <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is a dependent random variable in an n-dimensional continuous space. The probability function must be continuous on <img src="https://render.githubusercontent.com/render/math?math=x">. In this article and the provided source code <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is assumed to be 1-dimensional.  
 [^3]: <img src="https://render.githubusercontent.com/render/math?math=Z"> is a uniformly distributed random variable in an n-dimensional continuous space with a predefined range, however in this article and the provided code <img src="https://render.githubusercontent.com/render/math?math=Z"> is always assumed to be 1-dimensional.
 
@@ -129,7 +129,7 @@ Let's say that <img src="https://render.githubusercontent.com/render/math?math=a
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=a%20%3D%20z%27%20-%20Z_%7Bmin%7D%5C%5C%0Ab%20%3D%20Z_%7Bmax%7D%20-%20z%27%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Barray%7D%7Bll%7D%0Aa%20%3D%20z%27%20-%20Z_%7Bmin%7D%5C%5C%0Ab%20%3D%20Z_%7Bmax%7D%20-%20z%27%0A%5Cend%7Barray%7D%0A">|
 
 
 
@@ -151,7 +151,7 @@ Which gives us:
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=%5Calpha%20%3D%201%20/%20%282%20%20a%29%5C%5C%0A%5Cbeta%20%3D%201%20/%20%282%20b%29%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Barray%7D%7Bll%7D%0A%5Calpha%20%3D%201%20/%20%282%20%20a%29%5C%5C%0A%5Cbeta%20%3D%201%20/%20%282%20b%29%0A%5Cend%7Barray%7D%0A">|
 
 This logic however, breaks at the edges, that is when a *z-sample* is equal to <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmin%7D"> or <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmax%7D">. At these values either <img src="https://render.githubusercontent.com/render/math?math=a"> or <img src="https://render.githubusercontent.com/render/math?math=b"> is 0 and if either of them is 0 then one of <img src="https://render.githubusercontent.com/render/math?math=%5Calpha"> or <img src="https://render.githubusercontent.com/render/math?math=%5Cbeta"> is undefined.
 
@@ -307,6 +307,8 @@ This one experiments with branching paths. It starts with simple gaussian noise 
 | |
 |:-:|
 |<img src="https://render.githubusercontent.com/render/math?math=f%20%3D%20%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%0A0.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B-4%2C%20-2%5D%5C%5C%0A1.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B-2%2C%200%5D%20%26%5Cand%20%26U%280%2C1%29%20%3C%3D%200.5%5C%5C%0A-1.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B-2%2C%200%5D%20%26%5Cand%20%260.5%20%3C%20U%280%2C1%29%5C%5C%0A0.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B0%2C%202%5D%20%26%5Cand%20%260.5%20%3C%20U%280%2C1%29%5C%5C%0A2.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B0%2C%202%5D%20%26%5Cand%20%260.25%20%3C%20U%280%2C1%29%20%3C%3D%200.5%5C%5C%0A-2.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B0%2C%202%5D%20%26%5Cand%20%26U%280%2C1%29%20%3C%3D%200.25%5C%5C%0A1.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B2%2C%204%5D%20%26%5Cand%20%26U%280%2C1%29%20%3C%3D%200.375%5C%5C%0A-1.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B2%2C%204%5D%20%26%5Cand%20%260.375%20%3C%20U%280%2C1%29%20%3C%3D%200.75%5C%5C%0A3.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B2%2C%204%5D%20%26%5Cand%20%260.75%20%3C%20U%280%2C1%29%20%3C%3D%200.875%5C%5C%0A-3.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B2%2C%204%5D%20%26%5Cand%20%260.875%20%3C%20U%280%2C1%29%5C%5C%0A%5Cend%7Barray%7D%5Cright.%0A">|
+
+
 Despite the distribution not being continuous, the model does a reasonably good job of approximating it.
 
 |      |      |
