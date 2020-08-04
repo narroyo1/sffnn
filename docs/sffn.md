@@ -1,5 +1,9 @@
 # Approximating Stochastic Data Sets
 
+###### Nicolas Arroyo nicolas.arroyo.duran@gmail.com
+
+
+
 ## Introduction
 
 Neural networks are [universal function approximators][UAT]. Which means that having enough hidden neurons a neural network can be used to approximate any continuous function. Real life data, however, often has noise or hidden variables which makes approximation inaccurate and in other cases over trained. At best, the prediction settles on the mean of the immediate vicinity. In **Fig. 1** we can see that using a neural network to approximate a noisy data set fails to capture all the information.
@@ -51,9 +55,9 @@ We'll start by putting 1 pin in any given latitude of the fabric and at the midp
 
 For every observed point, we'll move the pin position in the underlying fabric a small predefined distance downwards if the observed point is below its current position, and we'll move it upwards if it is above it. This means that if there are more observed points above the pin's position in the underlying fabric the total movement will be upwards and vice versa if there are more observed points below it. If we repeat this process enough times, the pin's position in the underlying fabric will settle in a place that divides the observed points by half, that is the same amount of observed points are above it as below it.
 |                                                              |
-| :-: |
-| <img src="images\fig3.gif" alt="fig3" style="zoom:50%;" /> |
-| **Fig 3** Moving 1 pins towards observed points until it settles. |
+| :----------------------------------------------------------: |
+|  <img src="images\fig3.gif" alt="fig3" style="zoom:50%;" />  |
+| **Fig 3** Moving 1 pin towards observed points until it settles. |
 
 The pin comes to a stable position dividing all data points in half because the amount of movement for every observation is equal for data points above and below. If the predefined distance of movement for observations above is different from the predefined distance of movement for observations below then the pin would settle in a position dividing the data points by a different ratio (different than half). For example, let's try having 2 pins instead of 1, the first one will move 1 distance for observations above it and 0.5 distance for observations below, the second one will do the opposite. After enough iterations the first one should settle at a position that divides the data points by <img src="https://render.githubusercontent.com/render/math?math=1/3"> above and <img src="https://render.githubusercontent.com/render/math?math=2/3"> below while the second pin will divide by <img src="https://render.githubusercontent.com/render/math?math=2/3"> above and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below. This means we'll have <img src="https://render.githubusercontent.com/render/math?math=1/3"> above the first pin, <img src="https://render.githubusercontent.com/render/math?math=1/3"> between both pins and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below the second pin.
 
@@ -125,11 +129,7 @@ Let's say that <img src="https://render.githubusercontent.com/render/math?math=a
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=a%20%3D%20z%27%20-%20Z_%7Bmin%7D%0A">|
-
-| |
-|:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=b%20%3D%20Z_%7Bmax%7D%20-%20z%27%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=a%20%3D%20z%27%20-%20Z_%7Bmin%7D%5C%5C%0Ab%20%3D%20Z_%7Bmax%7D%20-%20z%27%0A">|
 
 
 
@@ -151,11 +151,7 @@ Which gives us:
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=%5Calpha%20%3D%201%20/%20%282%20%20a%29%0A">|
-
-| |
-|:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=%5Cbeta%20%3D%201%20/%20%282%20b%29%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Calpha%20%3D%201%20/%20%282%20%20a%29%5C%5C%0A%5Cbeta%20%3D%201%20/%20%282%20b%29%0A">|
 
 This logic however, breaks at the edges, that is when a *z-sample* is equal to <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmin%7D"> or <img src="https://render.githubusercontent.com/render/math?math=Z_%7Bmax%7D">. At these values either <img src="https://render.githubusercontent.com/render/math?math=a"> or <img src="https://render.githubusercontent.com/render/math?math=b"> is 0 and if either of them is 0 then one of <img src="https://render.githubusercontent.com/render/math?math=%5Calpha"> or <img src="https://render.githubusercontent.com/render/math?math=%5Cbeta"> is undefined.
 
@@ -267,14 +263,14 @@ The following are various experiments done on different datasets.
 
 ### <img src="https://render.githubusercontent.com/render/math?math=%7B%5Clarge%20x%5E2%7D"> plus gaussian noise
 
-Let's start with a simple example. The function <img src="https://render.githubusercontent.com/render/math?math=x_%7B2%7D"> with added gaussian noise. On the left panel you can see the training evolving over the course of 180 epochs. On the top left corner of this panel you can see the goal 1 error localized over <img src="https://render.githubusercontent.com/render/math?math=X">, at the end of the training you can see that the highest local error is around 2% and the global error is around 0.5%. On the top right corner of the same panel you can see the local Earth Mover's Distance (EMD). On the bottom left corner you can see a plot of the original test dataset (in blue) and the <img src="https://render.githubusercontent.com/render/math?math=z-lines"> (in orange), you can see how they represent the predicted space's mapping on the real data. On the bottom right you can see a plot of the original test dataset (in blue) and random predictions (with <img src="https://render.githubusercontent.com/render/math?math=z%20%5Csim%20Z">), you can see as the predicted results slowly conform to the real data.
+Let's start with a simple example. The function <img src="https://render.githubusercontent.com/render/math?math=x_%7B2%7D"> with added gaussian noise. On the left panel you can see the training evolving over the course of 180 epochs. On the top left corner of this panel you can see the goal 1 error localized over <img src="https://render.githubusercontent.com/render/math?math=X">, at the end of the training you can see that the highest local error is around 2% and the global error is around 0.5%. On the top right corner of the same panel you can see the local Earth Mover's Distance (EMD). On the bottom left corner you can see a plot of the original test dataset (in blue) and the <img src="https://render.githubusercontent.com/render/math?math=z-lines"> (in orange), you can see how they progressively conform to the test data. On the bottom right you can see a plot of the original test dataset (in blue) and random predictions (with <img src="https://render.githubusercontent.com/render/math?math=z%20%5Csim%20Z">), you can see as the predicted results progressively represent the test data.
 
-On the right panel, you can see a plot of the global goal1 error (above) and global EMD values (below) as they change over the entire training.
+On the right panel, you can see a plot of the global goal1 error (above) and global EMD values (below) as they change over the course of the training.
 
 |      |      |
 | ---- | ---- |
 |   <img src="images\x2_normal_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_x2norm_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
-| **Fig 7** Training goal 1 testing. |  |
+| **Fig 7** Training model to match <img src="https://render.githubusercontent.com/render/math?math=x%5E2"> plus gaussian. |  |
 
 ### <img src="https://render.githubusercontent.com/render/math?math=%7B%5Clarge%20a%20x%5E3%20%2B%20bx%5E2%20%2B%20cx%20%2B%20d%7D"> plus truncated gaussian noise
 
@@ -283,7 +279,7 @@ This one is a bit more complicated. An order 3 polynomial with added truncated g
 |      |      |
 | ---- | ---- |
 |   <img src="images\x3x2_trunc_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_x3x2trunc_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
-| **Fig 8** Training goal 1 testing. |  |
+| **Fig 8** Training model to match <img src="https://render.githubusercontent.com/render/math?math=x%5E3%20%2B%20bx%5E2%20%2B%20cx%20%2B%20d"> plus truncated gaussian. |  |
 
 ### Double <img src="https://render.githubusercontent.com/render/math?math=%7B%5Clarge%20sin%28x%29%7D"> plus gaussian noise multiplied by sin(x)
 
@@ -291,37 +287,47 @@ This one is quite more interesting. 2 mirroring <img src="https://render.githubu
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=f%20%3D%20%5Cleft%5C%7B%5Cbegin%7Barray%7D%7B11%7D%0Asin%28x%29%20%2B%20%5Cmathcal%7BN%7D%20%2A%20sin%28x%29%20%26%20U%280%2C1%29%20%3C%3D%200.5%5C%5C%0A-sin%28x%29%20%2B%20%5Cmathcal%7BN%7D%20%2A%20sin%28x%29%20%26%20U%280%2C1%29%20%3E%200.5%5C%5C%0A%5Cend%7Barray%7D%5Cright.%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=f%20%3D%20%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%0Asin%28x%29%20%2B%20%5Cmathcal%7BN%7D%20%2A%20sin%28x%29%20%26%20U%280%2C1%29%20%3C%3D%200.5%5C%5C%0A-sin%28x%29%20%2B%20%5Cmathcal%7BN%7D%20%2A%20sin%28x%29%20%26%20U%280%2C1%29%20%3E%200.5%5C%5C%0A%5Cend%7Barray%7D%5Cright.%0A">|
+
+
+
+Notice how the model succeeds to represent the areas in the middle with lower densities.
 
 
 |      |      |
 | ---- | ---- |
 |   <img src="images\sin_sin_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_sinsin_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
-| **Fig 9** |  |
+| **Fig 9** Training model to match double <img src="https://render.githubusercontent.com/render/math?math=sin%28x%29"> with added gaussian times <img src="https://render.githubusercontent.com/render/math?math=sin%28x%29">. |  |
 
 ### Branching function plus gaussian noise
 
-This one adds branching.
+This one experiments with branching paths. It starts with simple gaussian noise around <img src="https://render.githubusercontent.com/render/math?math=0">, then starts splitting it with equal probabilities over the course of various segments.
+
+
+| |
+|:-:|
+|<img src="https://render.githubusercontent.com/render/math?math=f%20%3D%20%5Cleft%5C%7B%5Cbegin%7Barray%7D%7Bll%7D%0A0.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B-4%2C%20-2%5D%5C%5C%0A1.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B-2%2C%200%5D%20%26%5Cand%20%26U%280%2C1%29%20%3C%3D%200.5%5C%5C%0A-1.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B-2%2C%200%5D%20%26%5Cand%20%260.5%20%3C%20U%280%2C1%29%5C%5C%0A0.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B0%2C%202%5D%20%26%5Cand%20%260.5%20%3C%20U%280%2C1%29%5C%5C%0A2.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B0%2C%202%5D%20%26%5Cand%20%260.25%20%3C%20U%280%2C1%29%20%3C%3D%200.5%5C%5C%0A-2.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B0%2C%202%5D%20%26%5Cand%20%26U%280%2C1%29%20%3C%3D%200.25%5C%5C%0A1.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B2%2C%204%5D%20%26%5Cand%20%26U%280%2C1%29%20%3C%3D%200.375%5C%5C%0A-1.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B2%2C%204%5D%20%26%5Cand%20%260.375%20%3C%20U%280%2C1%29%20%3C%3D%200.75%5C%5C%0A3.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B2%2C%204%5D%20%26%5Cand%20%260.75%20%3C%20U%280%2C1%29%20%3C%3D%200.875%5C%5C%0A-3.0%20%2B%20%5Cmathcal%7BN%7D%20%26%20%5Cforall%20x%20%5Cin%20%5B2%2C%204%5D%20%26%5Cand%20%260.875%20%3C%20U%280%2C1%29%5C%5C%0A%5Cend%7Barray%7D%5Cright.%0A">|
+Despite the distribution not being continuous, the model does a reasonably good job of approximating it.
 
 |      |      |
 | ---- | ---- |
 |   <img src="images\branch_norm_plots_res.gif" alt="fig7" style="zoom:80%;" />   |   <img src="images\fig_branchnorm_tensorboard.png" alt="fig7" style="zoom:50%;" />   |
-| **Fig 10** Training goal 1 testing. |  |
+| **Fig 10** Training model to match branching function plus gaussian. |  |
 
-### <img src="https://render.githubusercontent.com/render/math?math=x_%7B2%7D"> in one dimension <img src="https://render.githubusercontent.com/render/math?math=%7B%5Clarge%20x_%7B3%7D%7D"> in another plus absolute normal
+### <img src="https://render.githubusercontent.com/render/math?math=%7B%5Clarge%20x_%7B0%7D%5E2%20%2B%20x_%7B1%7D%5E3%7D"> plus absolute gaussian noise
 
-The next example has 2 dimensions of input. <img src="https://render.githubusercontent.com/render/math?math=X_%7B0%7D"> (the first dimension) is <img src="https://render.githubusercontent.com/render/math?math=x%5E2"> and <img src="https://render.githubusercontent.com/render/math?math=X_%7B1%7D"> (the second dimension) is <img src="https://render.githubusercontent.com/render/math?math=x%5E3">.
+The next example has 2 dimensions of input. <img src="https://render.githubusercontent.com/render/math?math=X_%7B0%7D"> (the first dimension) is <img src="https://render.githubusercontent.com/render/math?math=x%5E2"> and <img src="https://render.githubusercontent.com/render/math?math=X_%7B1%7D"> (the second dimension) is <img src="https://render.githubusercontent.com/render/math?math=x%5E3"> with added absolute gaussian noise. The display is slightly different, for the sake of space the <img src="https://render.githubusercontent.com/render/math?math=z-lines"> plot is omitted. As you can see there is a panel per dimension and as always an additional panel for goal 1 error and EMD error histories.
 
 |      |
 | ---- |
 |<img src="images\x3_x2_absnormal_plots_res_0.gif" alt="fig10_0" style="zoom:80%;" />|
 |<img src="images\x3_x2_absnormal_plots_res_1.gif" alt="fig10_1" style="zoom:80%;" />|
 |<img src="images\fig_x3x2abs_tensorboard.png" alt="fig7" style="zoom:50%;" />|
-| **Fig 11** Training goal 1 testing. |
+| **Fig 11** Training model to match <img src="https://render.githubusercontent.com/render/math?math=x_%7B0%7D%5E2%20%2B%20x_%7B1%7D%5E3"> plus absolute gaussian. |
 
 ### California housing dataset
 
-This is the classic California housing dataset. It has 8 input dimensions.
+This experiment uses real data instead of generated one which proves the model's effectivity on real data. It is the classic California housing dataset. It has 8 input dimensions.
 
 |      |
 | ---- |
@@ -334,9 +340,9 @@ This is the classic California housing dataset. It has 8 input dimensions.
 |<img src="images\california_housing_plots_res_6.gif" alt="fig10_1" style="zoom:66%;" />|
 |<img src="images\california_housing_plots_res_7.gif" alt="fig10_1" style="zoom:66%;" />|
 |<img src="images\fig_cal_tensorboard.png" alt="fig7" style="zoom:50%;" />|
-| **Fig 12** Training goal 1 testing. |
+| **Fig 12** Training model to match the California housing dataset. |
 
 ## Conclusion
 
-This method allows to approximate stochastic data sets.
+The method presented allows to approximate stochastic data sets to an arbitrary precision. The model is simple, fast to train and can be implemented with a vanilla feedforward neural network. Its ability to approximate any distribution across an input space makes it a potentially valuable tool for any task that require prediction.
 
