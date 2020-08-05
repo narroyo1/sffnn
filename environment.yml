@@ -1,15 +1,16 @@
 name: sffn
 channels:
+  - pytorch
   - defaults
 dependencies:
   - python=3.8
   - ipykernel
   - numpy
-  - pytorch
+  - pytorch=1.6.0
   - scipy
   - matplotlib
   - tensorboard
   - cudatoolkit=10.1
-  - torchvision
+  - torchvision=0.7.0
   - pylint
   - scikit-learn
