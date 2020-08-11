@@ -28,7 +28,10 @@ conda activate sffn
 
 ## Usage
 ### Using VS Code
-Open `main.py` and run.
+Open `main_windowed.py` and run.
+
+### On the command line
+Run `python main_windowed.py` on a shell.
 
 ### Tensorboard visualization
 On the same directory as `main.py` run:
@@ -36,7 +39,7 @@ On the same directory as `main.py` run:
 tensorboard --logdir=runs
 ```
 
-Then open `http://localhost:6006/` on a browser.
+Then open `http://localhost:6006/` on any browser.
 
 ## Documentation
 
