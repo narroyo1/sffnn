@@ -33,7 +33,7 @@ Or put another way, we want a deterministic function that for any given input <i
 
 ## Model
 
-The proposed model to approximate <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is an ordinary feed forward neural network that in addition to an input <img src="https://render.githubusercontent.com/render/math?math=x"> also takes an input <img src="https://render.githubusercontent.com/render/math?math=z"> that can be sampled from <img src="https://render.githubusercontent.com/render/math?math=Z">.
+The proposed model to approximate <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is an ordinary feed forward neural network that in addition to an input <img src="https://render.githubusercontent.com/render/math?math=x"> takes an input <img src="https://render.githubusercontent.com/render/math?math=z"> that can be sampled from <img src="https://render.githubusercontent.com/render/math?math=Z">.
 
 |                                                              |
 | :----------------------------------------------------------: |
@@ -59,7 +59,7 @@ For every observed point, we'll move the pin position in the underlying fabric a
 |  <img src="images\fig3.gif" alt="fig3" style="zoom:50%;" />  |
 | **Fig 3** Moving 1 pin towards observed points until it settles. |
 
-The pin comes to a stable position dividing all data points in half because the amount of movement for every observation is equal for data points above and below. If the predefined distance of movement for observations above is different from the predefined distance of movement for observations below then the pin would settle in a position dividing the data points by a different ratio (different than half). For example, let's try having 2 pins instead of 1, the first one will move 1 distance for observations above it and 0.5 distance for observations below, the second one will do the opposite. After enough iterations the first one should settle at a position that divides the data points by <img src="https://render.githubusercontent.com/render/math?math=1/3"> above and <img src="https://render.githubusercontent.com/render/math?math=2/3"> below while the second pin will divide by <img src="https://render.githubusercontent.com/render/math?math=2/3"> above and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below. This means we'll have <img src="https://render.githubusercontent.com/render/math?math=1/3"> above the first pin, <img src="https://render.githubusercontent.com/render/math?math=1/3"> between both pins and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below the second pin.
+The pin comes to a stable position dividing all data points in half because the amount of movement for every observation is equal for data points above and data points below. If the predefined distance of movement for observations above is different from the predefined distance of movement for observations below then the pin would settle in a position dividing the data points by a different ratio (different than half). For example, let's try having 2 pins instead of 1, the first one will move 1 distance for observations above it and 0.5 distance for observations below, the second one will do the opposite. After enough iterations the first one should settle at a position that divides the data points by <img src="https://render.githubusercontent.com/render/math?math=1/3"> above and <img src="https://render.githubusercontent.com/render/math?math=2/3"> below while the second pin will divide by <img src="https://render.githubusercontent.com/render/math?math=2/3"> above and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below. This means we'll have <img src="https://render.githubusercontent.com/render/math?math=1/3"> above the first pin, <img src="https://render.githubusercontent.com/render/math?math=1/3"> between both pins and <img src="https://render.githubusercontent.com/render/math?math=1/3"> below the second pin.
 
 |                                                              |
 | :-: |
@@ -88,7 +88,7 @@ In other words, we want that for every <img src="https://render.githubuserconten
 |:-:|
 |<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%2C%20z%27%27%20%5Cin%20Z%20%5Cspace%20s.t.%20%5Cspace%20z%27%20%3C%20z%27%27%3A%20f%28x%2C%20z%27%29%20%3C%20f%28x%2C%20z%27%27%29%0A">|
 
-This second goal gives us that for any given <img src="https://render.githubusercontent.com/render/math?math=x"> in <img src="https://render.githubusercontent.com/render/math?math=X"> <img src="https://render.githubusercontent.com/render/math?math=f"> is monotonically increasing function in <img src="https://render.githubusercontent.com/render/math?math=Z">.
+This second goal gives us that for any given <img src="https://render.githubusercontent.com/render/math?math=x"> in <img src="https://render.githubusercontent.com/render/math?math=X"> <img src="https://render.githubusercontent.com/render/math?math=f"> is a monotonically increasing function in <img src="https://render.githubusercontent.com/render/math?math=Z">.
 
 Both of these goals will be tested empirically during the testing step of the training algorithm.
 
@@ -203,13 +203,15 @@ We pass the prediction matrix results in a addition to this matrix to a Weighted
 
 ## Testing the model
 
-The Mean Squared Error (MSE) loss function works to train the model using backpropagation and target values, but testing the model requires a different approach. Since the <img src="https://render.githubusercontent.com/render/math?math=Z"> and <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> are random, measuring the differences between them is pointless. Because of this, the success of the model will be measured in 2 ways:
+The Mean Squared Error (MSE) loss function works to train the model using backpropagation and target values, but testing the model requires a different approach. Since both <img src="https://render.githubusercontent.com/render/math?math=Z"> and <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> are random variables, measuring the differences between them is pointless. Because of this, the success of the model will be measured in 2 ways:
 
 ### Earth Movers Distance (EMD)
 
 > In statistics, the **earth mover's distance** (**EMD**) is a measure of the distance between two probability distributions over a region *D*. In mathematics, this is known as the Wasserstein metric. Informally, if the distributions are interpreted as two different ways of piling up a certain amount of dirt over the region *D*, the EMD is the minimum cost of turning one pile into the other; where the cost is assumed to be amount of dirt moved times the distance by which it is moved. [wikipedia.org][EMD]
 
-Using EMD we can obtain an indicator of how similar <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20y%20%5Csim%20Y_%7Bx%7D"> and <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%3A%20f%28x%2C%20z%20%5Csim%20Z%29"> are. It can be calculated by comparing every <img src="https://render.githubusercontent.com/render/math?math=%28x%2C%20y%29"> data point in the test data and prediction data sets and finding way to transform one into the other that requires the smallest total movement.
+Using EMD we can obtain an indicator of how similar <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20y%20%5Csim%20Y_%7Bx%7D"> and <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%3A%20f%28x%2C%20z%20%5Csim%20Z%29"> are. It can be calculated by comparing every <img src="https://render.githubusercontent.com/render/math?math=%28x%2C%20y%29"> data point in the test data and prediction data sets and finding way to transform one into the other that requires the smallest total movement. What the EMD number tells us is the average amount of distance to transform every point in the predictions data set to the test data set.
+
+On the example below you can see that the mean EMD is ~3.9 on a data set with a thickness of roughly 100. Because of the random nature of the data sets the EMD cannot be used as a literal error indicator, but it can be used as a progress indicator, that is to tell if the model improves with training.
 
 |      |
 | :-: |
@@ -238,6 +240,8 @@ We then proceed to compare each row with the outputs <img src="https://render.gi
 and create *smaller than counts* (i.e. <img src="https://render.githubusercontent.com/render/math?math=Pr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29">) which we can then compare with the canonical counts for every <img src="https://render.githubusercontent.com/render/math?math=z-sample"> (i.e. <img src="https://render.githubusercontent.com/render/math?math=Pr%28z%20%3E%3D%20Z%29">) to measure the error in the selected vicinity.
 
 We will create a number of such vicinities and call each error as the local errors and a vicinity covering all <img src="https://render.githubusercontent.com/render/math?math=X_%7Btest%7D"> and call its error the mean error.
+
+On the example below you can see that the goal 1 error is ~1.6%, this can be used as an error indicator for the model.
 
 |      |
 | :-: |
@@ -329,7 +333,7 @@ The next example has 2 dimensions of input. <img src="https://render.githubuserc
 
 ### California housing dataset
 
-This experiment uses real data instead of generated one which proves the model's effectivity on real data. It is the classic California housing dataset. It has 8 input dimensions.
+This experiment uses real data instead of generated one which proves the model's effectivity on real data. It is the classic California housing dataset. It has information from the 1990 California census with 8 input dimensions (Median Income, House Age, etc ...).
 
 |      |
 | ---- |

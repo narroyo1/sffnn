@@ -1,4 +1,4 @@
-name: sffn
+name: sffnn
 channels:
   - pytorch
   - defaults

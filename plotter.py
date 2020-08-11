@@ -29,7 +29,7 @@ class Plotter:
 
         self.options = kwargs
 
-    def initialize(self, epoch):
+    def start_frame(self, epoch):
         """
         Initializes the plot of the current epoch.
         """
@@ -50,6 +50,8 @@ class Plotter:
     def plot_goals(
         self, x_np, local_goal1_err, global_goal1_err, mon_incr, dimension,
     ):
+        """
+        """
 
         axes_goals = self.figures[dimension].add_subplot(2, 2, 1)
         axes_goals.set_ylim(0.0, 0.2)
@@ -96,7 +98,7 @@ class Plotter:
         )
         axes_emd.grid()
 
-    def finalize(self, epoch):
+    def end_frame(self, epoch):
 
         # Create a png with the plot and save it to a file.
         if not os.path.exists("plots"):
@@ -126,10 +128,10 @@ class Plotter:
             ]
 
         if len(self.x_dimensions) == 1:
-            self.plot_datasets_zlines(y_predict_mat, axes, orderings)
-        self.plot_datasets_preds(y_pred_d, axes)
+            self._plot_datasets_zlines(y_predict_mat, axes, orderings)
+        self._plot_datasets_preds(y_pred_d, axes)
 
-    def plot_datasets_zlines(self, y_predict_mat, axes, orderings):
+    def _plot_datasets_zlines(self, y_predict_mat, axes, orderings):
         # Filter the z-sample lines so that they are not as dense.
         zline_skip = self.options.get("zline_skip", 1)
 
@@ -180,7 +182,7 @@ class Plotter:
             axes[dimension][zlines_index].set_xlabel(f"$X_{dimension}$")
             axes[dimension][zlines_index].grid()
 
-    def plot_datasets_preds(self, y_pred_d, axes):
+    def _plot_datasets_preds(self, y_pred_d, axes):
         if len(self.x_dimensions) == 1:
             preds_index = 1
         else:

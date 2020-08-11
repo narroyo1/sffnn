@@ -39,20 +39,22 @@ class ZSamples:
     @staticmethod
     def calculate_scalars(z_samples):
         """
+        This method calculates the alpha and beta scalars for every z-sample.
         """
+
         num_z_samples = z_samples.shape[0]
         less_scalar = np.zeros((num_z_samples,), dtype=float)
         more_scalar = np.zeros((num_z_samples,), dtype=float)
         min_val = z_samples[0]
         max_val = z_samples[-1]
 
-        for i in range(1, num_z_samples - 1):
-            a_n = z_samples[i] - min_val
-            b_n = max_val - z_samples[i]
+        for idx in range(1, num_z_samples - 1):
+            a_n = z_samples[idx] - min_val
+            b_n = max_val - z_samples[idx]
             alpha = 1.0 / (2.0 * a_n)
             beta = 1.0 / (2.0 * b_n)
-            less_scalar[i] = alpha
-            more_scalar[i] = beta
+            less_scalar[idx] = alpha
+            more_scalar[idx] = beta
 
         normalizer = 1.0 / np.max(less_scalar)
         # print("normalizer:", normalizer)

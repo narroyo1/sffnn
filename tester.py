@@ -9,7 +9,6 @@ import torch
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
-from plotter import Plotter
 from writer import Writer
 from utils import sample_random, to_tensor
 
@@ -40,8 +39,9 @@ class Tester:
     """
 
     def __init__(
-        self, z_samples, datasets, trainer, model, device, **kwargs,
+        self, z_samples, datasets, trainer, plotter, model, device,
     ):
+        self.plotter = plotter
         self.model = model
         self.device = device
         self.z_samples = z_samples.z_samples
@@ -70,10 +70,6 @@ class Tester:
             datasets_target_function=datasets.target_function_desc,
             trainer_params=trainer.params_desc,
             datasets_params=datasets.params_desc,
-        )
-
-        self.plotter = Plotter(
-            datasets=datasets, z_samples_size=self.z_samples_size, **kwargs,
         )
 
     def calculate_emd(self, y_pred_d):
@@ -182,6 +178,8 @@ class Tester:
         return goal1_mean_err_abs
 
     def test_goal2(self):
+        """
+        """
 
         x_goal = to_tensor(
             self.x_test[np.random.choice(self.x_test.shape[0], 10)], self.device
@@ -199,6 +197,7 @@ class Tester:
         y_predict_mat_d = y_predict_mat.cpu().detach().numpy()
 
         ascending = np.all(y_predict_mat_d[:-1] <= y_predict_mat_d[1:])
+
         return ascending
 
     def step(
@@ -232,7 +231,7 @@ class Tester:
 
         y_predict_mat_d = y_predict_mat.cpu().detach().numpy()
 
-        self.plotter.initialize(epoch)
+        self.plotter.start_frame(epoch)
         # First test: calculate the emd.
         mean_emd = self.calculate_emd(y_pred_d)
         # Second test: Test training goal 2.
@@ -241,8 +240,8 @@ class Tester:
         mean_goal1 = self.test_goal1(y_predict_mat, mon_incr)
 
         self.plotter.plot_datasets(y_pred_d, y_predict_mat_d, self.x_orderings_np)
-        self.plotter.finalize(epoch)
+        self.plotter.end_frame(epoch)
 
         self.writer.log_emd(mean_emd, epoch)
         self.writer.log_goal1_error(mean_goal1, epoch)
-        self.writer.log_plot(self.plotter.figures, epoch)
+        # self.writer.log_plot(self.plotter.figures, epoch)

@@ -55,9 +55,7 @@ class Writer:
         """
         This method logs total pressure and individual pressure differences as scalars.
         """
-        self.summwriter.add_scalar(
-            "goal1 error", goal1_error, epoch
-        )
+        self.summwriter.add_scalar("goal1 error", goal1_error, epoch)
 
     def log_plot(self, figure, epoch):
         """

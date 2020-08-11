@@ -9,12 +9,15 @@ import torch.nn as nn
 DEFAULT_HIDDEN_SIZE = 1024
 OUT_SIZE = 1
 
+
 class StochasticFFNN(nn.Module):
     """
     This is the neural network model.
     """
 
-    def __init__(self, z_space_size, x_space_size, device, hidden_size=DEFAULT_HIDDEN_SIZE):
+    def __init__(
+        self, z_space_size, x_space_size, device, hidden_size=DEFAULT_HIDDEN_SIZE
+    ):
         # Perform initialization of the pytorch superclass
         super(StochasticFFNN, self).__init__()
         self.device = device
