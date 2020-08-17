@@ -1,6 +1,7 @@
 """
 This module contains class ZSamples.
 """
+# pylint: disable=bad-continuation
 
 import numpy as np
 

@@ -127,7 +127,8 @@ class DataSets:
             )
         # cutoffs = np.percentile(cal_housing.target, (1.0, 99.0))
         # non_outliers = np.logical_and(
-        #    non_outliers, np.logical_and(cal_housing.target > cutoffs[0], cal_housing.target < cutoffs[1])
+        #    non_outliers, np.logical_and(cal_housing.target > cutoffs[0],
+        #    cal_housing.target < cutoffs[1])
         # )
 
         cal_housing.data = cal_housing.data[non_outliers]

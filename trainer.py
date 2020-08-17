@@ -24,6 +24,7 @@ class Trainer:
         self.movement = movement
         self.model = model
         self.device = device
+        # dimensions: (greater/smaller, z-samples)
         self.scalars = torch.tensor(
             np.stack((z_samples.less_scalar_bias, z_samples.more_scalar_bias)),
             dtype=torch.float64,
@@ -64,62 +65,36 @@ class Trainer:
         # pylint: disable=unused-argument
         self.scheduler.step()
 
-        # if (epoch + 1) % 10 == 0:
-        #    self.movement *= 0.5
-
     def batch(self, x_pt, y_pt):
         """
         This method is called once for every training batch in an epoch.
         """
         # Calculate the prediction matrix using the batch data and the z-samples.
+        # dimensions: (z-samples, data points, output dimensions)
         y_predict_mat = self.model.get_z_sample_preds(x=x_pt, z_samples=self.z_samples)
 
         # This matrix tells if the training data is greater than the prediction.
+        # dimensions: (z-samples, data points, output dimensions)
         greater_than = torch.gt(y_pt.squeeze(), y_predict_mat) + 0
 
         ind = torch.arange(len(self.z_samples), device=self.device).unsqueeze(1)
-        w_bp = self.scalars[greater_than, ind]  # .double()
+        # This matrix will have he weights to be used on the loss function.
+        # dimensions: (z-samples, data points, output dimensions)
+        w_bp = self.scalars[greater_than, ind]
+        # dimensions: (z-samples * data points, output dimensions)
         w_bp = w_bp.reshape((-1)).unsqueeze(1)
 
-        y_bp = y_predict_mat + ((greater_than * 2) - 1) * self.movement  # .double()
+        # dimensions: (z-samples, data points, output dimensions)
+        y_bp = y_predict_mat + ((greater_than * 2) - 1) * self.movement
+        # dimensions: (z-samples * data points, output dimensions)
         y_bp = y_bp.reshape((-1)).unsqueeze(1)
 
-        """
-        # ""
-        # These lists will contain the target z-samples for every x data point, the
-        # matching x data point and the matching y target respectively to be used
-        # on backpropation.
-        # z_samples_bp [z0(x0), z1(x0), ... , z0(x1), z1(x1), ...]
-        # x_bp [x0, x0, ... , x1, x1, ...]
-        # y_bp [ytar(z0, x0), ytar(z1, x0), ... , ytar(z1, x0), ytar(z1, x1), ...]
-        # (<num>, <z-samples>)
-        shape = (y_predict_mat.shape[0], y_predict_mat.shape[1])
-        y_bp = np.zeros(shape)
-        w_bp = np.zeros(shape)
-        for z_sample_index, z_sample in enumerate(self.z_samples):
-            for i in range(y_predict_mat.shape[1]):
-                y_pred = y_predict_mat[z_sample_index, i]
-                if (
-                    False
-                ):  # z_sample_index == 0 or z_sample_index == self.z_samples.shape[0] - 1:
-                    weight = 0.0
-                    target = y_pred
-                elif y_pt[i] < y_pred:
-                    weight = self.less_scalar[z_sample_index]
-                    target = y_pred - self.movement
-                else:
-                    weight = self.more_scalar[z_sample_index]
-                    target = y_pred + self.movement
-
-                y_bp[z_sample_index, i] = target
-                w_bp[z_sample_index, i] = weight
-                # ""
-        """
-
+        # dimensions: (z-samples * data points, z-sample dimensions)
         z_samples_bp = torch.repeat_interleave(self.z_samples, x_pt.shape[0], dim=0).to(
             device=self.device
         )
 
+        # dimensions: (z-samples * data points, input dimensions)
         x_bp = x_pt.repeat(*self.z_samples.shape)
 
         # Run backpropagation with the calculated targets.
