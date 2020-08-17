@@ -3,6 +3,8 @@ This module contains class DataSets.
 """
 # pylint: disable=bad-continuation
 
+import numpy as np
+
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
@@ -87,7 +89,7 @@ class DataSets:
             then creates an artificial dataset based on the function.
             """
             # x_np = sample_random(x_range, size, base_function.x_space_size)
-            x_np = sample_uniform(x_range, size, base_function.x_space_size)
+            x_np = sample_uniform(x_range, np.array([size]))
             y_np = function(x_np)
 
             return x_np, y_np
@@ -103,7 +105,7 @@ class DataSets:
             y_train,
             x_test,
             y_test,
-            [str(i) for i in range(base_function.x_space_size)],
+            [str(i) for i in range(x_range_train.shape[0])],
             batch_size,
             target_function_desc,
             params_desc,

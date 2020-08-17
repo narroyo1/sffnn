@@ -46,7 +46,7 @@ class Tester:
         self.device = device
         self.z_samples = z_samples.z_samples
         self.z_range = z_samples.z_range
-        self.z_space_size = z_samples.Z_SPACE_SIZE
+        # self.z_space_size = z_samples.Z_SPACE_SIZE
         self.z_samples_size = self.z_samples.shape[0]
 
         self.smaller_than_ratios = np.linspace(0.0, 1.0, self.z_samples_size)

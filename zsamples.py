@@ -13,7 +13,7 @@ class ZSamples:
     """
 
     # Currently Z space is only supported to be 1.
-    Z_SPACE_SIZE = 1
+    # Z_SPACE_SIZE = 1
 
     # If this value is 1.0 it may pull the outer z-lines too far and affect
     # the z-lines immediately next to them.
@@ -23,12 +23,22 @@ class ZSamples:
     def __init__(self, num_z_samples, z_range, device):
         # Create a tensor of samples on z-space.
         # [z0, z1, ... , zS]
-        z_samples = sample_uniform(z_range, num_z_samples, self.Z_SPACE_SIZE)
+        z_samples = sample_uniform(z_range, num_z_samples)
         self.z_samples = to_tensor(z_samples, device)
 
         self.z_range = z_range
 
-        self.less_scalar, self.more_scalar = self.calculate_scalars(self.z_samples)
+        z_space_size = z_range.shape[0]
+        self.less_scalar = []
+        self.more_scalar = []
+        for dimension in range(z_space_size):
+            z_samples_dim = sample_uniform(
+                z_range[dimension : dimension + 1],
+                num_z_samples[dimension : dimension + 1],
+            )
+            less_scalar, more_scalar = self.calculate_scalars(z_samples_dim)
+            self.less_scalar.append(less_scalar)
+            self.more_scalar.append(more_scalar)
         # print("less_scalar", self.less_scalar)
         # print("more_scalar", self.more_scalar)
 

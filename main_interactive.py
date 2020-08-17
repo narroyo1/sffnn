@@ -36,6 +36,10 @@ from functions import (
 )
 
 
+def fn_2out_linear(x_np, multiplier=1.0):
+    return x_np * np.array([multiplier, multiplier])
+
+
 # %%
 
 # Use coprime numbers to prevent any matching points between train and test.
@@ -68,11 +72,13 @@ datasets = DataSets.generated_dataset(
     # base_function=binder(fn_double_sin, amplitude=2.5), # exp 3
     # base_function=binder(fn_branch), # exp 4
     # base_function=binder(fn_x0_2_x1_2, x_space_size=2),  # exp 5
+    # base_function=binder(fn_2out_linear, multiplier=5.0),
     noise_function=binder(fn_normal, std=26.5),  # exp 1
     # noise_function=binder(fn_truncnormal, std=39, low=-10, upp=90),  # exp 2
     # noise_function=binder(fn_sinnormal, amplitude=2.0), # exp 3
     # noise_function=binder(fn_normal, std=0.5), # exp 4
     # noise_function=binder(fn_halfnormal, std=5.0),  # exp 5
+    # noise_function=binder(fn_normal, std=26.5),
     train_size=TRAIN_SIZE,
     test_size=TEST_SIZE,
     x_range_train=X_RANGE_TRAIN,
@@ -86,23 +92,27 @@ datasets = DataSets.california_housing_dataset(BATCH_SIZE, device)  # exp 6
 # datasets.show()
 
 
-NUM_Z_SAMPLES = 13  # exp 1, 2, 5
+NUM_Z_SAMPLES = np.array([13])  # exp 1, 2, 5
 # NUM_Z_SAMPLES = 18  # exp 3, 4
 # NUM_Z_SAMPLES = 6  # exp 6
+# NUM_Z_SAMPLES = np.array([3, 3])
+
 # The range of values in z-space.
 # Having a range spanning from negative to positive can have unintended
 # training results.
 Z_RANGE = np.array([[-10.0, 10.0]])  # exp 1, 2, 3, 4, 5
 # Z_RANGE = np.array([[10.0, 20.0]])  # exp 6
+# Z_RANGE = np.array([[-10.0, 10.0], [-10.0, 10.0]])
 
 z_samples = ZSamples(num_z_samples=NUM_Z_SAMPLES, z_range=Z_RANGE, device=device)
 
 
 stochastic_ffnn = StochasticFFNN(
-    z_samples.Z_SPACE_SIZE,
+    Z_RANGE.shape[0],
     len(datasets.x_dimensions),
     device=device,
     # hidden_size=1536,  # exp 6
+    out_size=Z_RANGE.shape[0],
 ).to(device=device)
 
 

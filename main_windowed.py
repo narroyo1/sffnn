@@ -97,7 +97,7 @@ def main():
         z_samples.Z_SPACE_SIZE,
         len(datasets.x_dimensions),
         device=device,
-        #hidden_size=1536,  # exp 6
+        # hidden_size=1536,  # exp 6
     ).to(device=device)
 
     # LEARNING_RATE = 1e-3

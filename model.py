@@ -7,7 +7,7 @@ import torch.nn as nn
 
 
 DEFAULT_HIDDEN_SIZE = 1024
-OUT_SIZE = 1
+DEFAULT_OUT_SIZE = 1
 
 
 class StochasticFFNN(nn.Module):
@@ -15,19 +15,18 @@ class StochasticFFNN(nn.Module):
     This is the neural network model.
     """
 
-    def __init__(
-        self, z_space_size, x_space_size, device, hidden_size=DEFAULT_HIDDEN_SIZE
-    ):
+    def __init__(self, z_space_size, x_space_size, device, **kwargs):
         # Perform initialization of the pytorch superclass
         super(StochasticFFNN, self).__init__()
         self.device = device
-        self.hidden_size = hidden_size
+        self.hidden_size = kwargs.get("hidden_size", DEFAULT_HIDDEN_SIZE)
+        self.out_size = kwargs.get("out_size", DEFAULT_OUT_SIZE)
 
         # Define layer types
         self.linear1 = nn.Linear(x_space_size + z_space_size, self.hidden_size)
         self.linear2 = nn.Linear(self.hidden_size, self.hidden_size)
         self.linear3 = nn.Linear(self.hidden_size, self.hidden_size)
-        self.linear4 = nn.Linear(self.hidden_size, OUT_SIZE)
+        self.linear4 = nn.Linear(self.hidden_size, self.out_size)
 
     def forward(self, x, z):
         """
@@ -75,12 +74,12 @@ class StochasticFFNN(nn.Module):
             #  [x1], -> for z sample 1
             #  ...]
             x_ex = torch.cat(z_samples_size * [x]).to(device=self.device)
-            x_ex_mat = (
-                x_ex.cpu()
-                .detach()
-                .numpy()
-                .reshape(z_samples_size, x.shape[0], x.shape[1])
-            )
+            # x_ex_mat = (
+            #    x_ex.cpu()
+            #    .detach()
+            #    .numpy()
+            #    .reshape(z_samples_size, x.shape[0], x.shape[1])
+            # )
 
             # Run the model with all the elements x on every z sample.
             # [[y <- x0 z0],
@@ -96,6 +95,8 @@ class StochasticFFNN(nn.Module):
             # [[y <- x0 z0, y <- x1 z0, ...],
             #  [y <- x0 z1, y <- x1 z1, ...],
             #  ...]
-            y_predict_mat = y_predict.view(z_samples_size, x.shape[0])
+            y_predict_mat = y_predict.view(
+                z_samples_size, x.shape[0], y_predict.shape[1]
+            )
 
             return y_predict_mat

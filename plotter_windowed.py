@@ -67,7 +67,7 @@ class ProcessPlotter:
                         figure.suptitle(title)
                 elif data_type == "end":
                     for figure in self.figures:
-                        #figure.subplots_adjust(top=0.970, bottom=0.045, left=0.045, right=990)
+                        # figure.subplots_adjust(top=0.970, bottom=0.045, left=0.045, right=990)
                         figure.canvas.draw()
                 elif data_type == "emd":
                     x_np, local_emds = data
@@ -292,7 +292,14 @@ class ProcessPlotter:
         self.pipe = pipe
         # figure.tight_layout()
         for figure in self.figures:
-            figure.subplots_adjust(top=0.970, bottom=0.045, left=0.045, right=0.990, hspace=0.400, wspace=0.100)
+            figure.subplots_adjust(
+                top=0.970,
+                bottom=0.045,
+                left=0.045,
+                right=0.990,
+                hspace=0.400,
+                wspace=0.100,
+            )
 
         timer = self.figures[0].canvas.new_timer(interval=1000)
         timer.add_callback(self.call_back)
