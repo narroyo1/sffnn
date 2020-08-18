@@ -1,6 +1,7 @@
 """
 This module contains class StochasticFFNN.
 """
+# pylint: disable=bad-continuation
 
 import torch
 import torch.nn as nn

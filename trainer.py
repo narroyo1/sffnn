@@ -54,6 +54,7 @@ class Trainer:
 
     @property
     def params_desc(self):
+        """ This property returns a description of the Trainer parameters. """
         return "{}/{}/{}/{}".format(
             self.learning_rate, self.movement, self.milestones, self.gamma
         )

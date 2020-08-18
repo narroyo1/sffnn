@@ -76,6 +76,9 @@ class DataSets:
         batch_size,
         device,
     ):
+        """
+        This named constructor builds a DataSet from a pair of base and noise functions.
+        """
         target_function_desc = "{}/{}".format(base_function.name, noise_function.name)
         target_function = lambda x: base_function(x) + noise_function(x)
 
@@ -112,6 +115,10 @@ class DataSets:
 
     @staticmethod
     def california_housing_dataset(batch_size, device):
+        """
+        This named constructor builds a DataSet from the California Housing dataset.
+        """
+        # pylint: disable=import-outside-toplevel
         import numpy as np
         from sklearn.datasets import fetch_california_housing
         from sklearn.model_selection import train_test_split
@@ -174,6 +181,7 @@ class DataSets:
         """
         This helper method plots the train and test data sets.
         """
+        # pylint: disable=import-outside-toplevel
         from matplotlib import pyplot
 
         figure = pyplot.figure()
@@ -182,8 +190,6 @@ class DataSets:
         # pyplot.ylim(-30, 30)
         pyplot.scatter(self.x_test[:, 0], self.y_test, marker="o", s=2)
         pyplot.scatter(self.x_train[:, 0], self.y_train, marker="o", s=0.6)
-        # pyplot.text(-9, 0.44, "- Prediction", color="orange", fontsize=8)
-        # pyplot.text(-9, 0.48, "- Sine (with noise)", color="blue", fontsize=8)
         pyplot.legend(
             [r"Training data points", r"Prediction"],
             loc="lower left",

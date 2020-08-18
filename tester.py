@@ -14,10 +14,6 @@ from utils import sample_random, to_tensor
 
 # pylint: disable=bad-continuation
 
-# The number of epochs skipped before running the tests.
-SKIP_EPOCHS = 5  # exp 1, 2, 3, 4, 5
-# SKIP_EPOCHS = 10  # exp 6
-
 # The number of points in X to test for goal 1.
 EMD_TEST_POINTS = 50
 
@@ -39,7 +35,7 @@ class Tester:
     """
 
     def __init__(
-        self, z_samples, datasets, trainer, plotter, model, device,
+        self, z_samples, datasets, trainer, plotter, model, skip_epochs, device,
     ):
         self.plotter = plotter
         self.model = model
@@ -54,8 +50,8 @@ class Tester:
 
         self.y_test = datasets.y_test
         self.x_test = datasets.x_test
-        # self.x_range_test = datasets.x_range_test
         self.x_space_size = len(datasets.x_dimensions)
+        self.skip_epochs = skip_epochs
 
         self.y_test_pt = to_tensor(datasets.y_test, device)
         self.x_test_pt = to_tensor(datasets.x_test, device)
@@ -179,6 +175,8 @@ class Tester:
 
     def test_goal2(self):
         """
+        This method tests goal 2 i.e. whether f(x, z) is monotonically increasing in z for any
+        given x.
         """
 
         x_goal = to_tensor(
@@ -210,7 +208,7 @@ class Tester:
         self.writer.log_weights(model=self.model, epoch=epoch)
 
         # Only run tests every number of epochs.
-        if epoch % SKIP_EPOCHS != 0:
+        if epoch % self.skip_epochs != 0:
             return
 
         # With grad off make a prediction over a random set of z-samples and the test x
