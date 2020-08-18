@@ -20,7 +20,14 @@ from datasets import DataSets
 from plotter import Plotter
 
 
-from experiments import EXPERIMENT_1
+from experiments import (
+    EXPERIMENT_1,
+    EXPERIMENT_2,
+    EXPERIMENT_3,
+    EXPERIMENT_4,
+    EXPERIMENT_5,
+    EXPERIMENT_6,
+)
 
 
 # %%
