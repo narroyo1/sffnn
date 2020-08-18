@@ -1,6 +1,7 @@
 """
 This module contains class StochasticFFNN.
 """
+# pylint: disable=bad-continuation
 
 import torch
 import torch.nn as nn
@@ -20,7 +21,7 @@ class StochasticFFNN(nn.Module):
         super(StochasticFFNN, self).__init__()
         self.device = device
         self.hidden_size = kwargs.get("hidden_size", DEFAULT_HIDDEN_SIZE)
-        self.out_size = kwargs.get("out_size", DEFAULT_OUT_SIZE)
+        self.out_size = z_space_size
 
         # Define layer types
         self.linear1 = nn.Linear(x_space_size + z_space_size, self.hidden_size)
@@ -55,46 +56,66 @@ class StochasticFFNN(nn.Module):
         with torch.no_grad():
             # Create a tensor with all the z samples repeated once for every element in the
             # batch. This will be matched with x_ex when finding targets.
-            # [[z0[0], z0[1], ...], -> for x sample 0
-            #  [z0[0], z0[1], ...], -> for x sample 1
+            # [z0, -> for x datapoint 0
+            #  z0, -> for x datapoint 1
             #  ...
-            #  [z1[0], z1[1], ...], -> for x sample 0
-            #  [z1[0], z1[1], ...], -> for x sample 1
-            #  ...]
+            #  z0, -> for x datapoint n
+            #  z1, -> for x datapoint 0
+            #  z1, -> for x datapoint 1
+            #  ...
+            #  z1, -> for x datapoint n
+            #  ...
+            #  zS, -> for x datapoint 0
+            #  zS, -> for x datapoint 1
+            #  ...
+            #  zS, -> for x datapoint n]
+            # dimensions: (data points * z-samples, z-sample dimensions)
             z_samples_ex = torch.repeat_interleave(z_samples, x.shape[0], dim=0).to(
                 device=self.device
             )
 
             # Create a tensor with a copy of the elements in the batch for every z sample. This
             # will be matched with z_samples_ex when finding targets.
-            # [[x0], -> for z sample 0
-            #  [x1], -> for z sample 0
+            # [x0, -> for z sample 0
+            #  x1, -> for z sample 0
             #  ...
-            #  [x0], -> for z sample 1
-            #  [x1], -> for z sample 1
-            #  ...]
+            #  xn, -> for z sample 0
+            #  x0, -> for z sample 1
+            #  x1, -> for z sample 1
+            #  ...
+            #  xn, -> for z sample 1
+            #  ...
+            #  x0, -> for z sample S
+            #  x1, -> for z sample S
+            #  ...
+            #  xn, -> for z sample S]
+            # dimensions: (data points * z-samples, input dimensions)
             x_ex = torch.cat(z_samples_size * [x]).to(device=self.device)
-            # x_ex_mat = (
-            #    x_ex.cpu()
-            #    .detach()
-            #    .numpy()
-            #    .reshape(z_samples_size, x.shape[0], x.shape[1])
-            # )
 
             # Run the model with all the elements x on every z sample.
-            # [[y <- x0 z0],
-            #  [y <- x1 z0],
-            # ...
-            #  [y <- x0 z1],
-            #  [y <- x1 z1],
-            # ...]
+            # [y <- x0 z0,
+            #  y <- x1 z0,
+            #  ...
+            #  y <- xn z0,
+            #  y <- x0 z1,
+            #  y <- x1 z1,
+            #  ...
+            #  y <- xn z1
+            #  ...
+            #  y <- x0 zS,
+            #  y <- x1 zS,
+            #  ...
+            #  y <- xn zS]
+            # dimensions: (data points * z-samples, output dimensions)
             y_predict = self.forward(x_ex, z_samples_ex)
 
             # Create a matrix view of the results with a column for every element and a row for
             # every z sample.
-            # [[y <- x0 z0, y <- x1 z0, ...],
-            #  [y <- x0 z1, y <- x1 z1, ...],
-            #  ...]
+            # [[y <- x0 z0, y <- x1 z0, ..., y <- xn z0],
+            #  [y <- x0 z1, y <- x1 z1, ..., y <- xn z1],
+            #  ...,
+            #  [y <- x0 zS, y <- x1 zS, ..., y <- xn zS]]
+            # dimensions: (z-samples, data points, output dimensions)
             y_predict_mat = y_predict.view(
                 z_samples_size, x.shape[0], y_predict.shape[1]
             )

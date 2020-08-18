@@ -3,7 +3,7 @@ This module contains class PlotterWindowed.
 """
 # pylint: disable=bad-continuation
 
-import os
+# import os
 
 import multiprocessing as mp
 import numpy as np
@@ -13,6 +13,8 @@ from matplotlib import pyplot
 
 class ProcessPlotter:
     """
+    This class implements a plotting process that receives updates over a pipe and
+    updates a group of windows.
     """
 
     def __init__(self, x_dimensions, labels, **kwargs):
@@ -45,11 +47,13 @@ class ProcessPlotter:
 
     def terminate(self):
         """
+        Called when the process receives a poison pill.
         """
         pyplot.close("all")
 
     def call_back(self):
         """
+        This method will be called on a timed interval to check if there is new data in the pipe.
         """
         while self.pipe.poll():
             command = self.pipe.recv()
@@ -228,14 +232,11 @@ class ProcessPlotter:
     def __call__(self, pipe):
         print("starting plotter...")
 
-        width = 10
-        height = 8
         total_dimensions = len(self.x_dimensions)
         figure_dimensions = min(total_dimensions, 4)
 
         for _ in range(((total_dimensions - 1) // 4) + 1):
             figure = pyplot.figure()
-            # figure.set_size_inches(width, height)
             self.figures.append(figure)
 
         goal_rows = figure_dimensions * 2
@@ -343,6 +344,7 @@ class PlotterWindowed:
         self, x_np, local_goal1_err, global_goal1_err, mon_incr, dimension,
     ):
         """
+        This method sends the goal 1 and goal 2 information to the plotter process.
         """
         if not self.first:
             x_np = None
@@ -353,16 +355,19 @@ class PlotterWindowed:
                 (x_np, local_goal1_err, global_goal1_err.data.cpu().numpy(), mon_incr,),
             )
         )
-        return
 
     def plot_emd(self, x_np, local_emds, dimension):
         """
+        This method sends the emd information to the plotter process.
         """
         if not self.first:
             x_np = None
         self.plot_pipe.send(("emd", dimension, (x_np, local_emds)))
 
     def end_frame(self, epoch):
+        """
+        This method is called when the frame is finished being drawn.
+        """
 
         # Create a png with the plot and save it to a file.
         # if not os.path.exists("plots"):
@@ -388,7 +393,6 @@ class PlotterWindowed:
 
         x_skipped = self.x_test[::zline_skip]
         y_predict_mat_skipped = y_predict_mat[:, ::zline_skip]
-        zlines_index = 0
 
         x_tiled = np.tile(
             x_skipped, (y_predict_mat_skipped.shape[0], x_skipped.shape[1])

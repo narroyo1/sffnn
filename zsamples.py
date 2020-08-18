@@ -1,6 +1,7 @@
 """
 This module contains class ZSamples.
 """
+# pylint: disable=bad-continuation
 
 import numpy as np
 
@@ -15,30 +16,28 @@ class ZSamples:
     # Currently Z space is only supported to be 1.
     # Z_SPACE_SIZE = 1
 
-    # If this value is 1.0 it may pull the outer z-lines too far and affect
-    # the z-lines immediately next to them.
-    OUTER_LEVEL_SCALAR = 0.2  # exp 1, 2, 3, 4, 5
-    # OUTER_LEVEL_SCALAR = 0.1  # exp 6
-
-    def __init__(self, num_z_samples, z_range, device):
+    def __init__(self, num_z_samples, z_range, outer_level_scalar, device):
         # Create a tensor of samples on z-space.
         # [z0, z1, ... , zS]
         z_samples = sample_uniform(z_range, num_z_samples)
         self.z_samples = to_tensor(z_samples, device)
 
         self.z_range = z_range
+        self.outer_level_scalar = outer_level_scalar
 
-        z_space_size = z_range.shape[0]
-        self.less_scalar = []
-        self.more_scalar = []
-        for dimension in range(z_space_size):
-            z_samples_dim = sample_uniform(
-                z_range[dimension : dimension + 1],
-                num_z_samples[dimension : dimension + 1],
-            )
-            less_scalar, more_scalar = self.calculate_scalars(z_samples_dim)
-            self.less_scalar.append(less_scalar)
-            self.more_scalar.append(more_scalar)
+        # z_space_size = z_range.shape[0]
+        # self.less_scalar = []
+        # self.more_scalar = []
+        # for dimension in range(z_space_size):
+        #    z_samples_dim = sample_uniform(
+        #        z_range[dimension : dimension + 1],
+        #        num_z_samples[dimension : dimension + 1],
+        #    )
+        #    less_scalar, more_scalar = self.calculate_scalars(z_samples_dim)
+        #    self.less_scalar.append(less_scalar)
+        #    self.more_scalar.append(more_scalar)
+
+        self.less_scalar, self.more_scalar = self.calculate_scalars()
         # print("less_scalar", self.less_scalar)
         # print("more_scalar", self.more_scalar)
 
@@ -46,21 +45,20 @@ class ZSamples:
             self.less_scalar, self.more_scalar
         )
 
-    @staticmethod
-    def calculate_scalars(z_samples):
+    def calculate_scalars(self):
         """
         This method calculates the alpha and beta scalars for every z-sample.
         """
 
-        num_z_samples = z_samples.shape[0]
+        num_z_samples = self.z_samples.shape[0]
         less_scalar = np.zeros((num_z_samples,), dtype=float)
         more_scalar = np.zeros((num_z_samples,), dtype=float)
-        min_val = z_samples[0]
-        max_val = z_samples[-1]
+        min_val = self.z_samples[0]
+        max_val = self.z_samples[-1]
 
         for idx in range(1, num_z_samples - 1):
-            a_n = z_samples[idx] - min_val
-            b_n = max_val - z_samples[idx]
+            a_n = self.z_samples[idx] - min_val
+            b_n = max_val - self.z_samples[idx]
             alpha = 1.0 / (2.0 * a_n)
             beta = 1.0 / (2.0 * b_n)
             less_scalar[idx] = alpha
@@ -71,7 +69,7 @@ class ZSamples:
         less_scalar *= normalizer
         more_scalar *= normalizer
 
-        less_scalar[0] = more_scalar[-1] = ZSamples.OUTER_LEVEL_SCALAR
+        less_scalar[0] = more_scalar[-1] = self.outer_level_scalar
         less_scalar[-1] = more_scalar[0] = 0.0
 
         return less_scalar, more_scalar

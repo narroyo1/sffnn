@@ -79,7 +79,7 @@ def to_tensor(nparray, device):
 
 # %%
 
-
+# pylint: disable=wrong-import-position, wrong-import-order
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -87,6 +87,10 @@ timer_aggregates = defaultdict(timedelta)
 
 
 def timer(func):
+    """
+    Timer utility function to track down bottlenecks.
+    """
+
     def func_wrapper(*args, **kwargs):
         start = datetime.now()
         func(*args, **kwargs)
