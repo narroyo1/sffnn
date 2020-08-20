@@ -80,29 +80,29 @@ And we define our goals to train <img src="https://render.githubusercontent.com/
 |:-:|
 |<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%20%5Cin%20z_%7Bsamples%7D%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%20%3E%3D%20Z%29%0A">|
 
-In other words, we want that for every <img src="https://render.githubusercontent.com/render/math?math=z"> in <img src="https://render.githubusercontent.com/render/math?math=z_%7Bsamples%7D"> and across the entire <img src="https://render.githubusercontent.com/render/math?math=X"> input space the cumulative distribution functions <img src="https://render.githubusercontent.com/render/math?math=F_%7BY_%7Bx%7D%7D%28f%28x%2C%20z%27%29%29"> and <img src="https://render.githubusercontent.com/render/math?math=F_%7BZ%7D%28z%27%29"> have the same value. This first goal gives us a discrete finite mapping between the ***z-samples*** set and <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">. Although it doesn't say anything about all the points <img src="https://render.githubusercontent.com/render/math?math=%5Chat%7Bz%7D"> in <img src="https://render.githubusercontent.com/render/math?math=Z"> that are not in <img src="https://render.githubusercontent.com/render/math?math=z_%7Bsamples%7D">.
+In other words, we want that for every <img src="https://render.githubusercontent.com/render/math?math=z%27"> in <img src="https://render.githubusercontent.com/render/math?math=z_%7Bsamples%7D"> and across the entire <img src="https://render.githubusercontent.com/render/math?math=X"> input space the cumulative distribution functions <img src="https://render.githubusercontent.com/render/math?math=F_%7BY_%7Bx%7D%7D%28f%28x%2C%20z%27%29%29"> and <img src="https://render.githubusercontent.com/render/math?math=F_%7BZ%7D%28z%27%29"> have the same value. This first goal gives us a discrete finite mapping between the ***z-samples*** set and <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">. Although it doesn't say anything about all the points <img src="https://render.githubusercontent.com/render/math?math=%5Chat%7Bz%7D"> in <img src="https://render.githubusercontent.com/render/math?math=Z"> that are not in <img src="https://render.githubusercontent.com/render/math?math=z_%7Bsamples%7D">.
 
 ###### Goal 2
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%2C%20z%27%27%20%5Cin%20Z%20%5Cspace%20s.t.%20%5Cspace%20z%27%20%3C%20z%27%27%3A%20f%28x%2C%20z%27%29%20%3C%20f%28x%2C%20z%27%27%29%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z_%7B0%7D%2C%20z_%7B1%7D%20%5Cin%20Z%20%5Cspace%20s.t.%20%5Cspace%20z_%7B0%7D%20%3C%20z_%7B1%7D%3A%20f%28x%2C%20z_%7B0%7D%29%20%3C%20f%28x%2C%20z_%7B1%7D%29%0A">|
 
 This second goal gives us that for any given <img src="https://render.githubusercontent.com/render/math?math=x"> in <img src="https://render.githubusercontent.com/render/math?math=X"> <img src="https://render.githubusercontent.com/render/math?math=f"> is a monotonically increasing function in <img src="https://render.githubusercontent.com/render/math?math=Z">.
 
 Both of these goals will be tested empirically during the testing step of the training algorithm.
 
-If we assume that these goals are met we have that for any point <img src="https://render.githubusercontent.com/render/math?math=z%20%5Csim%20Z"> and with <img src="https://render.githubusercontent.com/render/math?math=z%27"> and <img src="https://render.githubusercontent.com/render/math?math=z%27%27"> being the points in the ***z-samples*** set that are immediately smaller and greater respectively we have that:
+If we assume that these goals are met we have that for any point <img src="https://render.githubusercontent.com/render/math?math=z%20%5Csim%20Z"> and with <img src="https://render.githubusercontent.com/render/math?math=z%27"> and <img src="https://render.githubusercontent.com/render/math?math=z%27%27"> being the ***z-samples*** that are immediately smaller and greater respectively we have that:
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%20%3E%3D%20Z%29%20%3C%20%5Cmathbf%7BPr%28z%20%3E%3D%20Z%29%7D%20%3C%20Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%27%20%3E%3D%20Z%29%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%20%5C%20st%3A%20%5C%20z%27%20%3C%20z%20%3C%20z%27%27%3A%20Pr%28z%27%20%3E%3D%20Z%29%20%3C%20%5Cmathbf%7BPr%28z%20%3E%3D%20Z%29%7D%20%3C%20Pr%28z%27%27%20%3E%3D%20Z%29%0A">|
 
 and
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%20%3E%3D%20Z%29%20%3C%20%5Cmathbf%7BPr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7D%20%3C%20Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3D%20Pr%28z%27%27%20%3E%3D%20Z%29%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%20%5C%20st%3A%20%5C%20z%27%20%3C%20z%20%3C%20z%27%27%3A%20Pr%28f%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3C%20%5Cmathbf%7BPr%28f%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7D%20%3C%20Pr%28f%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%0A">|
 
 From this we have that:
 
@@ -169,16 +169,16 @@ First we select a batch of data from the training data with size <img src="https
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Af%28x_%7B0%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B1%7D%2C%20z_%7B0%7D%29%2C%20...%2C%20f%28x_%7B0%7D%2C%20z_%7BS%7D%29%5C%5C%0Af%28x_%7B1%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B1%7D%2C%20z_%7B1%7D%29%2C%20...%2C%20f%28x_%7B1%7D%2C%20z_%7BS%7D%29%5C%5C%0A...%5C%5C%0Af%28x_%7Bn%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bn%7D%2C%20z_%7B1%7D%29%2C%20...%2C%20f%28x_%7Bn%7D%2C%20z_%7BS%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Bbmatrix%7D%0Af%28x_%7B0%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B0%7D%2C%20z_%7B0%7D%29%2C%20...%2C%20f%28x_%7B0%7D%2C%20z_%7BS%7D%29%5C%5C%0Af%28x_%7B1%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7B1%7D%2C%20z_%7B1%7D%29%2C%20...%2C%20f%28x_%7B1%7D%2C%20z_%7BS%7D%29%5C%5C%0A...%5C%5C%0Af%28x_%7Bn%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bn%7D%2C%20z_%7B1%7D%29%2C%20...%2C%20f%28x_%7Bn%7D%2C%20z_%7BS%7D%29%5C%5C%0A%5Cend%7Bbmatrix%7D%0A">|
 
 For every data point <img src="https://render.githubusercontent.com/render/math?math=%28x_%7Bi%7D%2C%20y_%7Bi%7D%29"> in the batch, we take the output value <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> and compare it with every value of its corresponding row in the prediction matrix (i.e. <img src="https://render.githubusercontent.com/render/math?math=%5Bf%28x_%7Bi%7D%2C%20z_%7B0%7D%29%2C%20f%28x_%7Bi%7D%2C%20z_%7B0%7D%29%2C%20...%2C%20f%28x_%7Bi%7D%2C%20z_%7B8%7D%29%5D">). After determining if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is greater or smaller than each predicted value, we produce 2 values for every element in the matrix:
 
-###### Weight
-The weight is the scalar <img src="https://render.githubusercontent.com/render/math?math=%5Calpha_%7Bz-sample%7D"> if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is smaller than the prediction and <img src="https://render.githubusercontent.com/render/math?math=%5Cbeta_%7Bz-sample%7D"> if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is greater.
+###### Scalar
+The scalar will be <img src="https://render.githubusercontent.com/render/math?math=%5Calpha_%7Bz-sample%7D"> if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is smaller than the prediction and <img src="https://render.githubusercontent.com/render/math?math=%5Cbeta_%7Bz-sample%7D"> if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is greater.
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=w_%7Bi%2C%20z-sample%7D%20%3D%20%5Cleft%5C%7B%0A%5Cbegin%7Barray%7D%7Bll%7D%0A%5Calpha_%7Bz-sample%7D%20%26%20y_%7Bi%7D%20%3C%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cbeta_%7Bz-sample%7D%20%26%20y_%7Bi%7D%20%3E%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cend%7Barray%7D%0A%5Cright.%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=s_%7Bi%2C%20z-sample%7D%20%3D%20%5Cleft%5C%7B%0A%5Cbegin%7Barray%7D%7Bll%7D%0A%5Calpha_%7Bz-sample%7D%20%26%20y_%7Bi%7D%20%3C%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cbeta_%7Bz-sample%7D%20%26%20y_%7Bi%7D%20%3E%20f%28x_%7Bi%7D%2C%20z_%7Bz-sample%7D%29%5C%5C%0A%5Cend%7Barray%7D%0A%5Cright.%0A">|
 
 ###### Target Value
 The target value is the prediction itself plus the preselected movement constant <img src="https://render.githubusercontent.com/render/math?math=M"> multiplied by -1 if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is smaller than the prediction and 1 if <img src="https://render.githubusercontent.com/render/math?math=y_%7Bi%7D"> is greater. You can think of target values as the "where we want the prediction to be" value.
@@ -197,7 +197,7 @@ We pass the prediction matrix results in a addition to this matrix to a Weighted
 
 | |
 |:-:|
-|<img src="https://render.githubusercontent.com/render/math?math=%5Csum_%7Bj%3D0%7D%5E%7BS%7D%5Csum_%7Bi%3D0%7D%5E%7Bn%7D%28f%28x_%7Bi%7D%2C%20z_%7Bj%7D%29%20-%20t_%7Bi%2Cj%7D%29%5E2%20%2A%20w_%7Bi%2Cj%7D%0A">|
+|<img src="https://render.githubusercontent.com/render/math?math=%5Csum_%7Bj%3D0%7D%5E%7BS%7D%5Csum_%7Bi%3D0%7D%5E%7Bn%7D%28f%28x_%7Bi%7D%2C%20z_%7Bj%7D%29%20-%20t_%7Bi%2Cj%7D%29%5E2%20%2A%20s_%7Bi%2Cj%7D%0A">|
 
 
 
