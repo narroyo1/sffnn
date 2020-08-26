@@ -95,9 +95,11 @@ That is, the difference between the real data cumulative probability distributio
 Now we can define our training goals as:
 
 ###### Goal 1
+
 | |
 |:-:|
 |<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%27%20%5Cin%20z_%7Bsamples%7D%3A%20arg%20%5Cmin_%7B%5Ctheta%7D%20%7CE_%7B%5Ctheta%7D%28z%27%29%7C%20%5Ctag%7B2%7D%0A">|
+
 In other words, we want that for every <img src="https://render.githubusercontent.com/render/math?math=z%27"> in <img src="https://render.githubusercontent.com/render/math?math=z_%7Bsamples%7D"> and across the entire <img src="https://render.githubusercontent.com/render/math?math=X"> input space the absolute error <img src="https://render.githubusercontent.com/render/math?math=%7CE_%7B%5Ctheta%7D%28z%27%29%7C"> is minimized. This first goal gives us an approximate discrete finite mapping between the ***z-samples*** set and <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">. Even if it doesn't say anything about all the points <img src="https://render.githubusercontent.com/render/math?math=%5Chat%7Bz%7D"> in <img src="https://render.githubusercontent.com/render/math?math=Z"> that are not in <img src="https://render.githubusercontent.com/render/math?math=z_%7Bsamples%7D">.
 
 ###### Goal 2
@@ -116,13 +118,13 @@ For any point <img src="https://render.githubusercontent.com/render/math?math=z%
 |:-:|
 |<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%20%5C%20st%3A%20%5C%20z%27%20%3C%20z%20%3C%20z%27%27%3A%20P%28f_%7B%5Ctheta%7D%28x%2C%20z%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%3C%20%5Cmathbf%7BP%28f_%7B%5Ctheta%7D%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7D%20%3C%20P%28f_%7B%5Ctheta%7D%28x%2C%20z%27%27%29%20%3E%3D%20Y_%7Bx%7D%29%20%5Ctag%7B5%7D%0A">|
 
-and replacing (1) in (5) we have:
+and replacing the prediction error we have:
 
 | |
 |:-:|
 |<img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%5Cand%20%5Cforall%20z%20%5C%20st%3A%20%5C%20z%27%20%3C%20z%20%3C%20z%27%27%3A%20P%28z%27%20%3E%3D%20Z%29%20%2B%20E_%7B%5Ctheta%7D%28z%27%29%20%3C%20%5Cmathbf%7BP%28f_%7B%5Ctheta%7D%28x%2C%20z%29%20%3E%3D%20Y_%7Bx%7D%29%7D%20%3C%20P%28z%27%27%20%3E%3D%20Z%29%20%2B%20E_%7B%5Ctheta%7D%28z%27%27%29%20%5Ctag%7B6%7D%0A">|
 
-And if we substract <img src="https://render.githubusercontent.com/render/math?math=P%28z%20%3E%3D%20Z%29"> from every term in (6) we have:
+And if we substract <img src="https://render.githubusercontent.com/render/math?math=P%28z%20%3E%3D%20Z%29"> from every term we have:
 
 | |
 |:-:|
