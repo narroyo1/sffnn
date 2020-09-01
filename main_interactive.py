@@ -33,11 +33,11 @@ from experiments import (
 # %%
 
 # Use coprime numbers to prevent any matching points between train and test.
-# TRAIN_SIZE = 31013
-TRAIN_SIZE = 9611
+TRAIN_SIZE = 31013
+# TRAIN_SIZE = 9611
 
-# TEST_SIZE = 5007
-TEST_SIZE = 1001
+TEST_SIZE = 5007
+# TEST_SIZE = 1001
 
 
 experiment = EXPERIMENT_1
