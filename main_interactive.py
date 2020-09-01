@@ -20,7 +20,14 @@ from datasets import DataSets
 from plotter import Plotter
 
 
-from experiments import EXPERIMENT_1
+from experiments import (
+    EXPERIMENT_1,
+    EXPERIMENT_2,
+    EXPERIMENT_3,
+    EXPERIMENT_4,
+    EXPERIMENT_5,
+    EXPERIMENT_6,
+)
 
 
 def fn_2out_linear(x_np, multiplier=1.0):
@@ -30,11 +37,11 @@ def fn_2out_linear(x_np, multiplier=1.0):
 # %%
 
 # Use coprime numbers to prevent any matching points between train and test.
-# TRAIN_SIZE = 31013
-TRAIN_SIZE = 9611
+TRAIN_SIZE = 31013
+# TRAIN_SIZE = 9611
 
-# TEST_SIZE = 5007
-TEST_SIZE = 1001
+TEST_SIZE = 5007
+# TEST_SIZE = 1001
 
 
 experiment = EXPERIMENT_1

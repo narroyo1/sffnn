@@ -48,7 +48,13 @@ class Plotter:
             figure.suptitle(title)
 
     def plot_goals(
-        self, x_np, local_goal1_err, global_goal1_err, mon_incr, dimension,
+        self,
+        x_np,
+        local_goal1_err,
+        #local_goal1_max_err,
+        global_goal1_err,
+        mon_incr,
+        dimension,
     ):
         """
         """
@@ -58,6 +64,9 @@ class Plotter:
         # for i in range(self.z_samples_size):
         #    axes_goals.plot(x_np, local_goal1_err[i], "o-", label=f"$z_{{{i}}}$")
         axes_goals.plot(x_np, local_goal1_err, "o--", label="goal 1 - local error")
+        #axes_goals.plot(
+        #    x_np, local_goal1_max_err, "o--", label="goal 1 - local max error"
+        #)
         axes_goals.legend(loc="upper right")
         axes_goals.set_title("Training goals")
         axes_goals.set_xlabel(f"$X_{dimension}$")
