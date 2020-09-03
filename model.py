@@ -16,18 +16,18 @@ class StochasticFFNN(nn.Module):
     This is the neural network model.
     """
 
-    def __init__(self, z_space_size, x_space_size, device, **kwargs):
+    def __init__(self, output_size, x_space_size, device, **kwargs):
         # Perform initialization of the pytorch superclass
         super(StochasticFFNN, self).__init__()
         self.device = device
         self.hidden_size = kwargs.get("hidden_size", DEFAULT_HIDDEN_SIZE)
-        self.out_size = z_space_size
+        self.output_size = output_size
 
         # Define layer types
-        self.linear1 = nn.Linear(x_space_size + z_space_size, self.hidden_size)
+        self.linear1 = nn.Linear(x_space_size + output_size, self.hidden_size)
         self.linear2 = nn.Linear(self.hidden_size, self.hidden_size)
         self.linear3 = nn.Linear(self.hidden_size, self.hidden_size)
-        self.linear4 = nn.Linear(self.hidden_size, self.out_size)
+        self.linear4 = nn.Linear(self.hidden_size, self.output_size)
 
     def forward(self, x, z):
         """

@@ -8,29 +8,29 @@ import numpy as np
 import torch
 
 # %%
-def sample_uniform(range_, size):
+def sample_uniform(ranges, sizes):
     """
     This function returns a uniformly distributed sample (grid) in a space
     of dims dimensions.
-    @return nparray with shape (size, dims)
+    @return nparray with shape (sizes, dims)
     """
-    dimensions = range_.shape[0]
+    dimensions = ranges.shape[0]
     # Take the dimensions'th root of dimensions. That is the number of points on each dimension.
-    # dim_size = size ** (1 / dimensions)
+    # dim_size = sizes ** (1 / dimensions)
     # Round it to the nearest greater integer.
     # dim_size = np.ceil(dim_size)
 
     slices = []
     for dimension in range(dimensions):
-        start = range_[dimension, 0]
-        end = range_[dimension, 1]
-        step = (end - start) / (size[dimension] - 1)
+        start = ranges[dimension, 0]
+        end = ranges[dimension, 1]
+        step = (end - start) / (sizes[dimension] - 1)
         slices.append(slice(start, end + 0.000000001, step))
     slices = tuple(slices)
 
     # Create a tensor with the grid coordinates.
     mgrid = np.mgrid[slices].reshape(dimensions, -1).T
-    # Return a truncated tensor containing only the requested size.
+    # Return a truncated tensor containing only the requested sizes.
     return mgrid
 
 

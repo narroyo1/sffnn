@@ -57,6 +57,7 @@ class DataSets:
 
         self.x_train = x_train
         self.y_train = y_train
+        self.output_size = self.y_train.shape[-1]
 
         self.target_function_desc = target_function_desc
         self.params_desc = params_desc

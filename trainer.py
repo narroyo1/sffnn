@@ -20,19 +20,15 @@ class Trainer:
     def __init__(
         self, z_samples, movement, model, learning_rate, milestones, gamma, device,
     ):
-        self.z_samples = z_samples.z_samples
+        self.z_samples = z_samples.z_samples_pt
         self.movement = movement
         self.model = model
         self.device = device
-        # dimensions: (greater/smaller, z-samples)
-        self.scalars = []
-        for i in range(z_samples.z_range.shape[0]):
-            self.scalars.append(
-                torch.tensor(
-                    np.stack((z_samples.less_scalar_bias, z_samples.more_scalar_bias)),
-                    dtype=torch.float64,
-                ).to(device=self.device)
-            )
+        # dimensions: (greater/smaller, z-samples, output dimensions)
+        self.scalars = torch.tensor(
+            np.stack((z_samples.less_scalar_bias, z_samples.more_scalar_bias)),
+            dtype=torch.float64,
+        ).to(device=self.device)
 
         self.learning_rate = learning_rate
         self.gamma = gamma
@@ -82,28 +78,36 @@ class Trainer:
         # dimensions: (z-samples, data points, output dimensions)
         greater_than = torch.gt(y_pt, y_predict_mat) + 0
 
-        # ind = torch.arange(len(self.z_samples), device=self.device)  # .unsqueeze(1)
         # This matrix will have he weights to be used on the loss function.
         # dimensions: (z-samples, data points, output dimensions)
+        ind1, _, ind3 = np.ogrid[
+            0 : greater_than.shape[0],
+            0 : greater_than.shape[1],
+            0 : greater_than.shape[2],
+        ]
+        ind1 = torch.tensor(ind1, device=self.device, dtype=torch.long)
+        ind3 = torch.tensor(ind3, device=self.device, dtype=torch.long)
+        w_bp = self.scalars[greater_than, ind1, ind3]
+        # dimensions: (z-samples * data points, output dimensions)
+        w_bp = w_bp.reshape((w_bp.shape[0] * w_bp.shape[1], w_bp.shape[2]))
+        """
         w_bp = []
-        # w_bp = self.scalars[greater_than, greater_than[0]]
         for z_sample_idx in range(greater_than.shape[0]):
             for datapoint_idx in range(greater_than.shape[1]):
                 ws = []
                 for output_dimension in range(y_predict_mat.shape[2]):
-                    scalars = self.scalars[output_dimension][
-                        greater_than[z_sample_idx, datapoint_idx]
+                    scalars = self.scalars[
+                        greater_than[z_sample_idx, datapoint_idx, output_dimension]
                     ]
-                    ws.append(scalars[:, z_sample_idx])
+                    ws.append(scalars[z_sample_idx, output_dimension])
                 w_bp.append(ws)
-        w_bp = torch.tensor(w_bp).to(device=self.device).unsqueeze(1)
-        # dimensions: (z-samples * data points, output dimensions)
-        # w_bp = w_bp.reshape((-1)).unsqueeze(1)
+        w_bp = torch.tensor(w_bp).to(device=self.device)#.unsqueeze(1)
+        """
 
         # dimensions: (z-samples, data points, output dimensions)
         y_bp = y_predict_mat + ((greater_than * 2) - 1) * self.movement
         # dimensions: (z-samples * data points, output dimensions)
-        y_bp = y_bp.reshape((-1)).unsqueeze(1)
+        y_bp = y_bp.reshape((y_bp.shape[0] * y_bp.shape[1], y_bp.shape[2]))
 
         # dimensions: (z-samples * data points, z-sample dimensions)
         z_samples_bp = torch.repeat_interleave(self.z_samples, x_pt.shape[0], dim=0).to(

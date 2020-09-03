@@ -16,13 +16,22 @@ class ZSamples:
     # Currently Z space is only supported to be 1.
     # Z_SPACE_SIZE = 1
 
-    def __init__(self, num_z_samples, z_range, outer_level_scalar, device):
+    def __init__(
+        self,
+        z_samples_per_dimension,
+        z_ranges_per_dimension,
+        outer_level_scalar,
+        device,
+    ):
         # Create a tensor of samples on z-space.
         # [z0, z1, ... , zS]
-        z_samples = sample_uniform(z_range, num_z_samples)
-        self.z_samples = to_tensor(z_samples, device)
+        # dimensions: (z-samples mult, output dimensions)
+        self.z_samples_np = sample_uniform(
+            z_ranges_per_dimension, z_samples_per_dimension
+        )
+        self.z_samples_pt = to_tensor(self.z_samples_np, device)
 
-        self.z_range = z_range
+        self.z_ranges = z_ranges_per_dimension
         self.outer_level_scalar = outer_level_scalar
 
         # z_space_size = z_range.shape[0]
@@ -31,7 +40,7 @@ class ZSamples:
         # for dimension in range(z_space_size):
         #    z_samples_dim = sample_uniform(
         #        z_range[dimension : dimension + 1],
-        #        num_z_samples[dimension : dimension + 1],
+        #        z_samples_per_dimension[dimension : dimension + 1],
         #    )
         #    less_scalar, more_scalar = self.calculate_scalars(z_samples_dim)
         #    self.less_scalar.append(less_scalar)
@@ -50,15 +59,20 @@ class ZSamples:
         This method calculates the alpha and beta scalars for every z-sample.
         """
 
-        num_z_samples = self.z_samples.shape[0]
-        less_scalar = np.zeros((num_z_samples,), dtype=float)
-        more_scalar = np.zeros((num_z_samples,), dtype=float)
-        min_val = self.z_samples[0]
-        max_val = self.z_samples[-1]
+        z_samples_per_dimension = self.z_samples_np.shape[0]
+        z_samples_dimensions = self.z_samples_np.shape[1]
+        less_scalar = np.zeros(
+            (z_samples_per_dimension, z_samples_dimensions), dtype=float
+        )
+        more_scalar = np.zeros(
+            (z_samples_per_dimension, z_samples_dimensions), dtype=float
+        )
+        min_val = self.z_samples_np[0]
+        max_val = self.z_samples_np[-1]
 
-        for idx in range(1, num_z_samples - 1):
-            a_n = self.z_samples[idx] - min_val
-            b_n = max_val - self.z_samples[idx]
+        for idx in range(1, z_samples_per_dimension - 1):
+            a_n = self.z_samples_np[idx] - min_val
+            b_n = max_val - self.z_samples_np[idx]
             alpha = 1.0 / (2.0 * a_n)
             beta = 1.0 / (2.0 * b_n)
             less_scalar[idx] = alpha

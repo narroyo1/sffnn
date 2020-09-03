@@ -46,7 +46,7 @@ TEST_SIZE = 5007
 
 experiment = EXPERIMENT_1
 
-BATCH_SIZE = 4
+BATCH_SIZE = 512
 # BATCH_SIZE = 2048
 
 device = torch.device("cuda")
@@ -67,16 +67,16 @@ else:
 # datasets.show()
 
 z_samples = ZSamples(
-    num_z_samples=experiment["num_z_samples"],
-    z_range=experiment["z_range"],
+    z_samples_per_dimension=experiment["z_samples_per_dimension"],
+    z_ranges_per_dimension=experiment["z_ranges_per_dimension"],
     outer_level_scalar=experiment["outer_level_scalar"],
     device=device,
 )
 
 
 stochastic_ffnn = StochasticFFNN(
-    z_samples.z_range.shape[0],
-    len(datasets.x_dimensions),
+    output_size=datasets.output_size,
+    x_space_size=len(datasets.x_dimensions),
     device=device,
     # hidden_size=1536,  # exp 6
 ).to(device=device)
@@ -96,7 +96,7 @@ trainer = Trainer(
 
 plotter = Plotter(
     datasets=datasets,
-    z_samples_size=z_samples.z_samples.shape[0],
+    z_samples_size=z_samples.z_samples_pt.shape[0],
     test_s=0.9,
     train_s=0.2,
     zline_s=5,

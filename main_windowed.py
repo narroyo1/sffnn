@@ -58,7 +58,7 @@ def main():
     # datasets.show()
 
     z_samples = ZSamples(
-        num_z_samples=experiment["num_z_samples"],
+        z_samples_per_dimension=experiment["z_samples_per_dimension"],
         z_range=experiment["z_range"],
         outer_level_scalar=experiment["outer_level_scalar"],
         device=device,
