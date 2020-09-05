@@ -27,26 +27,23 @@ from experiments import (
     EXPERIMENT_4,
     EXPERIMENT_5,
     EXPERIMENT_6,
+    EXPERIMENT_7,
 )
-
-
-def fn_2out_linear(x_np, multiplier=1.0):
-    return x_np * np.array([multiplier, multiplier])
 
 
 # %%
 
 # Use coprime numbers to prevent any matching points between train and test.
-TRAIN_SIZE = 31013
-# TRAIN_SIZE = 9611
+# TRAIN_SIZE = 31013
+TRAIN_SIZE = 9611
 
-TEST_SIZE = 5007
-# TEST_SIZE = 1001
+# TEST_SIZE = 5007
+TEST_SIZE = 1001
 
 
-experiment = EXPERIMENT_1
+experiment = EXPERIMENT_7
 
-BATCH_SIZE = 512
+BATCH_SIZE = 8
 # BATCH_SIZE = 2048
 
 device = torch.device("cuda")

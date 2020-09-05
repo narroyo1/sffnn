@@ -72,6 +72,10 @@ def fn_x0_2_x1_2(x_np, multipler0=1, multiplier1=1):
     return result[..., np.newaxis]
 
 
+def fn_2out_linear(x_np, multiplier=1.0):
+    return x_np * np.array([multiplier, multiplier])
+
+
 ###########################################
 # noise functions
 ###########################################
@@ -143,7 +147,7 @@ def binder(func, x_space_size=1, **kwargs):
     def helper(x_np):
         return func(x_np, **kwargs)
 
-    #helper.x_space_size = x_space_size
+    # helper.x_space_size = x_space_size
     helper.name = func.__name__
 
     return helper

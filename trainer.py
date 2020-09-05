@@ -43,7 +43,7 @@ class Trainer:
         )
 
         # Create an Weighted Mean Squared Error (WMSE) loss function for the targets.
-        def weighted_mse_loss(inputs, targets, weights):
+        def weighted_mse_loss(inputs, targets, weights) some weights are nans:
             sqerr = (inputs - targets) ** 2
             out = sqerr * weights
             loss = out.mean()
@@ -115,7 +115,7 @@ class Trainer:
         )
 
         # dimensions: (z-samples * data points, input dimensions)
-        x_bp = x_pt.repeat(*self.z_samples.shape)
+        x_bp = x_pt.repeat((self.z_samples.shape[0], x_pt.shape[1]))
 
         # Run backpropagation with the calculated targets.
         self.backprop(x_bp=x_bp, z_samples_bp=z_samples_bp, y_bp=y_bp, w_bp=w_bp)

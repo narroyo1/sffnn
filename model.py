@@ -35,6 +35,7 @@ class StochasticFFNN(nn.Module):
         """
 
         x = torch.cat((x.view(x.size(0), -1), z.view(z.size(0), -1)), dim=1)
+        #x = torch.cat(x, z, dim=1) Change for this
 
         x = self.linear1(x)
         x = torch.nn.functional.leaky_relu(x, 0.1)

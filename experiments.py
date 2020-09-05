@@ -17,6 +17,7 @@ from functions import (
     fn_truncnormal,
     fn_sinnormal,
     fn_halfnormal,
+    fn_2out_linear,
 )
 
 EXPERIMENT_1 = {
@@ -113,4 +114,19 @@ EXPERIMENT_6 = {
     "num_epochs": 501,
     "gamma": 0.85,
     "dataset_builder": DataSets.california_housing_dataset,
+}
+
+EXPERIMENT_7 = {
+    "x_range_train": np.array([[-5.0, 5.0]]),
+    "x_range_test": np.array([[-4.0, 4.0]]),
+    "base_function": binder(fn_2out_linear),
+    "noise_function": binder(fn_normal, std=0.5),
+    "outer_level_scalar": 0.2,
+    "skip_epochs": 5,
+    "z_samples_per_dimension": np.array([3, 4]),
+    "z_ranges_per_dimension": np.array([[-10.0, 10.0], [-5.0, 5.0]]),
+    "movement": 10.0,
+    "learning_rate": 1e-2 / 12,
+    "num_epochs": 321,
+    "gamma": 0.5,
 }
