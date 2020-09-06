@@ -41,9 +41,9 @@ class Tester:
         self.model = model
         self.device = device
         self.z_samples = z_samples.z_samples_pt
-        self.z_ranges = z_samples.z_ranges
+        self.z_ranges = z_samples.z_ranges_per_dimension
         # self.z_space_size = z_samples.Z_SPACE_SIZE
-        self.z_samples_size = self.z_samples.shape[0]
+        #self.z_samples_size = self.z_samples.shape[0]
 
         self.smaller_than_ratios = np.linspace(0.0, 1.0, self.z_samples_size)[
             ..., np.newaxis
@@ -158,7 +158,7 @@ class Tester:
                 stop = int(stop)
                 # This is the mean ratio of smaller than over all the data points in this
                 # vicinity.
-                # dimension: (z-samples)
+                # dimensions: (z-samples, output dimensions)
                 smaller_than_mean = torch.mean(
                     smaller_than[:, self.x_orderings_pt[dimension]][:, start:stop],
                     dim=1,

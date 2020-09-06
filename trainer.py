@@ -43,7 +43,7 @@ class Trainer:
         )
 
         # Create an Weighted Mean Squared Error (WMSE) loss function for the targets.
-        def weighted_mse_loss(inputs, targets, weights) some weights are nans:
+        def weighted_mse_loss(inputs, targets, weights):
             sqerr = (inputs - targets) ** 2
             out = sqerr * weights
             loss = out.mean()
