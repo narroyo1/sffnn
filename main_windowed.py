@@ -8,21 +8,14 @@ import time
 
 import torch
 
+import experiments
+
 from model import StochasticFFNN
 from trainer import Trainer
 from tester import Tester
 from zsamples import ZSamples
 from datasets import DataSets
 from plotter_windowed import PlotterWindowed
-
-from experiments import (
-    EXPERIMENT_1,
-    EXPERIMENT_2,
-    EXPERIMENT_3,
-    EXPERIMENT_4,
-    EXPERIMENT_5,
-    EXPERIMENT_6,
-)
 
 
 def main():

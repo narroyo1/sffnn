@@ -6,7 +6,7 @@ This module contains class DataSets.
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
-from utils import sample_uniform, sample_random, to_tensor
+from utils import sample_uniform, to_tensor
 
 
 class FunctionDataSet(Dataset):
