@@ -22,6 +22,7 @@ from experiments import (
     EXPERIMENT_4,
     EXPERIMENT_5,
     EXPERIMENT_6,
+    EXPERIMENT_7,
 )
 
 
@@ -36,7 +37,7 @@ def main():
     TEST_SIZE = 5007
     # TEST_SIZE = 1001
 
-    experiment = EXPERIMENT_1
+    experiment = EXPERIMENT_7
 
     BATCH_SIZE = 2048
 
@@ -59,14 +60,15 @@ def main():
 
     z_samples = ZSamples(
         z_samples_per_dimension=experiment["z_samples_per_dimension"],
-        z_range=experiment["z_range"],
+        z_ranges_per_dimension=experiment["z_ranges_per_dimension"],
         outer_level_scalar=experiment["outer_level_scalar"],
+        outer_samples=True,
         device=device,
     )
 
     stochastic_ffnn = StochasticFFNN(
-        z_samples.Z_SPACE_SIZE,
-        len(datasets.x_dimensions),
+        output_size=datasets.output_size,
+        x_space_size=len(datasets.x_dimensions),
         device=device,
         # hidden_size=1536,  # exp 6
     ).to(device=device)
@@ -83,7 +85,7 @@ def main():
 
     plotter = PlotterWindowed(
         datasets=datasets,
-        z_samples_size=z_samples.z_samples.shape[0],
+        z_samples_size=z_samples.z_samples_pt.shape[0],
         test_s=0.9,
         train_s=0.2,
         zline_s=5,

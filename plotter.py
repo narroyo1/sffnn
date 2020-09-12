@@ -6,6 +6,7 @@ import os
 
 import numpy as np
 
+from mpl_toolkits import mplot3d
 from matplotlib import pyplot
 
 from IPython.display import clear_output
@@ -51,7 +52,7 @@ class Plotter:
         self,
         x_np,
         local_goal1_err,
-        #local_goal1_max_err,
+        # local_goal1_max_err,
         global_goal1_err,
         mon_incr,
         dimension,
@@ -64,9 +65,9 @@ class Plotter:
         # for i in range(self.z_samples_size):
         #    axes_goals.plot(x_np, local_goal1_err[i], "o-", label=f"$z_{{{i}}}$")
         axes_goals.plot(x_np, local_goal1_err, "o--", label="goal 1 - local error")
-        #axes_goals.plot(
+        # axes_goals.plot(
         #    x_np, local_goal1_max_err, "o--", label="goal 1 - local max error"
-        #)
+        # )
         axes_goals.legend(loc="upper right")
         axes_goals.set_title("Training goals")
         axes_goals.set_xlabel(f"$X_{dimension}$")
@@ -112,8 +113,8 @@ class Plotter:
         # Create a png with the plot and save it to a file.
         if not os.path.exists("plots"):
             os.makedirs("plots")
-        for i, figure in enumerate(self.figures):
-            figure.savefig(f"plots/img_{epoch:03}_{i}.png", bbox_inches="tight")
+        # for i, figure in enumerate(self.figures):
+        #    figure.savefig(f"plots/img_{epoch:03}_{i}.png", bbox_inches="tight")
 
         pyplot.show()
 
@@ -126,13 +127,13 @@ class Plotter:
         if len(self.x_dimensions) == 1:
             axes = [
                 (
-                    self.figures[0].add_subplot(2, 2, 3),
-                    self.figures[0].add_subplot(2, 2, 4),
+                    self.figures[0].add_subplot(2, 2, 3),  # , projection="3d"),
+                    self.figures[0].add_subplot(2, 2, 4),  # , projection="3d"),
                 )
             ]
         else:
             axes = [
-                (self.figures[i].add_subplot(1, 2, 2),)
+                (self.figures[i].add_subplot(1, 2, 2),)  # , projection="3d"),)
                 for i in range(len(self.x_dimensions))
             ]
 
@@ -152,7 +153,11 @@ class Plotter:
             x_skipped, (y_predict_mat_skipped.shape[0], x_skipped.shape[1])
         )
         # Reshape y_predict_mat_skipped to be flat.
-        y_predict_mat_flat = y_predict_mat_skipped.flatten()
+        # y_predict_mat_flat = y_predict_mat_skipped.flatten()
+        shape = y_predict_mat_skipped.shape
+        y_predict_mat_flat = y_predict_mat_skipped.reshape(
+            (shape[0] * shape[1], shape[2])
+        )
 
         # Add the scatter plots.
         for dimension in range(len(self.x_dimensions)):
@@ -162,19 +167,24 @@ class Plotter:
             y_label_pos = y_predict_mat[:, orderings[dimension][-1]]
             x_label_pos = self.x_test[orderings[dimension][-1]]
 
+            # axes[dimension][zlines_index].scatter3D(
             axes[dimension][zlines_index].scatter(
                 self.x_test[:, dimension],
-                self.y_test,
+                # self.y_test[:, 0],
+                self.y_test[:, 1],
                 marker="o",
                 s=self.options.get("test_s", 0.5),
             )
 
+            # axes[dimension][zlines_index].scatter3D(
             axes[dimension][zlines_index].scatter(
                 x_tiled[:, dimension],
-                y_predict_mat_flat,
+                # y_predict_mat_flat[:, 0],
+                y_predict_mat_flat[:, 1],
                 marker="o",
                 s=self.options.get("zline_s", 0.1),
             )
+            continue
 
             for j, label in enumerate(self.labels):
                 axes[dimension][zlines_index].annotate(
@@ -201,14 +211,16 @@ class Plotter:
         for dimension in range(len(self.x_dimensions)):
             axes[dimension][preds_index].scatter(
                 self.x_test[:, dimension],
-                self.y_test,
+                # self.y_test[:, 0],
+                self.y_test[:, 1],
                 marker="o",
                 s=self.options.get("test_s", 0.9),
             )
 
             axes[dimension][preds_index].scatter(
                 self.x_test[:, dimension],
-                y_pred_d,
+                # y_pred_d[:, 0],
+                y_pred_d[:, 1],
                 marker="x",
                 s=self.options.get("train_s", 0.5),
             )

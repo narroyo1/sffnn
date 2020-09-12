@@ -26,7 +26,7 @@ class Trainer:
         self.device = device
         # dimensions: (greater/smaller, z-samples, output dimensions)
         self.scalars = torch.tensor(
-            np.stack((z_samples.less_scalar_bias, z_samples.more_scalar_bias)),
+            np.stack((z_samples.less_scalar, z_samples.more_scalar)),
             dtype=torch.float64,
         ).to(device=self.device)
 
@@ -74,10 +74,25 @@ class Trainer:
         # dimensions: (z-samples, data points, output dimensions)
         y_predict_mat = self.model.get_z_sample_preds(x=x_pt, z_samples=self.z_samples)
 
+        difference = y_pt - y_predict_mat
+        squared = difference * difference
+        summation = torch.sum(squared, dim=2).unsqueeze(2)
+        distance = torch.sqrt(summation)
+        cosine = torch.abs(difference) / distance
+        angle = torch.acos(cosine)
+        magnitude = (np.pi / 2.0 - angle) / (np.pi / 2.0)
+
         # This matrix tells if the training data is greater than the prediction.
         # dimensions: (z-samples, data points, output dimensions)
         greater_than = torch.gt(y_pt, y_predict_mat) + 0
 
+        # def func(vec):
+        #    from collections import Counter
+        #    ass = Counter()
+        #    for el in vec:
+        #        ass[(el.cpu().numpy()[0], el.cpu().numpy()[1])] += 1
+        #    print(ass)
+        # func((greater_than[7] * 2) - 1)
         # This matrix will have he weights to be used on the loss function.
         # dimensions: (z-samples, data points, output dimensions)
         ind1, _, ind3 = np.ogrid[
@@ -88,6 +103,8 @@ class Trainer:
         ind1 = torch.tensor(ind1, device=self.device, dtype=torch.long)
         ind3 = torch.tensor(ind3, device=self.device, dtype=torch.long)
         w_bp = self.scalars[greater_than, ind1, ind3]
+        w_bp *= magnitude
+        # func(w_bp[7])
         # dimensions: (z-samples * data points, output dimensions)
         w_bp = w_bp.reshape((w_bp.shape[0] * w_bp.shape[1], w_bp.shape[2]))
         """

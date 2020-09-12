@@ -8,6 +8,8 @@ This module contains class PlotterWindowed.
 import multiprocessing as mp
 import numpy as np
 
+# from mpl_toolkits import mplot3d
+from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot
 
 
@@ -138,28 +140,42 @@ class ProcessPlotter:
                         self.axes_goals[dimension].autoscale_view(True, True, True)
 
                 elif data_type == "preds test":
+                    # continue
                     x_test, y_test = data
+                    print("1", x_test.shape, y_test[:, 0].shape)
+                    # self.axes_plot_preds[dimension].scatter3D(
                     self.axes_plot_preds[dimension].scatter(
-                        x_test, y_test, marker="o", s=self.options.get("test_s", 0.9),
+                        x_test,
+                        y_test[:, 0],
+                        y_test[:, 1],
+                        marker="o",
+                        s=self.options.get("test_s", 0.9),
                     )
 
                 elif data_type == "z-lines test":
+                    continue
                     if len(self.x_dimensions) == 1:
                         x_test, y_test = data
+                        print("2", x_test.shape, y_test[:, 0].shape)
+                        # self.axes_plot_zlines.scatter3D(
                         self.axes_plot_zlines.scatter(
                             x_test,
-                            y_test,
+                            y_test[:, 0],
+                            y_test[:, 1],
                             marker="o",
                             s=self.options.get("test_s", 0.9),
                         )
 
                 elif data_type == "z-lines":
+                    # continue
                     if len(self.x_dimensions) == 1:
                         x_test, y_test = data
                         if x_test is not None:
+                            # self.scatter_zlines = self.axes_plot_zlines.scatter3D(
                             self.scatter_zlines = self.axes_plot_zlines.scatter(
                                 x_test,
-                                y_test,
+                                y_test[:, 0],
+                                y_test[:, 1],
                                 marker="x",
                                 s=self.options.get("zline_s", 0.1),
                             )
@@ -171,18 +187,27 @@ class ProcessPlotter:
                                 legend, loc="upper right",
                             )
                         else:
+                            self.scatter_zlines._offsets3d = (
+                                self.x_tests_zlines,
+                                y_test[:, 0],
+                                y_test[:, 1],
+                            )
+                            continue
                             self.scatter_zlines.set_offsets(
-                                np.c_[self.x_tests_zlines, y_test]
+                                np.c_[self.x_tests_zlines, y_test[:, 0], y_test[:, 1]]
                             )
 
                 elif data_type == "preds":
                     x_test, y_test = data
+                    # print("3", x_test.shape, y_test[:, 0].shape)
                     if x_test is not None:
                         self.scatter_preds[dimension] = self.axes_plot_preds[
                             dimension
+                            # ].scatter3D(
                         ].scatter(
                             x_test,
-                            y_test,
+                            y_test[:, 0],
+                            y_test[:, 1],
                             marker="x",
                             s=self.options.get("train_s", 0.5),
                         )
@@ -194,7 +219,15 @@ class ProcessPlotter:
                             legend, loc="upper right",
                         )
                     else:
-                        X = np.c_[self.x_tests_preds[dimension], y_test]
+                        self.scatter_preds[dimension]._offsets3d = (
+                            self.x_tests_preds[dimension],
+                            y_test[:, 0],
+                            y_test[:, 1],
+                        )
+                        continue
+                        X = np.c_[
+                            self.x_tests_preds[dimension], y_test[:, 0], y_test[:, 1]
+                        ]
                         self.scatter_preds[dimension].set_offsets(X)
                         xmin = X[:, 0].min()
                         xmax = X[:, 0].max()
@@ -208,6 +241,7 @@ class ProcessPlotter:
                         )
 
                 elif data_type == "z-lines pos":
+                    continue
                     if len(self.x_dimensions) == 1:
                         x_label_pos, y_label_pos = data
 
@@ -272,7 +306,7 @@ class ProcessPlotter:
             ############################################################################
             position = 3 if total_dimensions == 1 else figure_dimension * 2 + 2
             axes_plot_preds = self.figures[figure_idx].add_subplot(
-                plot_rows, columns, position
+                plot_rows, columns, position, projection="3d"
             )
             axes_plot_preds.set_title("test dataset & random preds")
             axes_plot_preds.set_xlabel(f"$X_{dimension}$")
@@ -283,7 +317,7 @@ class ProcessPlotter:
             ############################################################################
             if total_dimensions == 1:
                 self.axes_plot_zlines = self.figures[0].add_subplot(
-                    plot_rows, columns, 4
+                    plot_rows, columns, 4, projection="3d"
                 )
                 self.axes_plot_zlines.set_title("test dataset & z-lines")
                 self.axes_plot_zlines.set_xlabel(f"$X_{dimension}$")
@@ -346,6 +380,7 @@ class PlotterWindowed:
         """
         This method sends the goal 1 and goal 2 information to the plotter process.
         """
+        return
         if not self.first:
             x_np = None
         self.plot_pipe.send(
@@ -360,6 +395,7 @@ class PlotterWindowed:
         """
         This method sends the emd information to the plotter process.
         """
+        return
         if not self.first:
             x_np = None
         self.plot_pipe.send(("emd", dimension, (x_np, local_emds)))
@@ -398,7 +434,11 @@ class PlotterWindowed:
             x_skipped, (y_predict_mat_skipped.shape[0], x_skipped.shape[1])
         )
         # Reshape y_predict_mat_skipped to be flat.
-        y_predict_mat_flat = y_predict_mat_skipped.flatten()
+        # y_predict_mat_flat = y_predict_mat_skipped.flatten()
+        shape = y_predict_mat_skipped.shape
+        y_predict_mat_flat = y_predict_mat_skipped.reshape(
+            (shape[0] * shape[1], shape[2])
+        )
 
         # Add the scatter plots.
         for dimension in range(len(self.x_dimensions)):

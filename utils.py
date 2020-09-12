@@ -15,10 +15,6 @@ def sample_uniform(ranges, sizes):
     @return nparray with shape (sizes, dims)
     """
     dimensions = ranges.shape[0]
-    # Take the dimensions'th root of dimensions. That is the number of points on each dimension.
-    # dim_size = sizes ** (1 / dimensions)
-    # Round it to the nearest greater integer.
-    # dim_size = np.ceil(dim_size)
 
     slices = []
     for dimension in range(dimensions):

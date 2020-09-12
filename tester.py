@@ -40,15 +40,13 @@ class Tester:
         self.plotter = plotter
         self.model = model
         self.device = device
-        self.z_samples = z_samples.z_samples_pt
-        self.z_ranges = z_samples.z_ranges_per_dimension
+        self.z_samples = z_samples
+        # self.z_ranges_per_dimension = z_samples.z_ranges_per_dimension
         # self.z_space_size = z_samples.Z_SPACE_SIZE
-        #self.z_samples_size = self.z_samples.shape[0]
+        # self.z_samples_size = self.z_samples.shape[0]
 
-        self.smaller_than_ratios = np.linspace(0.0, 1.0, self.z_samples_size)[
-            ..., np.newaxis
-        ]
-        self.smaller_than_ratios = to_tensor(self.smaller_than_ratios, device)
+        # self.smaller_than_ratios = z_samples.smaller_than_ratios_pt
+        # self.smaller_than_ratios = to_tensor(self.smaller_than_ratios, device)
 
         self.y_test = datasets.y_test
         self.x_test = datasets.x_test
@@ -135,13 +133,14 @@ class Tester:
         goal1_mean = torch.mean(smaller_than, dim=1,)
         # This is the error for every mean ratio above.
         # dimensions: (z-samples, output dimensions)
-        goal1_err = goal1_mean - self.smaller_than_ratios
+        goal1_err = goal1_mean - self.z_samples.smaller_than_ratios_pt
         # This is the absolute error for every z-sample. It has to be absolute so that
         # they doesn't cancel each other when averaging.
         # dimensions: (z-samples, output dimensions)
         goal1_err_abs = torch.abs(goal1_err)
         # This is the single mean value of the absolute error of all z-samples.
         goal1_mean_err_abs = torch.mean(goal1_err_abs)
+        return 0.0
 
         num_dimensions = self.x_test.shape[1]
         for dimension in range(num_dimensions):
@@ -165,9 +164,9 @@ class Tester:
                 )
                 # Get the error by substracting it from the expected ratio and calculate
                 # the absolute value.
-                # dimension: (z-samples)
+                # dimension: (z-samples, output dimensions)
                 smaller_than_mean_abs = torch.abs(
-                    smaller_than_mean - self.smaller_than_ratios
+                    smaller_than_mean - self.z_samples.smaller_than_ratios_pt
                 )
                 local_goal1_err[point + 1] = torch.mean(smaller_than_mean_abs, dim=0)
                 local_goal1_max_err[point + 1] = torch.max(smaller_than_mean_abs)
@@ -212,7 +211,12 @@ class Tester:
         # )
         z_goal = torch.sort(
             to_tensor(
-                sample_random(self.z_ranges, 15, self.z_ranges.shape[0]), self.device
+                sample_random(
+                    self.z_samples.z_ranges_per_dimension,
+                    15,
+                    self.z_samples.z_dimensions,
+                ),
+                self.device,
             ),
             dim=0,
         )[0]
@@ -235,23 +239,28 @@ class Tester:
         self.writer.log_weights(model=self.model, epoch=epoch)
 
         # Only run tests every number of epochs.
-        if epoch % self.skip_epochs != 0:
+        if epoch % self.skip_epochs != 0 or epoch < 10:
+            # if epoch != 267:
             return
 
         # With grad off make a prediction over a random set of z-samples and the test x
         # data points.
         with torch.no_grad():
             test_size = self.x_test_pt.shape[0]
-            z_test = sample_random(self.z_ranges, test_size, self.z_ranges.shape[0])
+            z_test = sample_random(
+                self.z_samples.z_ranges_per_dimension,
+                test_size,
+                self.z_samples.z_dimensions,
+            )
             z_test_pt = to_tensor(z_test, self.device)
             y_pred = self.model.forward(self.x_test_pt, z_test_pt)
 
         # Create a numpy version of the prediction tensor.
-        y_pred_d = y_pred.cpu().detach()
+        y_pred_d = y_pred.cpu().detach().numpy()
 
         # Get the z-sample predictions for every test data point.
         y_predict_mat = self.model.get_z_sample_preds(
-            x=self.x_test_pt, z_samples=self.z_samples,
+            x=self.x_test_pt, z_samples=self.z_samples.z_samples_pt,
         )
 
         y_predict_mat_d = y_predict_mat.cpu().detach().numpy()

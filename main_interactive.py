@@ -43,7 +43,7 @@ TEST_SIZE = 1001
 
 experiment = EXPERIMENT_7
 
-BATCH_SIZE = 8
+BATCH_SIZE = 128
 # BATCH_SIZE = 2048
 
 device = torch.device("cuda")
@@ -67,6 +67,7 @@ z_samples = ZSamples(
     z_samples_per_dimension=experiment["z_samples_per_dimension"],
     z_ranges_per_dimension=experiment["z_ranges_per_dimension"],
     outer_level_scalar=experiment["outer_level_scalar"],
+    outer_samples=False,
     device=device,
 )
 
@@ -114,7 +115,7 @@ tester = Tester(
 # %%
 
 
-for epoch in range(0, experiment["num_epochs"]):
+for epoch in range(0, 30):  # experiment["num_epochs"]):
     start = time.time()
 
     for x, y in datasets.data_loader_train:
