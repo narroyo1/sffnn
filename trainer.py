@@ -74,12 +74,19 @@ class Trainer:
         # dimensions: (z-samples, data points, output dimensions)
         y_predict_mat = self.model.get_z_sample_preds(x=x_pt, z_samples=self.z_samples)
 
+        # dimensions: (z-samples, data points, output dimensions)
         difference = y_pt - y_predict_mat
+        # dimensions: (z-samples, data points, output dimensions)
         squared = difference * difference
+        # dimensions: (z-samples, data points, 1)
         summation = torch.sum(squared, dim=2).unsqueeze(2)
+        # dimensions: (z-samples, data points, 1)
         distance = torch.sqrt(summation)
+        # dimensions: (z-samples, data points, output dimensions)
         cosine = torch.abs(difference) / distance
+        # dimensions: (z-samples, data points, output dimensions)
         angle = torch.acos(cosine)
+        # dimensions: (z-samples, data points, output dimensions)
         magnitude = (np.pi / 2.0 - angle) / (np.pi / 2.0)
 
         # This matrix tells if the training data is greater than the prediction.
@@ -107,22 +114,9 @@ class Trainer:
         # func(w_bp[7])
         # dimensions: (z-samples * data points, output dimensions)
         w_bp = w_bp.reshape((w_bp.shape[0] * w_bp.shape[1], w_bp.shape[2]))
-        """
-        w_bp = []
-        for z_sample_idx in range(greater_than.shape[0]):
-            for datapoint_idx in range(greater_than.shape[1]):
-                ws = []
-                for output_dimension in range(y_predict_mat.shape[2]):
-                    scalars = self.scalars[
-                        greater_than[z_sample_idx, datapoint_idx, output_dimension]
-                    ]
-                    ws.append(scalars[z_sample_idx, output_dimension])
-                w_bp.append(ws)
-        w_bp = torch.tensor(w_bp).to(device=self.device)#.unsqueeze(1)
-        """
 
         # dimensions: (z-samples, data points, output dimensions)
-        y_bp = y_predict_mat + ((greater_than * 2) - 1) * self.movement
+        y_bp = y_predict_mat + ((greater_than * 2) - 1) * (cosine * self.movement)
         # dimensions: (z-samples * data points, output dimensions)
         y_bp = y_bp.reshape((y_bp.shape[0] * y_bp.shape[1], y_bp.shape[2]))
 
