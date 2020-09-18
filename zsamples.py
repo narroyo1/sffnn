@@ -33,7 +33,7 @@ class ZSamples:
                 z_range[0] += range_size / 20.0
                 z_range[1] -= range_size / 20.0
         self._z_samples_np = sample_uniform(
-            z_ranges_per_dimension, z_samples_per_dimension
+            z_ranges_per_dimension_cp, z_samples_per_dimension
         )
         self.z_samples_pt = to_tensor(self._z_samples_np, device)
 

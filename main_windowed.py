@@ -8,23 +8,14 @@ import time
 
 import torch
 
+import experiments
+
 from model import StochasticFFNN
 from trainer import Trainer
 from tester import Tester
 from zsamples import ZSamples
 from datasets import DataSets
 from plotter_windowed import PlotterWindowed
-
-from experiments import (
-    EXPERIMENT_1,
-    EXPERIMENT_2,
-    EXPERIMENT_3,
-    EXPERIMENT_4,
-    EXPERIMENT_5,
-    EXPERIMENT_6,
-    EXPERIMENT_7,
-)
-
 
 def main():
     """
@@ -37,7 +28,7 @@ def main():
     TEST_SIZE = 5007
     # TEST_SIZE = 1001
 
-    experiment = EXPERIMENT_7
+    experiment = experiments.EXPERIMENT_7
 
     BATCH_SIZE = 2048
 
@@ -62,7 +53,7 @@ def main():
         z_samples_per_dimension=experiment["z_samples_per_dimension"],
         z_ranges_per_dimension=experiment["z_ranges_per_dimension"],
         outer_level_scalar=experiment["outer_level_scalar"],
-        outer_samples=True,
+        outer_samples=False,
         device=device,
     )
 

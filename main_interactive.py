@@ -12,23 +12,14 @@ import time
 import torch
 
 
+import experiments
+
 from model import StochasticFFNN
 from trainer import Trainer
 from tester import Tester
 from zsamples import ZSamples
 from datasets import DataSets
 from plotter import Plotter
-
-
-from experiments import (
-    EXPERIMENT_1,
-    EXPERIMENT_2,
-    EXPERIMENT_3,
-    EXPERIMENT_4,
-    EXPERIMENT_5,
-    EXPERIMENT_6,
-    EXPERIMENT_7,
-)
 
 
 # %%
@@ -41,7 +32,7 @@ TRAIN_SIZE = 9611
 TEST_SIZE = 1001
 
 
-experiment = EXPERIMENT_7
+experiment = experiments.EXPERIMENT_7
 
 BATCH_SIZE = 128
 # BATCH_SIZE = 2048
