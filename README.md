@@ -30,9 +30,6 @@ conda activate sffn
 ### Using VS Code
 Open `main_windowed.py` and run.
 
-### On the command line
-Run `python main_windowed.py` on a shell.
-
 ### Tensorboard visualization
 On the same directory as `main.py` run:
 ```shell
