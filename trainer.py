@@ -26,7 +26,7 @@ class Trainer:
         self.device = device
         # dimensions: (greater/smaller, z-samples)
         self.scalars = torch.tensor(
-            np.stack((z_samples.less_scalar_bias, z_samples.more_scalar_bias)),
+            np.stack((z_samples.less_scalar, z_samples.more_scalar)),
             dtype=torch.float64,
         ).to(device=self.device)
 
@@ -96,7 +96,9 @@ class Trainer:
         )
 
         # dimensions: (z-samples * data points, input dimensions)
-        x_bp = x_pt.repeat(*self.z_samples.shape)
+        repeat_shape = [1 for _ in range(len(x_pt.shape))]
+        repeat_shape[0] = self.z_samples.shape[0]
+        x_bp = x_pt.repeat(tuple(repeat_shape))
 
         # Run backpropagation with the calculated targets.
         self.backprop(x_bp=x_bp, z_samples_bp=z_samples_bp, y_bp=y_bp, w_bp=w_bp)

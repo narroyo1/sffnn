@@ -16,21 +16,39 @@ class ZSamples:
     # Currently Z space is only supported to be 1.
     Z_SPACE_SIZE = 1
 
-    def __init__(self, num_z_samples, z_range, outer_level_scalar, device):
+    def __init__(self, experiment, device):
         # Create a tensor of samples on z-space.
         # [z0, z1, ... , zS]
-        z_samples = sample_uniform(z_range, num_z_samples, self.Z_SPACE_SIZE)
+        z_range = experiment["z_range"]
+        self.z_range = z_range
+        self.device = device
+
+        if "num_z_samples" in experiment:
+            z_samples = sample_uniform(
+                z_range, experiment["num_z_samples"], self.Z_SPACE_SIZE
+            )
+        else:
+            z_samples = experiment["z_samples"]
         self.z_samples = to_tensor(z_samples, device)
 
-        self.z_range = z_range
-        self.outer_level_scalar = outer_level_scalar
+        self.less_than_ratios = self.calculate_ratios()
+
+        self.outer_level_scalar = experiment.get("outer_level_scalar")
 
         self.less_scalar, self.more_scalar = self.calculate_scalars()
-        # print("less_scalar", self.less_scalar)
-        # print("more_scalar", self.more_scalar)
 
-        self.less_scalar_bias, self.more_scalar_bias = self.biased_scalars(
-            self.less_scalar, self.more_scalar
+        # self.less_scalar_bias, self.more_scalar_bias = self.biased_scalars(
+        #    self.less_scalar, self.more_scalar
+        # )
+
+    def calculate_ratios(self):
+        min_val = self.z_range[0][0]
+        max_val = self.z_range[0][1]
+        size = max_val - min_val
+
+        return to_tensor(
+            [(z_sample - min_val) / size for z_sample in self.z_samples.squeeze()],
+            self.device,
         )
 
     def calculate_scalars(self):
@@ -38,15 +56,23 @@ class ZSamples:
         This method calculates the alpha and beta scalars for every z-sample.
         """
 
-        num_z_samples = self.z_samples.shape[0]
-        less_scalar = np.zeros((num_z_samples,), dtype=float)
-        more_scalar = np.zeros((num_z_samples,), dtype=float)
-        min_val = self.z_samples[0]
-        max_val = self.z_samples[-1]
+        z_samples_size = self.z_samples.shape[0]
+        less_scalar = np.zeros((z_samples_size,), dtype=float)
+        more_scalar = np.zeros((z_samples_size,), dtype=float)
+        min_val = self.z_range[0][0]
+        max_val = self.z_range[0][1]
 
-        for idx in range(1, num_z_samples - 1):
+        for idx in range(z_samples_size):
             a_n = self.z_samples[idx] - min_val
+            if a_n == 0.0 and self.outer_level_scalar is not None:
+                less_scalar[idx] = self.outer_level_scalar
+                more_scalar[idx] = 0.0
+                continue
             b_n = max_val - self.z_samples[idx]
+            if b_n == 0.0 and self.outer_level_scalar is not None:
+                more_scalar[idx] = self.outer_level_scalar
+                less_scalar[idx] = 0.0
+                continue
             alpha = 1.0 / (2.0 * a_n)
             beta = 1.0 / (2.0 * b_n)
             less_scalar[idx] = alpha
@@ -56,9 +82,6 @@ class ZSamples:
         # print("normalizer:", normalizer)
         less_scalar *= normalizer
         more_scalar *= normalizer
-
-        less_scalar[0] = more_scalar[-1] = self.outer_level_scalar
-        less_scalar[-1] = more_scalar[0] = 0.0
 
         return less_scalar, more_scalar
 

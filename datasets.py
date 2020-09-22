@@ -3,6 +3,8 @@ This module contains class DataSets.
 """
 # pylint: disable=bad-continuation
 
+import numpy as np
+
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
@@ -39,7 +41,7 @@ class DataSets:
         y_train,
         x_test,
         y_test,
-        x_dimensions,
+        x_dimension_names,
         batch_size,
         target_function_desc,
         params_desc,
@@ -50,11 +52,7 @@ class DataSets:
         """
         self.x_test = x_test
         self.y_test = y_test
-        self.x_dimensions = x_dimensions
-        # self.x_range_test = x_range_test
-
-        self.x_train = x_train
-        self.y_train = y_train
+        self.x_dimensions = x_dimension_names
 
         self.target_function_desc = target_function_desc
         self.params_desc = params_desc

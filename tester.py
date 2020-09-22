@@ -45,8 +45,9 @@ class Tester:
         self.z_space_size = z_samples.Z_SPACE_SIZE
         self.z_samples_size = self.z_samples.shape[0]
 
-        self.smaller_than_ratios = np.linspace(0.0, 1.0, self.z_samples_size)
-        self.smaller_than_ratios = to_tensor(self.smaller_than_ratios, device)
+        # self.smaller_than_ratios = np.linspace(0.0, 1.0, self.z_samples_size)
+        # self.smaller_than_ratios = to_tensor(self.smaller_than_ratios, device)
+        self.less_than_ratios = z_samples.less_than_ratios
 
         self.y_test = datasets.y_test
         self.x_test = datasets.x_test
@@ -133,7 +134,7 @@ class Tester:
         goal1_mean = torch.mean(smaller_than, dim=1,)
         # This is the error for every mean ratio above.
         # dimensions: (z-samples)
-        goal1_err = goal1_mean - self.smaller_than_ratios
+        goal1_err = goal1_mean - self.less_than_ratios
         # This is the absolute error for every z-sample. It has to be absolute so that
         # they doesn't cancel each other when averaging.
         # dimensions: (z-samples)
@@ -165,7 +166,7 @@ class Tester:
                 # the absolute value.
                 # dimension: (z-samples)
                 smaller_than_mean_abs = torch.abs(
-                    smaller_than_mean - self.smaller_than_ratios
+                    smaller_than_mean - self.less_than_ratios
                 )
                 local_goal1_err[point + 1] = torch.mean(smaller_than_mean_abs, dim=0)
                 local_goal1_max_err[point + 1] = torch.max(smaller_than_mean_abs)
@@ -187,7 +188,7 @@ class Tester:
             self.plotter.plot_goals(
                 x_np=x_np,
                 local_goal1_err=local_goal1_err,
-                #local_goal1_max_err=local_goal1_max_err,
+                # local_goal1_max_err=local_goal1_max_err,
                 global_goal1_err=goal1_mean_err_abs,
                 mon_incr=mon_incr,
                 dimension=dimension,

@@ -53,15 +53,10 @@ else:
     datasets = experiment["dataset_builder"](BATCH_SIZE, device)
 # datasets.show()
 
-z_samples = ZSamples(
-    num_z_samples=experiment["num_z_samples"],
-    z_range=experiment["z_range"],
-    outer_level_scalar=experiment["outer_level_scalar"],
-    device=device,
-)
+z_samples = ZSamples(experiment=experiment, device=device,)
 
 
-stochastic_ffnn = StochasticFFNN(
+model = StochasticFFNN(
     z_samples.Z_SPACE_SIZE,
     len(datasets.x_dimensions),
     device=device,
@@ -74,7 +69,7 @@ stochastic_ffnn = StochasticFFNN(
 trainer = Trainer(
     z_samples=z_samples,
     movement=experiment["movement"],
-    model=stochastic_ffnn,
+    model=model,
     learning_rate=experiment["learning_rate"],
     milestones=[60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660,],
     gamma=experiment["gamma"],
@@ -96,7 +91,7 @@ tester = Tester(
     datasets=datasets,
     trainer=trainer,
     plotter=plotter,
-    model=stochastic_ffnn,
+    model=model,
     skip_epochs=experiment["skip_epochs"],
     device=device,
 )
