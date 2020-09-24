@@ -32,7 +32,7 @@ TEST_SIZE = 5007
 # TEST_SIZE = 1001
 
 
-experiment = experiments.EXPERIMENT_1
+experiment = experiments.EXPERIMENT_6
 
 BATCH_SIZE = 2048
 
@@ -55,7 +55,6 @@ else:
 
 z_samples = ZSamples(experiment=experiment, device=device,)
 
-
 model = StochasticFFNN(
     z_samples.Z_SPACE_SIZE,
     len(datasets.x_dimensions),
@@ -63,17 +62,10 @@ model = StochasticFFNN(
     # hidden_size=1536,  # exp 6
 ).to(device=device)
 
-
 # %%
 
 trainer = Trainer(
-    z_samples=z_samples,
-    movement=experiment["movement"],
-    model=model,
-    learning_rate=experiment["learning_rate"],
-    milestones=[60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660,],
-    gamma=experiment["gamma"],
-    device=device,
+    experiment=experiment, z_samples=z_samples, model=model, device=device,
 )
 
 plotter = Plotter(
@@ -83,7 +75,6 @@ plotter = Plotter(
     train_s=0.2,
     zline_s=5,
     zline_skip=TEST_SIZE // 50,
-    zsample_label=True,
 )
 
 tester = Tester(
@@ -98,7 +89,6 @@ tester = Tester(
 
 # %%
 
-
 for epoch in range(0, experiment["num_epochs"]):
     start = time.time()
 
@@ -112,6 +102,6 @@ for epoch in range(0, experiment["num_epochs"]):
     tester.step(epoch=epoch)
 
     end = time.time()
-    print("epoch: {} elapsed time: {}".format(epoch, end - start))
+    print(f"epoch: {epoch} elapsed time: {end - start}")
 
 # %%

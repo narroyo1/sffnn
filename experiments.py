@@ -20,6 +20,7 @@ EXPERIMENT_1 = {
     "learning_rate": 1e-2 / 12,
     "num_epochs": 181,
     "gamma": 0.5,
+    "milestones": [60, 120, 180],
 }
 
 EXPERIMENT_2 = {
@@ -35,6 +36,7 @@ EXPERIMENT_2 = {
     "learning_rate": 1e-2 / 12,
     "num_epochs": 181,
     "gamma": 0.5,
+    "milestones": [60, 120, 180],
 }
 
 EXPERIMENT_3 = {
@@ -50,6 +52,7 @@ EXPERIMENT_3 = {
     "learning_rate": 1e-2 / 12,
     "num_epochs": 261,
     "gamma": 0.5,
+    "milestones": [60, 120, 180, 240],
 }
 
 EXPERIMENT_4 = {
@@ -65,6 +68,7 @@ EXPERIMENT_4 = {
     "learning_rate": 1e-2 / 12,
     "num_epochs": 321,
     "gamma": 0.5,
+    "milestones": [60, 120, 180, 240, 300],
 }
 
 EXPERIMENT_5 = {
@@ -89,6 +93,7 @@ EXPERIMENT_5 = {
     # The total number of epochs to run training for.
     "num_epochs": 321,
     "gamma": 0.5,
+    "milestones": [60, 120, 180, 240, 300],
 }
 
 EXPERIMENT_6 = {
@@ -100,5 +105,6 @@ EXPERIMENT_6 = {
     "learning_rate": 1e-2 / 4,
     "num_epochs": 501,
     "gamma": 0.85,
+    "milestones": [60, 120, 180, 240, 300, 360, 420, 480],
     "dataset_builder": DataSets.california_housing_dataset,
 }
