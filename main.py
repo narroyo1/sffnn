@@ -33,7 +33,7 @@ TEST_SIZE = 5007
 # TEST_SIZE = 1001
 
 
-experiment = experiments.EXPERIMENT_1a
+experiment = experiments.EXPERIMENT_1
 
 BATCH_SIZE = 2048
 
