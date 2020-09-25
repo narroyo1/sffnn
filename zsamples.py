@@ -37,10 +37,6 @@ class ZSamples:
 
         self.less_scalar, self.more_scalar = self.calculate_scalars()
 
-        # self.less_scalar_bias, self.more_scalar_bias = self.biased_scalars(
-        #    self.less_scalar, self.more_scalar
-        # )
-
     def calculate_ratios(self):
         min_val = self.z_range[0][0]
         max_val = self.z_range[0][1]

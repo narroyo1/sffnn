@@ -7,7 +7,6 @@ import torch
 
 from torch import optim
 
-
 # pylint: disable=bad-continuation, not-callable
 
 # %%

@@ -20,6 +20,7 @@ from tester import Tester
 from zsamples import ZSamples
 from datasets import DataSets
 from plotter import Plotter
+from writer import Writer
 
 
 # %%
@@ -32,7 +33,7 @@ TEST_SIZE = 5007
 # TEST_SIZE = 1001
 
 
-experiment = experiments.EXPERIMENT_6
+experiment = experiments.EXPERIMENT_1a
 
 BATCH_SIZE = 2048
 
@@ -77,13 +78,19 @@ plotter = Plotter(
     zline_skip=TEST_SIZE // 50,
 )
 
+writer = Writer(
+    datasets_target_function=datasets.target_function_desc,
+    trainer_params=trainer.params_desc,
+    datasets_params=datasets.params_desc,
+)
+
 tester = Tester(
+    experiment=experiment,
     z_samples=z_samples,
     datasets=datasets,
-    trainer=trainer,
     plotter=plotter,
+    writer=writer,
     model=model,
-    skip_epochs=experiment["skip_epochs"],
     device=device,
 )
 
