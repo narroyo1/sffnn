@@ -17,13 +17,14 @@ class Plotter:
     This class creates plots to track the model progress.
     """
 
-    def __init__(self, datasets, z_samples_size, **kwargs):
-        self.x_dimensions = datasets.x_dimensions
+    def __init__(self, datasets, z_samples, **kwargs):
+        self.x_dimension_names = datasets.x_dimension_names
+        self.y_dimension_name = datasets.y_dimension_name
         self.x_test = datasets.x_test
         self.y_test = datasets.y_test
-        self.z_samples_size = z_samples_size
+        self.z_samples_size = z_samples.z_samples.shape[0]
         self.figures = []
-        self.labels = ["$z_{{{}}}$".format(i) for i in range(self.z_samples_size)]
+        self.z_sample_labels = z_samples.z_sample_labels
 
         self.options = kwargs
 
@@ -37,17 +38,22 @@ class Plotter:
         clear_output(wait=True)
 
         width = 20
-        height = 16 if len(self.x_dimensions) == 1 else 8
-        self.figures = [pyplot.figure(i) for i in range(len(self.x_dimensions))]
+        height = 16 if len(self.x_dimension_names) == 1 else 8
+        self.figures = [pyplot.figure(i) for i in range(len(self.x_dimension_names))]
         for dim, figure in enumerate(self.figures):
             figure.set_size_inches(width, height)
             title = f"epoch {epoch}"
             if len(self.figures) > 1:
-                title += f' / X dimension "{self.x_dimensions[dim]}"'
+                title += f' / X dimension "{self.x_dimension_names[dim]}"'
             figure.suptitle(title)
 
     def plot_goal1(
-        self, x_np, local_goal1_err, global_goal1_err, dimension,
+        self,
+        x_np,
+        local_goal1_err,
+        global_goal1_err,
+        dimension,
+        local_goal1_err_zsample,
     ):
         """
         This method plots goal 1 test results.
@@ -55,15 +61,21 @@ class Plotter:
 
         axes_goals = self.figures[dimension].add_subplot(2, 2, 1)
         axes_goals.set_ylim(0.0, 0.2)
-        # for i in range(self.z_samples_size):
-        #    axes_goals.plot(x_np, local_goal1_err[i], "o-", label=f"$z_{{{i}}}$")
         axes_goals.plot(x_np, local_goal1_err, "o--", label="goal 1 - local error")
         # axes_goals.plot(
         #    x_np, local_goal1_max_err, "o--", label="goal 1 - local max error"
         # )
+        for i in range(self.z_samples_size):
+            axes_goals.plot(
+                x_np,
+                local_goal1_err_zsample[i],
+                "-",
+                label=f"{self.z_sample_labels[i]}",
+                linewidth=0.3,
+            )
         axes_goals.legend(loc="upper right")
         axes_goals.set_title("Training goals")
-        axes_goals.set_xlabel(f"$X_{dimension}$")
+        axes_goals.set_xlabel(f"{self.x_dimension_names[dimension]}")
         axes_goals.text(
             0.1,
             0.95,
@@ -89,7 +101,7 @@ class Plotter:
         This method plots EMD test results.
         """
 
-        if len(self.x_dimensions) == 1:
+        if len(self.x_dimension_names) == 1:
             axes_emd = self.figures[dimension].add_subplot(2, 2, 2)
         else:
             axes_emd = self.figures[dimension].add_subplot(2, 2, 3)
@@ -115,7 +127,7 @@ class Plotter:
         if not os.path.exists("plots"):
             os.makedirs("plots")
         for i, figure in enumerate(self.figures):
-            figure.savefig(f"plots/img_{epoch:03}_{i}.png", bbox_inches="tight")
+            figure.savefig(f"plots/img_{epoch:04}_{i}.png", bbox_inches="tight")
 
         pyplot.show()
 
@@ -124,7 +136,7 @@ class Plotter:
         This method plots the test dataset along with the zlines.
         """
 
-        if len(self.x_dimensions) != 1:
+        if len(self.x_dimension_names) != 1:
             return
 
         axe = self.figures[0].add_subplot(2, 2, 3)
@@ -141,7 +153,7 @@ class Plotter:
         y_predict_mat_flat = y_predict_mat_skipped.flatten()
 
         # Add the scatter plots.
-        for dimension in range(len(self.x_dimensions)):
+        for dimension in range(len(self.x_dimension_names)):
 
             # Get the positions for the rightmost elements in the z-lines to be used
             # with the z-sample labels.
@@ -162,19 +174,23 @@ class Plotter:
                 s=self.options.get("zline_s", 0.1),
             )
 
-            for j, label in enumerate(self.labels):
+            for j, label in enumerate(self.z_sample_labels):
                 axe.annotate(
                     label, (x_label_pos[dimension], y_label_pos[j]), fontsize=8
                 )
 
             legend = [r"test dataset ($y \sim Y_{x \in X}$)"]
             legend.append(r"zlines ($f(x \in X, z \in z-samples)$)")
+            # legend.append(r"$\mu_{x} \pm [0, 1, 2]\sigma$")
+            # legend.append(r"prediction ($f(x \in X)$)")
             # Print the legend.
             axe.legend(
                 legend, loc="upper right",
             )
             axe.set_title("test dataset & z-lines")
-            axe.set_xlabel(f"$X_{dimension}$")
+            # axe.set_title("test dataset & normal 2 sigma")
+            axe.set_xlabel(f"{self.x_dimension_names[dimension]}")
+            axe.set_ylabel(f"{self.y_dimension_name}")
             axe.grid()
 
     def plot_datasets_preds(self, y_pred_d):
@@ -182,18 +198,18 @@ class Plotter:
         This method plots the test dataset along with random samples.
         """
 
-        if len(self.x_dimensions) == 1:
+        if len(self.x_dimension_names) == 1:
             axes = [
                 self.figures[i].add_subplot(2, 2, 4)
-                for i in range(len(self.x_dimensions))
+                for i in range(len(self.x_dimension_names))
             ]
         else:
             axes = [
                 self.figures[i].add_subplot(1, 2, 2)
-                for i in range(len(self.x_dimensions))
+                for i in range(len(self.x_dimension_names))
             ]
         # Add the scatter plots.
-        for dimension in range(len(self.x_dimensions)):
+        for dimension in range(len(self.x_dimension_names)):
             axes[dimension].scatter(
                 self.x_test[:, dimension],
                 self.y_test,

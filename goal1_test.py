@@ -73,6 +73,11 @@ class Goal1Test:
             # Add 2 members for the plot edges.
             local_goal1_err = np.zeros(GOAL1_TEST_POINTS + 2)
             local_goal1_max_err = np.zeros(GOAL1_TEST_POINTS + 2)
+            # dimensions: (z-samples, test datapoint groups)
+            local_goal1_err_zsample = np.zeros(
+                (y_predict_mat.shape[0], GOAL1_TEST_POINTS + 2)
+            )
+
             x_np = np.zeros(GOAL1_TEST_POINTS + 2)
             for point in range(GOAL1_TEST_POINTS):
                 # For the current test point, select the start and stop indexes.
@@ -80,6 +85,7 @@ class Goal1Test:
                 stop = start + GOAL1_SAMPLES_PER_TEST_POINT
                 start = int(max(start, 0))
                 stop = int(stop)
+
                 # This is the mean ratio of smaller than over all the data points in this
                 # vicinity.
                 # dimension: (z-samples)
@@ -87,13 +93,18 @@ class Goal1Test:
                     smaller_than[:, self.x_orderings_pt[dimension]][:, start:stop],
                     dim=1,
                 )
+
                 # Get the error by substracting it from the expected ratio and calculate
                 # the absolute value.
                 # dimension: (z-samples)
                 smaller_than_mean_abs = torch.abs(
                     smaller_than_mean - self.less_than_ratios
                 )
+
                 local_goal1_err[point + 1] = torch.mean(smaller_than_mean_abs, dim=0)
+                local_goal1_err_zsample[
+                    :, point + 1
+                ] = smaller_than_mean_abs.cpu().numpy()
                 local_goal1_max_err[point + 1] = torch.max(smaller_than_mean_abs)
                 # Calculate the x value for the plot as the average of all data points considered.
                 x_np[point + 1] = torch.mean(
@@ -117,6 +128,7 @@ class Goal1Test:
                 global_goal1_err=goal1_mean_err_abs,
                 # mon_incr=mon_incr,
                 dimension=dimension,
+                local_goal1_err_zsample=local_goal1_err_zsample,
             )
 
         return goal1_mean_err_abs

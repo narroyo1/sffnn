@@ -30,6 +30,10 @@ class ZSamples:
         else:
             z_samples = experiment["z_samples"]
         self.z_samples = to_tensor(z_samples, device)
+        self.z_sample_labels = experiment.get(
+            "z_sample_labels",
+            ["$z_{{{}}}$".format(i) for i in range(z_samples.shape[0])],
+        )
 
         self.less_than_ratios = self.calculate_ratios()
 

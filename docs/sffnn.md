@@ -1,4 +1,4 @@
-# Approximating Stochastic Data Sets
+# A generic approach for training probabilistic machine learning models
 
 ###### Nicolas Arroyo nicolas.arroyo.duran@gmail.com
 
@@ -6,17 +6,27 @@
 
 ## Introduction
 
-Neural networks are [universal function approximators][UAT]. Which means that having enough hidden neurons a neural network can be used to approximate any continuous function. Real life data, however, often has noise or hidden variables which makes approximation inaccurate and in other cases over trained. At best, the prediction settles on the mean of the immediate vicinity. In **Fig. 1** we can see that using a neural network to approximate a noisy data set fails to capture all the information. Despite being able to predict a value for any input on the dataset that will be the closest to all the possibilities, the actual distribution of the outputs which may be quite complex, remains a mystery.
+Neural networks are [universal function approximators][UAT]. Which means that having enough hidden neurons a neural network can be used to approximate any continuous function. Real world data, however, often has noise that in some cases makes making a single deterministic value prediction unsuited. Take for example the dataset in **Fig. 1a**, it shows the relation between the departure delay and the arrival delay for flights out of JFK International Airport over the period of one year (Subset of [2015 Flight Delays and Cancellations][DEL]).
 
 |                                                              |
 | :----------------------------------------------------------: |
-| <img src="images\fig1.png" alt="fig1" style="zoom:80%;" /> |
-| **Fig. 1** Approximation of <img src="https://render.githubusercontent.com/render/math?math=ax%5E3%20%2B%20bx%5E2%20%2B%20cx%20%2B%20d"> with added normal noise |
+| <img src="images\fig1a.png" alt="fig1a" style="zoom:100%;" /> |
+| **Fig. 1a** Departure to arrival delays from JFK |
 
 
 
+**Fig. 1a** also shows the prediction of a fully trained neural network that does a good job of approximating the mean value and does provide information about the trend of the dataset. However, it does not help to answer questions like *given a departure delay, what is the maximum expected arrival in 90% of the flights?* or *given a departure delay, what is the probability that the arrival delay will be longer than X?* or even more fun, write a model that samples arrival delay values for given departure delays with the same distribution as the real thing.
 
-Because of this it is useful to a have a model that instead of producing a single prediction value for a given input value, produces an arbitrary set of predictions mirroring the dataset distribution at that input.
+There are methods to solve this problem, however they rely on knowing beforehand what the expected distribution will be. For example using [Maximum Likelihood Estimation] [MLE].
+
+In the case of the departure to arrival delays dataset, we can observe from the plot that the distribution appears to be similar to the normal (Gaussian) distribution, so it makes sense to build a Maximum Likelihood Estimation model trying to calculate the parameters of a normal distribution. **Fig 1b** shows a plot of a fully trained model showing the mean,  the mean plus/minus the standard deviation and the mean plus/minus twice the standard deviation. The accuracy of this model is of 2.48% which is quite good. However, the dataset's distribution is not exactly normal, you can see the the upper tail is slightly longer than the lower tail in addition to other imperfections, which is why the accuracy is not better.
+
+|                                                              |
+| :----------------------------------------------------------: |
+| <img src="images\fig1b.png" alt="fig1a" style="zoom:100%;" /> |
+| **Fig. 1b** Departure to arrival delays from JFK |
+
+This paper presents a generic approach to train probabilistic machine learning models that will produce distributions that adapt to the real data with any distribution it may have.
 
 ## The Method
 
@@ -230,7 +240,7 @@ The Mean Squared Error (MSE) loss function works to train the model using backpr
 
 > In statistics, the **earth mover's distance** (**EMD**) is a measure of the distance between two probability distributions over a region *D*. In mathematics, this is known as the Wasserstein metric. Informally, if the distributions are interpreted as two different ways of piling up a certain amount of dirt over the region *D*, the EMD is the minimum cost of turning one pile into the other; where the cost is assumed to be amount of dirt moved times the distance by which it is moved. [wikipedia.org][EMD]
 
-Using EMD we can obtain an indicator of how similar <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20y%20%5Csim%20Y_%7Bx%7D"> and <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%3A%20f_%7B%5Ctheta%7D%28x%2C%20z%20%5Csim%20Z%29"> are. It can be calculated by comparing every <img src="https://render.githubusercontent.com/render/math?math=%28x%2C%20y%29"> data point in the test data and prediction data sets and finding way to transform one into the other that requires the smallest total movement. What the EMD number tells us is the average amount of distance to transform every point in the predictions data set to the test data set.
+Using [EMD] [EMD] we can obtain an indicator of how similar <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%3A%20y%20%5Csim%20Y_%7Bx%7D"> and <img src="https://render.githubusercontent.com/render/math?math=%5Cforall%20x%20%5Cin%20X%20%3A%20f_%7B%5Ctheta%7D%28x%2C%20z%20%5Csim%20Z%29"> are. It can be calculated by comparing every <img src="https://render.githubusercontent.com/render/math?math=%28x%2C%20y%29"> data point in the test data and prediction data sets and finding way to transform one into the other that requires the smallest total movement. What the EMD number tells us is the average amount of distance to transform every point in the predictions data set to the test data set.
 
 On the example below you can see that the mean EMD is ~3.9 on a data set with a thickness of roughly 100. Because of the random nature of the data sets the EMD cannot be used as a literal error indicator, but it can be used as a progress indicator, that is to tell if the model improves with training.
 
@@ -369,6 +379,24 @@ This experiment uses real data instead of generated one which proves the model's
 |<img src="images\fig_cal_tensorboard.png" alt="fig7" style="zoom:50%;" />|
 | **Fig 12** Training model to match the California housing dataset. |
 
+
+
+Now we can go back to the delay departure to arrivals dataset, below you can see both approaches side by side. As we saw before the MLE approach fails to capture the small imperfections obtaining a goal 1 error of 2.48% while the generic approach does a much better job with a 0.018% goal 1 error. **Fig 13b** shows how when fully trained the generic approach learns the details of the dataset better including the slightly longer upper tail.
+
+
+
+|      |      |
+| ---- | ---- |
+|   <img src="images\delay_prob_plots_res.gif" alt="fig13a" style="zoom:90%;" />   |   <img src="images\delay_gen_plots_res.gif" alt="fig14b" style="zoom:90%;" />   |
+|   <img src="images\fig_delay_prob_tensorboard.png" alt="fig13a" style="zoom:30%;" />   |   <img src="images\fig_delay_gen_tensorboard.png" alt="fig13b" style="zoom:30%;" />   |
+| **Fig 13a** Probabilistic model MLE approach. | **Fig 13b** Generic approach. |
+
 ## Conclusion
 
-The method presented allows to approximate stochastic data sets to an arbitrary precision. The model is simple, fast to train and can be implemented with a vanilla feedforward neural network. Its ability to approximate any distribution across an input space makes it a potentially valuable tool for any task that requires prediction.
+The method presented allows to approximate stochastic data sets to an arbitrary precision. The model is simple, fast to train and can be implemented with a vanilla feedforward neural network. Its ability to approximate any distribution across an input space makes it a valuable tool for any task that requires prediction.
+
+## References
+
+[UAT]: https://en.wikipedia.org/wiki/Universal_approximation_theorem
+[EMD]: https://en.wikipedia.org/wiki/Earth_mover%27s_distance "Earth Mover's Distance"
+[DEL]: https://www.kaggle.com/usdot/flight-delays	"2015 Flight Delays and Cancellations Dataset"
