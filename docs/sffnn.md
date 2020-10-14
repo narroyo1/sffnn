@@ -6,7 +6,7 @@
 
 ## Introduction
 
-Neural networks are [universal function approximators][UAT]. Which means that having enough hidden neurons a neural network can be used to approximate any continuous function. Real world data, however, often has noise that in some cases makes making a single deterministic value prediction unsuited. Take for example the dataset in **Fig. 1a**, it shows the relation between the departure delay and the arrival delay for flights out of JFK International Airport over the period of one year (Subset of [2015 Flight Delays and Cancellations][DEL]).
+Neural networks are [universal function approximators][UAT]. Which means that having enough hidden neurons a neural network can be used to approximate any continuous function. Real world data, however, often has noise that in some cases makes producing a single deterministic value prediction unsuited. Take for example the dataset in **Fig. 1a**, it shows the relation between the departure delay and the arrival delay for flights out of JFK International Airport over a period of one year (Subset of [2015 Flight Delays and Cancellations][DEL]).
 
 |                                                              |
 | :----------------------------------------------------------: |
@@ -15,11 +15,11 @@ Neural networks are [universal function approximators][UAT]. Which means that ha
 
 
 
-**Fig. 1a** also shows the prediction of a fully trained neural network that does a good job of approximating the mean value and does provide information about the trend of the dataset. However, it does not help to answer questions like *given a departure delay, what is the maximum expected arrival in 90% of the flights?* or *given a departure delay, what is the probability that the arrival delay will be longer than X?* or even more fun, write a model that samples arrival delay values for given departure delays with the same distribution as the real thing.
+**Fig. 1a** also shows the prediction of a fully trained neural network that does a good job of approximating the mean value and does provide information about the trend of the dataset. However, it does not help to answer questions like *given a departure delay, what is the maximum expected arrival in 90% of the flights?* or *given a departure delay, what is the probability that the arrival delay will be longer than X?* or even more interesting, write a model that samples arrival delay values for given departure delays with the same distribution as the real thing.
 
-There are methods to solve this problem, however they rely on knowing beforehand what the expected distribution will be. For example using [Maximum Likelihood Estimation] [MLE].
+There are methods to solve this problem, for example, assuming the model in **Fig 1** estimates the mean, the standard deviation can be calculated and with those parameters you can produce an expected normal distribution. And if the variance is not constant, that is if the variance changes across the input space, you could use [Logistic Regression with Maximum Likelihood Estimation][MLE] which in a nutshell trains a model that predicts the parameters for a specific distribution function (for example the mean and the standard deviation in the case of the normal or gaussian distribution) at a given input. The problem is that it relies on beforehand knowledge of the dataset distribution, which might be difficult in some cases or too irregular to match a known distribution.
 
-In the case of the departure to arrival delays dataset, we can observe from the plot that the distribution appears to be similar to the normal (Gaussian) distribution, so it makes sense to build a Maximum Likelihood Estimation model trying to calculate the parameters of a normal distribution. **Fig 1b** shows a plot of a fully trained model showing the mean,  the mean plus/minus the standard deviation and the mean plus/minus twice the standard deviation. The accuracy of this model is of 2.48% which is quite good. However, the dataset's distribution is not exactly normal, you can see the the upper tail is slightly longer than the lower tail in addition to other imperfections, which is why the accuracy is not better.
+In the case of the departure to arrival delays dataset, we can observe from the plot that the distribution appears to be similar to the normal distribution, so it makes sense to build a Maximum Likelihood Estimation model trying to calculate the parameters of a normal distribution. **Fig 1b** shows a plot of a fully trained model showing the mean,  the mean plus/minus the standard deviation and the mean plus/minus twice the standard deviation. The error of this model is of 2.48% which is quite good. However, the dataset's distribution is not exactly normal, you can see the the upper tail is slightly longer than the lower tail in addition to other imperfections, which is why the accuracy is not better.
 
 |                                                              |
 | :----------------------------------------------------------: |
@@ -37,8 +37,8 @@ To do this we introduce a secondary input <img src="https://render.githubusercon
 Or put another way, we want a deterministic function that for any given input <img src="https://render.githubusercontent.com/render/math?math=x">, maps a random (but uniform) variable <img src="https://render.githubusercontent.com/render/math?math=Z"> to a dependent random variable <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">.
 
 [^1]: <img src="https://render.githubusercontent.com/render/math?math=X"> is the n-dimensional continuous domain of the target function.  
-[^2]: <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is a dependent random variable in an n-dimensional continuous space. The probability function must be continuous on <img src="https://render.githubusercontent.com/render/math?math=x">. In this article and the provided source code <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is assumed to be 1-dimensional.  
-[^3]: <img src="https://render.githubusercontent.com/render/math?math=Z"> is a uniformly distributed random variable in an n-dimensional continuous space with a predefined range, however in this article and the provided code <img src="https://render.githubusercontent.com/render/math?math=Z"> is always assumed to be 1-dimensional.
+[^2]: <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> is a dependent random variable in an n-dimensional continuous space. The probability function must be continuous on <img src="https://render.githubusercontent.com/render/math?math=x">. The method presented in this article only applies to the case where <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> to be 1-dimensional.  
+[^3]: <img src="https://render.githubusercontent.com/render/math?math=Z"> is a uniformly distributed random variable in an n-dimensional continuous space with a predefined range.
 
 
 ## Model
@@ -50,7 +50,7 @@ The proposed model to approximate <img src="https://render.githubusercontent.com
 | <img src="images\model.png" alt="model" /> |
 ### Overview
 
-At every point <img src="https://render.githubusercontent.com/render/math?math=x%20%5Cin%20X"> we want <img src="https://render.githubusercontent.com/render/math?math=f%28x%2C%20z%20%5Csim%20Z%29"> to approximate the <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> distribution to an arbitrary precision. Let's picture <img src="https://render.githubusercontent.com/render/math?math=f%28x%2C%20z%20%5Csim%20Z%29"> and <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> as 2-dimensional (in the case where <img src="https://render.githubusercontent.com/render/math?math=X"> and <img src="https://render.githubusercontent.com/render/math?math=Z"> are both 1-dimensional) pieces of fabric, they can stretch and shrink in different measures at different regions, decreasing or increasing it's density respectively. We want a mechanism that stretches and shrinks <img src="https://render.githubusercontent.com/render/math?math=f%28x%2C%20z%20%5Csim%20Z%29"> in a way that matches the shrinks and stretches in <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">.
+At every point <img src="https://render.githubusercontent.com/render/math?math=x%20%5Cin%20X"> we want our model <img src="https://render.githubusercontent.com/render/math?math=f_%7B%5Ctheta%7D%28x%2C%20z%20%5Csim%20Z%29"> to approximate the <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> distribution to an arbitrary precision. Let's picture <img src="https://render.githubusercontent.com/render/math?math=f_%7B%5Ctheta%7D%28x%2C%20z%20%5Csim%20Z%29"> and <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D"> as 2-dimensional (in the case where <img src="https://render.githubusercontent.com/render/math?math=X"> and <img src="https://render.githubusercontent.com/render/math?math=Z"> are both 1-dimensional) pieces of fabric, they can stretch and shrink in different measures at different regions, decreasing or increasing their densities respectively. We want a mechanism that stretches and shrinks <img src="https://render.githubusercontent.com/render/math?math=f_%7B%5Ctheta%7D%28x%2C%20z%20%5Csim%20Z%29"> in a way that matches the shrinks and stretches in <img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">.
 
 |                                                              |
 | :----------------------------------------------------------: |
@@ -59,13 +59,13 @@ At every point <img src="https://render.githubusercontent.com/render/math?math=x
 
 In **Fig 2** we can see how the trained model output stretches and shrinks little by little on each epoch until it matches target function.
 
-Going on with the stretching and shrinking piece of fabric analogy, we want to put "pins" into an overlaying fabric so that we can superimpose it over the underlying fabric that we are trying to match. We will put these pins into fixed points in the overlaying fabric but we will move them to different places of the underlying fabric as we train the model. At first we will pin them to random places on the underlying fabric. As we observe the position of the pins on the underlying fabric relative to the overlaying fabric we will move them slightly upwards or downwards to improve the overlaying fabric's match on the underlying fabric. Every pin will affect its surroundings in the fabric proportionally to distance from the pin.
+Going on with the stretching and shrinking piece of fabric analogy, we want to put "pins" into an overlaying fabric (<img src="https://render.githubusercontent.com/render/math?math=f_%7B%5Ctheta%7D%28x%2C%20z%20%5Csim%20Z%29">) so that we can superimpose it over the underlying fabric (<img src="https://render.githubusercontent.com/render/math?math=Y_%7Bx%7D">) that we are trying to match. We will put these pins into fixed points in the overlaying fabric but we will move them to different places of the underlying fabric as we train the model. At first we will pin them to random places on the underlying fabric. As we observe the position of the pins on the underlying fabric relative to the overlaying fabric we will move them slightly upwards or downwards to improve the overlaying fabric's match on the underlying fabric. Every pin will affect its surroundings in the fabric proportionally to distance from the pin.
 
 We'll start by putting 1 pin at a fixed position in any given longitude of the overlaying fabric and at the midpoint latitude across the fabric's height. We'll then make many observations in the underlying fabric at the same longitude, that is we will randomly pick several locations at the vertical line that goes through the selected pin location.
 
 For every observed point, we'll move the pin position on the underlying fabric (keeping the same fixed position on the overlaying fabric) a small predefined distance downwards if the observed point is below its current position, and we'll move it upwards if it is above it. This means that if there are more observed points above the pin's position in the underlying fabric the total movement will be upwards and vice versa if there are more observed points below it. If we repeat this process enough times, the pin's position in the underlying fabric will settle in a place that divides the observed points by half, that is the same amount of observed points are above it as below it.
 
-> ***Why do we move the pin a predefined distance up or down instead of a distance proportional to the observed point?***  *The reason is that we are not interested in matching the observed point. Since the target dataset is stochastic, matching a random observation is pointless. The information we get from the observed points is whether or not the pin divides them equally (or by another specific ratio)*
+> ***Why do we move the pin a predefined distance up or down instead of a distance proportional to the observed point?***  *The reason is that we are not interested in matching the observed point. Since the target dataset is stochastic, matching a random observation is pointless. The interesting information we get from the observed points is whether or not the pin divides them equally (or by another specific ratio)*
 
 |                                                              |
 | :----------------------------------------------------------: |
@@ -79,7 +79,7 @@ The pin comes to a stable position dividing all data points in half because the 
 | <img src="images\fig4.gif" alt="fig4" style="zoom:50%;" /> |
 | **Fig 4** Moving 2 pins towards observed points until they settle. |
 
-If  a pin divides the observed data points in 2 groups of sizes <img src="https://render.githubusercontent.com/render/math?math=a"> and <img src="https://render.githubusercontent.com/render/math?math=b"> and after training its fixed position settles in the underlying fabric in the <img src="https://render.githubusercontent.com/render/math?math=a/%28a%2Bb%29"> latitude from the top, we have a single point mapping between the 2 fabrics, that is at this longitude the densities above and below the pin are equal in both pieces of fabric. We can extrapolate this concept and create as many pins as we want in order to create a finer mapping between the 2 pieces of fabric.
+If a pin divides the observed data points in 2 groups of sizes <img src="https://render.githubusercontent.com/render/math?math=a"> and <img src="https://render.githubusercontent.com/render/math?math=b"> and after training its fixed position settles in the underlying fabric in the <img src="https://render.githubusercontent.com/render/math?math=a/%28a%2Bb%29"> latitude from the top, we have a single point mapping between the 2 fabrics, that is at this longitude the densities above and below the pin are equal in both pieces of fabric. We can extrapolate this concept and use as many pins as we want in order to create a finer mapping between the 2 pieces of fabric.
 
 ### Definitions
 
@@ -364,7 +364,7 @@ The next example has 2 dimensions of input. <img src="https://render.githubuserc
 
 ### California housing dataset
 
-This experiment uses real data instead of generated one which proves the model's effectivity on real data. It is the classic California housing dataset. It has information from the 1990 California census with 8 input dimensions (Median Income, House Age, etc ...).
+This experiment uses real data instead of generated one which proves the model's effectivity on real data. It is the classic [California housing dataset][CAL]. It has information from the 1990 California census with 8 input dimensions (Median Income, House Age, etc ...). Below you can see the plots of each dimension.
 
 |      |
 | ---- |
@@ -381,7 +381,7 @@ This experiment uses real data instead of generated one which proves the model's
 
 
 
-Now we can go back to the delay departure to arrivals dataset, below you can see both approaches side by side. As we saw before the MLE approach fails to capture the small imperfections obtaining a goal 1 error of 2.48% while the generic approach does a much better job with a 0.018% goal 1 error. **Fig 13b** shows how when fully trained the generic approach learns the details of the dataset better including the slightly longer upper tail.
+Now we can go back to the delay departure to arrivals dataset, below you can see the MLE approach (**Fig 13a**) and the Generic one (**Fig13b**) introduced here side by side. As we saw before the MLE approach fails to capture the small imperfections obtaining a goal 1 error of 2.48% while the generic approach does a much better job with a 0.018% goal 1 error.
 
 
 
@@ -393,10 +393,12 @@ Now we can go back to the delay departure to arrivals dataset, below you can see
 
 ## Conclusion
 
-The method presented allows to approximate stochastic data sets to an arbitrary precision. The model is simple, fast to train and can be implemented with a vanilla feedforward neural network. Its ability to approximate any distribution across an input space makes it a valuable tool for any task that requires prediction.
+The method presented allows to approximate the distributions of stochastic data sets to an arbitrary precision. The model is simple, fast to train and can be implemented with a vanilla feedforward neural network. Its ability to approximate any distribution across an input space makes it a valuable tool for any task that requires prediction.
 
 ## References
 
 [UAT]: https://en.wikipedia.org/wiki/Universal_approximation_theorem
 [EMD]: https://en.wikipedia.org/wiki/Earth_mover%27s_distance "Earth Mover's Distance"
 [DEL]: https://www.kaggle.com/usdot/flight-delays	"2015 Flight Delays and Cancellations Dataset"
+[MLE]: https://machinelearningmastery.com/logistic-regression-with-maximum-likelihood-estimation/	"Logistic regression with maximum likelihood estimation"
+[CAL]: http://lib.stat.cmu.edu/datasets/houses.zip "California Housing Dataset"
