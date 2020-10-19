@@ -83,6 +83,7 @@ class ZSamplePredsMixin:
 
 
 DEFAULT_HIDDEN_SIZE = 1024
+# DEFAULT_HIDDEN_SIZE = 256
 OUT_SIZE = 1
 
 
