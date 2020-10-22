@@ -7,7 +7,6 @@ import torch
 
 from torch import optim
 
-
 # pylint: disable=bad-continuation, not-callable
 
 # %%
@@ -18,10 +17,10 @@ class Trainer:
     """
 
     def __init__(
-        self, z_samples, movement, model, learning_rate, milestones, gamma, device,
+        self, experiment, z_samples, model, device,
     ):
-        self.z_samples = z_samples.z_samples_pt
-        self.movement = movement
+        self.z_samples = z_samples.z_samples
+        self.movement = experiment["movement"]
         self.model = model
         self.device = device
         # dimensions: (greater/smaller, z-samples, output dimensions)
@@ -30,16 +29,16 @@ class Trainer:
             dtype=torch.float64,
         ).to(device=self.device)
 
-        self.learning_rate = learning_rate
-        self.gamma = gamma
-        self.milestones = milestones
+        self.learning_rate = experiment["learning_rate"]
+        self.gamma = experiment["gamma"]
+        self.milestones = experiment["milestones"]
 
         # Create an adam optimizer.
-        self.optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        self.optimizer = optim.Adam(model.parameters(), lr=self.learning_rate)
 
         # Create a scheduler to decrease the learning rate.
         self.scheduler = optim.lr_scheduler.MultiStepLR(
-            self.optimizer, milestones=milestones, gamma=gamma,
+            self.optimizer, milestones=self.milestones, gamma=self.gamma,
         )
 
         # Create an Weighted Mean Squared Error (WMSE) loss function for the targets.
@@ -72,7 +71,9 @@ class Trainer:
         """
         # Calculate the prediction matrix using the batch data and the z-samples.
         # dimensions: (z-samples, data points, output dimensions)
-        y_predict_mat = self.model.get_z_sample_preds(x=x_pt, z_samples=self.z_samples)
+        y_predict_mat = self.model.get_z_sample_preds(
+            x_pt=x_pt, z_samples=self.z_samples
+        )
 
         # dimensions: (z-samples, data points, output dimensions)
         difference = y_pt - y_predict_mat
@@ -126,7 +127,9 @@ class Trainer:
         )
 
         # dimensions: (z-samples * data points, input dimensions)
-        x_bp = x_pt.repeat((self.z_samples.shape[0], x_pt.shape[1]))
+        repeat_shape = [1 for _ in range(len(x_pt.shape))]
+        repeat_shape[0] = self.z_samples.shape[0]
+        x_bp = x_pt.repeat(tuple(repeat_shape))
 
         # Run backpropagation with the calculated targets.
         self.backprop(x_bp=x_bp, z_samples_bp=z_samples_bp, y_bp=y_bp, w_bp=w_bp)
@@ -137,7 +140,7 @@ class Trainer:
         """
 
         # Run the forward pass.
-        y_predict = self.model.forward(x_bp, z_samples_bp)
+        y_predict = self.model.forward_z(x_bp, z_samples_bp)
 
         # Compute the loss.
         loss = self.loss_fn(y_predict, y_bp, w_bp)

@@ -157,7 +157,7 @@ def binder(func, x_space_size=1, **kwargs):
     def helper(x_np):
         return func(x_np, **kwargs)
 
-    # helper.x_space_size = x_space_size
+    helper.x_space_size = x_space_size
     helper.name = func.__name__
 
     return helper

@@ -13,54 +13,48 @@ class ZSamples:
     This class encapsulates the z-samples set.
     """
 
-    def __init__(
-        self,
-        z_samples_per_dimension,
-        z_ranges_per_dimension,
-        outer_level_scalar,
-        outer_samples,
-        device,
-    ):
+    def __init__(self, experiment, device):
+
         # Create a tensor of samples on z-space.
         # [z0, z1, ... , zS]
-        # dimensions: (z-samples mult, output dimensions)
-        if not outer_samples:
-            # Make a copy of the ranges to modify.
-            z_ranges_per_dimension_cp = np.array(z_ranges_per_dimension)
-            for z_range in z_ranges_per_dimension_cp:
-                range_size = z_range[1] - z_range[0]
-                # Shave off a percentage on each side.
-                z_range[0] += range_size / 20.0
-                z_range[1] -= range_size / 20.0
-        self._z_samples_np = sample_uniform(
-            z_ranges_per_dimension_cp, z_samples_per_dimension
-        )
-        self.z_samples_pt = to_tensor(self._z_samples_np, device)
-
+        z_ranges_per_dimension = experiment["z_ranges_per_dimension"]
         self.z_ranges_per_dimension = z_ranges_per_dimension
-        # self.z_samples_per_dimension = z_samples_per_dimension
-        self.z_dimensions = z_ranges_per_dimension.shape[0]
-        self._outer_level_scalar = outer_level_scalar
+        self.device = device
 
-        self.smaller_than_ratios = sample_uniform(
-            np.array([[0.0, 1.0] for _ in range(self.z_dimensions)]),
-            z_samples_per_dimension,
+        if "num_z_samples" in experiment:
+            z_samples = sample_uniform(
+                z_range, experiment["num_z_samples"], self.Z_SPACE_SIZE
+            )
+        else:
+            z_samples = experiment["z_samples"]
+        self.z_samples = to_tensor(z_samples, device)
+        self.z_sample_labels = experiment.get(
+            "z_sample_labels",
+            ["$z_{{{}}}$".format(i) for i in range(z_samples.shape[0])],
         )
-        self.smaller_than_ratios_pt = to_tensor(self.smaller_than_ratios, device)
+
+        self.less_than_ratios = self.calculate_ratios()
+
+        self.outer_level_scalar = experiment.get("outer_level_scalar")
 
         self.less_scalar, self.more_scalar = self.calculate_scalars()
-        # print("less_scalar", self.less_scalar)
-        # print("more_scalar", self.more_scalar)
 
-        # self.less_scalar_bias, self.more_scalar_bias = self.biased_scalars(
-        #    self.less_scalar, self.more_scalar
-        # )
+    def calculate_ratios(self):
+        min_val = self.z_range[0][0]
+        max_val = self.z_range[0][1]
+        size = max_val - min_val
+
+        return to_tensor(
+            [(z_sample - min_val) / size for z_sample in self.z_samples.squeeze()],
+            self.device,
+        )
 
     def calculate_scalars(self):
         """
         This method calculates the alpha and beta scalars for every z-sample.
         """
 
+        """
         z_samples_size = self._z_samples_np.shape[0]
         z_samples_dimensions = self._z_samples_np.shape[1]
         less_scalar = np.zeros((z_samples_size, z_samples_dimensions), dtype=float)
@@ -84,6 +78,29 @@ class ZSamples:
                 beta = 1.0 / (2.0 * b_n)
                 less_scalar[idx, dim] = alpha
                 more_scalar[idx, dim] = beta
+=======
+        z_samples_size = self.z_samples.shape[0]
+        less_scalar = np.zeros((z_samples_size,), dtype=float)
+        more_scalar = np.zeros((z_samples_size,), dtype=float)
+        min_val = self.z_range[0][0]
+        max_val = self.z_range[0][1]
+
+        for idx in range(z_samples_size):
+            a_n = self.z_samples[idx] - min_val
+            if a_n == 0.0 and self.outer_level_scalar is not None:
+                less_scalar[idx] = self.outer_level_scalar
+                more_scalar[idx] = 0.0
+                continue
+            b_n = max_val - self.z_samples[idx]
+            if b_n == 0.0 and self.outer_level_scalar is not None:
+                more_scalar[idx] = self.outer_level_scalar
+                less_scalar[idx] = 0.0
+                continue
+            alpha = 1.0 / (2.0 * a_n)
+            beta = 1.0 / (2.0 * b_n)
+            less_scalar[idx] = alpha
+            more_scalar[idx] = beta
+>>>>>>> master
 
         normalizer = 1.0 / np.max(less_scalar)
         # print("normalizer:", normalizer)
@@ -91,6 +108,7 @@ class ZSamples:
         more_scalar *= normalizer
 
         return less_scalar, more_scalar
+        """
 
     @staticmethod
     def biased_scalars(less_scalar, more_scalar):

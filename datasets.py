@@ -8,6 +8,8 @@ import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
+from sklearn.model_selection import train_test_split
+
 from utils import sample_uniform, to_tensor
 
 
@@ -41,7 +43,8 @@ class DataSets:
         y_train,
         x_test,
         y_test,
-        x_dimensions,
+        x_dimension_names,
+        y_dimension_name,
         batch_size,
         target_function_desc,
         params_desc,
@@ -52,12 +55,8 @@ class DataSets:
         """
         self.x_test = x_test
         self.y_test = y_test
-        self.x_dimensions = x_dimensions
-        # self.x_range_test = x_range_test
-
-        self.x_train = x_train
-        self.y_train = y_train
-        self.output_size = self.y_train.shape[-1]
+        self.x_dimension_names = x_dimension_names
+        self.y_dimension_name = y_dimension_name
 
         self.target_function_desc = target_function_desc
         self.params_desc = params_desc
@@ -70,18 +69,16 @@ class DataSets:
 
     @staticmethod
     def generated_dataset(
-        base_function,
-        noise_function,
-        train_size,
-        test_size,
-        x_range_train,
-        x_range_test,
-        batch_size,
-        device,
+        experiment, train_size, test_size, batch_size, device,
     ):
         """
         This named constructor builds a DataSet from a pair of base and noise functions.
         """
+        base_function = experiment["base_function"]
+        noise_function = experiment["noise_function"]
+        x_range_train = experiment["x_range_train"]
+        x_range_test = experiment["x_range_test"]
+
         target_function_desc = "{}/{}".format(base_function.name, noise_function.name)
         target_function = lambda x: base_function(x) + noise_function(x)
 
@@ -109,7 +106,8 @@ class DataSets:
             y_train,
             x_test,
             y_test,
-            [str(i) for i in range(x_range_train.shape[0])],
+            [str(i) for i in range(base_function.x_space_size)],
+            "Y",
             batch_size,
             target_function_desc,
             params_desc,
@@ -124,7 +122,6 @@ class DataSets:
         # pylint: disable=import-outside-toplevel
         import numpy as np
         from sklearn.datasets import fetch_california_housing
-        from sklearn.model_selection import train_test_split
 
         cal_housing = fetch_california_housing()
 
@@ -174,8 +171,53 @@ class DataSets:
             x_test,
             y_test,
             x_dimensions,
+            "Price",
             batch_size,
             "california housing dataset",
+            params_desc,
+            device,
+        )
+
+    @staticmethod
+    def load_csv(batch_size, device, data_file):
+        """
+        This named constructor builds a Dataset from a time series.
+        """
+        # pylint: disable=import-outside-toplevel
+        import pandas as pd
+
+        pandas_dataframe = pd.read_csv(data_file)
+
+        pandas_dataframe = pandas_dataframe.dropna(
+            how="any", subset=["DEPARTURE_DELAY", "ARRIVAL_DELAY"]
+        )
+        column = "DEPARTURE_DELAY"
+        q_hi = pandas_dataframe[column].quantile(0.95)
+
+        pandas_dataframe = pandas_dataframe[
+            (pandas_dataframe[column] < q_hi)  # & (pandas_dataframe[column] > q_low)
+        ]
+        training_set = pandas_dataframe.loc[
+            :, ["DEPARTURE_DELAY", "ARRIVAL_DELAY"]
+        ].values
+
+        x_train, x_test, y_train, y_test = train_test_split(
+            training_set[:, 0], training_set[:, 1], test_size=0.3, random_state=0,
+        )
+
+        params_desc = "train size: {}/test size: {}".format(
+            x_train.shape[0], x_test.shape[0]
+        )
+
+        return DataSets(
+            x_train[:, np.newaxis],
+            y_train[:, np.newaxis],
+            x_test[:, np.newaxis],
+            y_test[:, np.newaxis],
+            ["departure delay"],
+            "arrival delay",
+            batch_size,
+            "Flight delays",
             params_desc,
             device,
         )

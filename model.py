@@ -7,48 +7,8 @@ import torch
 import torch.nn as nn
 
 
-DEFAULT_HIDDEN_SIZE = 1024
-DEFAULT_OUT_SIZE = 1
-
-
-class StochasticFFNN(nn.Module):
-    """
-    This is the neural network model.
-    """
-
-    def __init__(self, output_size, x_space_size, device, **kwargs):
-        # Perform initialization of the pytorch superclass
-        super(StochasticFFNN, self).__init__()
-        self.device = device
-        self.hidden_size = kwargs.get("hidden_size", DEFAULT_HIDDEN_SIZE)
-        self.output_size = output_size
-
-        # Define layer types
-        self.linear1 = nn.Linear(x_space_size + output_size, self.hidden_size)
-        self.linear2 = nn.Linear(self.hidden_size, self.hidden_size)
-        self.linear3 = nn.Linear(self.hidden_size, self.hidden_size)
-        self.linear4 = nn.Linear(self.hidden_size, self.output_size)
-
-    def forward(self, x, z):
-        """
-        This method runs a forward pass through the model with the provided x and z.
-        """
-
-        x = torch.cat((x.view(x.size(0), -1), z.view(z.size(0), -1)), dim=1)
-        # x = torch.cat(x, z, dim=1) Change to this
-
-        x = self.linear1(x)
-        x = torch.nn.functional.leaky_relu(x, 0.1)
-        x = self.linear2(x)
-        x = torch.nn.functional.leaky_relu(x, 0.1)
-        x = self.linear3(x)
-        x = torch.nn.functional.leaky_relu(x, 0.1)
-
-        x = self.linear4(x)
-
-        return x
-
-    def get_z_sample_preds(self, x, z_samples):
+class ZSamplePredsMixin:
+    def get_z_sample_preds(self, x_pt, z_samples):
         """
         This method evaluates the model over every point in x once for every sample in z_samples.
         """
@@ -71,7 +31,7 @@ class StochasticFFNN(nn.Module):
             #  ...
             #  zS, -> for x datapoint n]
             # dimensions: (data points * z-samples, z-sample dimensions)
-            z_samples_ex = torch.repeat_interleave(z_samples, x.shape[0], dim=0).to(
+            z_samples_ex = torch.repeat_interleave(z_samples, x_pt.shape[0], dim=0).to(
                 device=self.device
             )
 
@@ -91,7 +51,7 @@ class StochasticFFNN(nn.Module):
             #  ...
             #  xn, -> for z sample S]
             # dimensions: (data points * z-samples, input dimensions)
-            x_ex = torch.cat(z_samples_size * [x]).to(device=self.device)
+            x_ex = torch.cat(z_samples_size * [x_pt]).to(device=self.device)
 
             # Run the model with all the elements x on every z sample.
             # [y <- x0 z0,
@@ -108,7 +68,7 @@ class StochasticFFNN(nn.Module):
             #  ...
             #  y <- xn zS]
             # dimensions: (data points * z-samples, output dimensions)
-            y_predict = self.forward(x_ex, z_samples_ex)
+            y_predict = self.forward_z(x_ex, z_samples_ex)
 
             # Create a matrix view of the results with a column for every element and a row for
             # every z sample.
@@ -118,7 +78,61 @@ class StochasticFFNN(nn.Module):
             #  [y <- x0 zS, y <- x1 zS, ..., y <- xn zS]]
             # dimensions: (z-samples, data points, output dimensions)
             y_predict_mat = y_predict.view(
-                z_samples_size, x.shape[0], y_predict.shape[1]
+                z_samples_size, x_pt.shape[0], y_predict.shape[1]
             )
 
             return y_predict_mat
+
+
+DEFAULT_HIDDEN_SIZE = 1024
+# DEFAULT_HIDDEN_SIZE = 256
+OUT_SIZE = 1
+
+
+class StochasticFFNN(nn.Module, ZSamplePredsMixin):
+    """
+    This is the neural network model.
+    """
+
+    def __init__(
+        self, z_space_size, x_space_size, device, hidden_size=DEFAULT_HIDDEN_SIZE
+    ):
+        super().__init__()
+        # Perform initialization of the pytorch superclass
+        super(StochasticFFNN, self).__init__()
+        self.device = device
+        self.hidden_size = hidden_size
+
+        # Define layer types
+        self.linear1 = nn.Linear(x_space_size + z_space_size, self.hidden_size)
+        self.linear2 = nn.Linear(self.hidden_size, self.hidden_size)
+        self.linear3 = nn.Linear(self.hidden_size, self.hidden_size)
+        self.linear4 = nn.Linear(self.hidden_size, OUT_SIZE)
+
+    def forward_z(self, x_pt, z_pt):
+        """
+        This method runs a forward pass through the model with the provided input x
+        and z-samples.
+        """
+
+        x_pt = torch.cat(
+            (x_pt.view(x_pt.size(0), -1), z_pt.view(z_pt.size(0), -1)), dim=1
+        )
+
+        return self.forward(x_pt)
+
+    def forward(self, x_pt):
+        """
+        This method runs a forward pass through the model with the provided input x.
+        """
+
+        x_pt = self.linear1(x_pt)
+        x_pt = torch.nn.functional.leaky_relu(x_pt, 0.1)
+        x_pt = self.linear2(x_pt)
+        x_pt = torch.nn.functional.leaky_relu(x_pt, 0.1)
+        x_pt = self.linear3(x_pt)
+        x_pt = torch.nn.functional.leaky_relu(x_pt, 0.1)
+
+        x_pt = self.linear4(x_pt)
+
+        return x_pt
