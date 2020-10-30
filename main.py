@@ -9,6 +9,8 @@ to aproximate it.
 
 import time
 
+import numpy as np
+
 import torch
 
 import experiments
@@ -34,10 +36,10 @@ device = torch.device("cuda")
 # If using a generated dataset.
 if "dataset_builder" not in experiment:
     # Use coprime numbers to prevent any matching points between train and test.
-    TRAIN_SIZE = 31013
+    TRAIN_SIZE = np.array([31013])
     # TRAIN_SIZE = 9611
 
-    TEST_SIZE = 5007
+    TEST_SIZE = np.array([5007])
     # TEST_SIZE = 1001
 
     datasets = DataSets.generated_dataset(
@@ -55,8 +57,8 @@ else:
 z_samples = ZSamples(experiment=experiment, device=device,)
 
 model = StochasticFFNN(
-    output_size=datasets.output_size,
-    x_space_size=len(datasets.x_dimensions),
+    z_space_size=datasets.output_size,
+    x_space_size=len(datasets.x_dimension_names),
     device=device,
     # hidden_size=1536,  # exp 6
 ).to(device=device)

@@ -17,7 +17,7 @@ EXPERIMENT_1 = {
     "outer_level_scalar": 0.2,
     "z_samples_per_dimension": np.array([13]),
     "z_ranges_per_dimension": np.array([[-10.0, 10.0]]),
-    #"num_z_samples": 13,
+    # "num_z_samples": 13,
     # tester
     "skip_epochs": 5,
     # trainer
@@ -142,12 +142,26 @@ EXPERIMENT_7 = {
     "noise_function": func.binder(func.fn_normal2d, std=10.5),
     "outer_level_scalar": 0.2,
     "skip_epochs": 5,
-    "z_samples_per_dimension": np.array([6, 6]),
-    "z_ranges_per_dimension": np.array([[-10.0, 10.0], [-5.0, 5.0]]),
+    # "z_samples_per_dimension": np.array([6, 6]),
+    "z_samples": np.array(
+        [
+            [-5.0, -5.0],
+            [-5.0, 0.0],
+            [-5.0, 5.0],
+            [0.0, -5.0],
+            [0.0, 0.0],
+            [0.0, 5.0],
+            [5.0, -5.0],
+            [5.0, 0.0],
+            [5.0, 5.0],
+        ]
+    ),
+    "z_ranges_per_dimension": np.array([[-10.0, 10.0], [-10.0, 10.0]]),
     "movement": 10.0,
     "learning_rate": 1e-2,
     "num_epochs": 621,
     "gamma": 0.85,
+    "milestones": [60, 120, 180, 240, 300, 360, 420, 480],
 }
 
 EXPERIMENT_DELAYS = {

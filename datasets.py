@@ -57,6 +57,7 @@ class DataSets:
         self.y_test = y_test
         self.x_dimension_names = x_dimension_names
         self.y_dimension_name = y_dimension_name
+        self.output_size = y_test.shape[1]
 
         self.target_function_desc = target_function_desc
         self.params_desc = params_desc
@@ -90,7 +91,7 @@ class DataSets:
             then creates an artificial dataset based on the function.
             """
             # x_np = sample_random(x_range, size, base_function.x_space_size)
-            x_np = sample_uniform(x_range, np.array([size]))
+            x_np = sample_uniform(x_range, size)
             y_np = function(x_np)
 
             return x_np, y_np

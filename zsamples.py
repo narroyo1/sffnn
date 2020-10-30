@@ -33,11 +33,11 @@ class ZSamples:
             ["$z_{{{}}}$".format(i) for i in range(z_samples.shape[0])],
         )
 
-        self.less_than_ratios = self.calculate_ratios()
+        #self.less_than_ratios = self.calculate_ratios()
 
         self.outer_level_scalar = experiment.get("outer_level_scalar")
 
-        self.less_scalar, self.more_scalar = self.calculate_scalars()
+        #self.less_scalar, self.more_scalar = self.calculate_scalars()
 
     def calculate_ratios(self):
         min_val = self.z_range[0][0]

@@ -24,10 +24,10 @@ class Trainer:
         self.model = model
         self.device = device
         # dimensions: (greater/smaller, z-samples, output dimensions)
-        self.scalars = torch.tensor(
-            np.stack((z_samples.less_scalar, z_samples.more_scalar)),
-            dtype=torch.float64,
-        ).to(device=self.device)
+        #self.scalars = torch.tensor(
+        #    np.stack((z_samples.less_scalar, z_samples.more_scalar)),
+        #    dtype=torch.float64,
+        #).to(device=self.device)
 
         self.learning_rate = experiment["learning_rate"]
         self.gamma = experiment["gamma"]
@@ -110,7 +110,7 @@ class Trainer:
         ]
         ind1 = torch.tensor(ind1, device=self.device, dtype=torch.long)
         ind3 = torch.tensor(ind3, device=self.device, dtype=torch.long)
-        w_bp = self.scalars[greater_than, ind1, ind3]
+        w_bp = 0#self.scalars[greater_than, ind1, ind3]
         w_bp *= magnitude
         # func(w_bp[7])
         # dimensions: (z-samples * data points, output dimensions)

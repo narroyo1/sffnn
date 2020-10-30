@@ -27,7 +27,7 @@ class Goal1Test:
         self.model = model
         self.z_samples = z_samples.z_samples
 
-        self.less_than_ratios = z_samples.less_than_ratios
+        #self.less_than_ratios = z_samples.less_than_ratios
 
         self.y_test = datasets.y_test
         self.x_test = datasets.x_test

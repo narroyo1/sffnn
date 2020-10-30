@@ -86,7 +86,7 @@ class ZSamplePredsMixin:
 
 DEFAULT_HIDDEN_SIZE = 1024
 # DEFAULT_HIDDEN_SIZE = 256
-OUT_SIZE = 1
+#OUT_SIZE = 1
 
 
 class StochasticFFNN(nn.Module, ZSamplePredsMixin):
@@ -107,7 +107,7 @@ class StochasticFFNN(nn.Module, ZSamplePredsMixin):
         self.linear1 = nn.Linear(x_space_size + z_space_size, self.hidden_size)
         self.linear2 = nn.Linear(self.hidden_size, self.hidden_size)
         self.linear3 = nn.Linear(self.hidden_size, self.hidden_size)
-        self.linear4 = nn.Linear(self.hidden_size, OUT_SIZE)
+        self.linear4 = nn.Linear(self.hidden_size, z_space_size)
 
     def forward_z(self, x_pt, z_pt):
         """
