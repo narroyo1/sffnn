@@ -42,6 +42,10 @@ class ZSamples:
         self.less_scalar, self.more_scalar = self.calculate_scalars()
 
     def calculate_ratios(self):
+        """
+        This method calculates the smaller than ratios array.
+        """
+
         min_val = self.z_range[0][0]
         max_val = self.z_range[0][1]
         size = max_val - min_val

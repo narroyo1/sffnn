@@ -28,7 +28,7 @@ experiment = experiments.EXPERIMENT_1
 
 BATCH_SIZE = 2048
 
-device = torch.device("cuda")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # If using a generated dataset.
 if "dataset_builder" not in experiment:
@@ -49,7 +49,6 @@ if "dataset_builder" not in experiment:
 # If using a real data dataset.
 else:
     datasets = experiment["dataset_builder"](BATCH_SIZE, device)
-# datasets.show()
 
 z_samples = ZSamples(experiment=experiment, device=device,)
 
