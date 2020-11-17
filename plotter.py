@@ -21,11 +21,14 @@ class Plotter:
     def __init__(self, datasets, z_samples, **kwargs):
         self.x_dimension_names = datasets.x_dimension_names
         self.y_dimension_name = datasets.y_dimension_name
+
         self.x_test = datasets.x_test
         self.y_test = datasets.y_test
+
         self.z_samples_size = z_samples.z_samples.shape[0]
-        self.figures = []
         self.z_sample_labels = z_samples.z_sample_labels
+
+        self.figures = []
 
         self.options = kwargs
 
@@ -40,6 +43,7 @@ class Plotter:
 
         width = 20
         height = 16 if len(self.x_dimension_names) == 1 else 8
+
         self.figures = [pyplot.figure(i) for i in range(len(self.x_dimension_names))]
         for dim, figure in enumerate(self.figures):
             figure.set_size_inches(width, height)
