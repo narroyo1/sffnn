@@ -28,7 +28,7 @@ conda activate sffn
 
 ## Usage
 ### Using VS Code
-Open `main_windowed.py` and run.
+Open `main.py` and run.
 
 ### Tensorboard visualization
 On the same directory as `main.py` run:

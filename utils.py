@@ -57,5 +57,4 @@ def to_tensor(nparray, device):
     return torch.tensor(nparray, dtype=torch.float32).to(device=device)
 
 
-
 # %%

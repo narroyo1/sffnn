@@ -1,0 +1,551 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>sffnn_uni</title><link href='https://fonts.loli.net/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext' rel='stylesheet' type='text/css' /><style type='text/css'>html {overflow-x: initial !important;}:root { --bg-color:#ffffff; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; }
+html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+body { margin: 0px; padding: 0px; height: auto; bottom: 0px; top: 0px; left: 0px; right: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
+iframe { margin: auto; }
+a.url { word-break: break-all; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; overflow-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 40px; }
+#write.first-line-indent p { text-indent: 2em; }
+#write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
+#write.first-line-indent li { margin-left: 2em; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+.typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
+.typora-export .task-list-item input { pointer-events: none; }
+@media screen and (max-width: 500px) {
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  #write { padding-left: 20px; padding-right: 20px; }
+  .CodeMirror-sizer { margin-left: 0px !important; }
+  .CodeMirror-gutters { display: none !important; }
+}
+#write li > figure:last-child { margin-bottom: 0.5rem; }
+#write ol, #write ul { position: relative; }
+img { max-width: 100%; vertical-align: middle; image-orientation: from-image; }
+button, input, select, textarea { color: inherit; font: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+*, ::after, ::before { box-sizing: border-box; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p { position: relative; }
+p { line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 4; }
+p { orphans: 4; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+.md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p { margin-top: 1rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
+a { cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
+figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
+figure > table { margin: 0px; }
+tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 32px; }
+.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
+.CodeMirror-linenumber { user-select: none; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+#write pre { white-space: pre-wrap; }
+#write.fences-no-line-wrapping pre { white-space: pre; }
+#write pre.ty-contain-cm { white-space: normal; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-diagram-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+#write .md-fences.mock-cm { white-space: pre-wrap; }
+.md-fences.md-fences-with-lineno { padding-left: 0px; }
+#write.fences-no-line-wrapping .md-fences.mock-cm { white-space: pre; overflow-x: auto; }
+.md-fences.mock-cm.md-fences-with-lineno { padding-left: 8px; }
+.CodeMirror-line, twitterwidget { break-inside: avoid; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
+.footnotes + .footnotes { margin-top: 0px; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li .mathjax-block, li p { margin: 0.5rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child, li > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
+#write .footnote-line { white-space: pre-wrap; }
+@media print {
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; font-variant-ligatures: no-common-ligatures; }
+  #write { margin-top: 0px; padding-top: 0px; border-color: transparent !important; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  html.blink-to-pdf { font-size: 13px; }
+  .typora-export #write { break-after: avoid; }
+  .typora-export #write::after { height: 0px; }
+  .is-mac table { break-inside: avoid; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+#write.first-line-indent p > .md-image:only-child:not(.md-img-error) img { left: -2em; position: relative; }
+p > .md-image:only-child { display: inline-block; width: 100%; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.md-math-block { width: 100%; }
+.md-math-block:not(:empty)::after { display: none; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus, [contenteditable="false"]:active, [contenteditable="false"]:focus { outline: 0px; box-shadow: none; }
+.md-task-list-item { position: relative; list-style-type: none; }
+.task-list-item.md-task-list-item { padding-left: 0px; }
+.md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc-content::after, .md-toc::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); }
+.md-toc-item a { text-decoration: none; }
+.md-toc-inner:hover { text-decoration: underline; }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: 700; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) {
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.md-attr { display: none; }
+.md-fn-count::after { content: "."; }
+code, pre, samp, tt { font-family: var(--monospace); }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.8; font-family: var(--monospace); }
+code { text-align: left; vertical-align: initial; }
+a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+.md-inline-math .MathJax_SVG .noError { display: none !important; }
+.html-for-mac .inline-math-svg .MathJax_SVG { vertical-align: 0.2px; }
+.md-math-block .MathJax_SVG_Display { text-align: center; margin: 0px; position: relative; text-indent: 0px; max-width: none; max-height: none; min-height: 0px; min-width: 100%; width: auto; overflow-y: hidden; display: block !important; }
+.MathJax_SVG_Display, .md-inline-math .MathJax_SVG_Display { width: auto; margin: inherit; display: inline-block !important; }
+.MathJax_SVG .MJX-monospace { font-family: var(--monospace); }
+.MathJax_SVG .MJX-sans-serif { font-family: sans-serif; }
+.MathJax_SVG { display: inline; font-style: normal; font-weight: 400; line-height: normal; zoom: 90%; text-indent: 0px; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; overflow-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0px; min-height: 0px; border: 0px; padding: 0px; margin: 0px; }
+.MathJax_SVG * { transition: none 0s ease 0s; }
+.MathJax_SVG_Display svg { vertical-align: middle !important; margin-bottom: 0px !important; margin-top: 0px !important; }
+.os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
+.md-diagram-panel > svg { max-width: 100%; }
+[lang="flow"] svg, [lang="mermaid"] svg { max-width: 100%; height: auto; }
+[lang="mermaid"] .node text { font-size: 1rem; }
+table tr th { border-bottom: 0px; }
+video { max-width: 100%; display: block; margin: 0px auto; }
+iframe { max-width: 100%; width: 100%; border: none; }
+.highlight td, .highlight tr { border: 0px; }
+svg[id^="mermaidChart"] { line-height: 1em; }
+mark { background: rgb(255, 255, 0); color: rgb(0, 0, 0); }
+.md-html-inline .md-plain, .md-html-inline strong, mark .md-inline-math, mark strong { color: inherit; }
+mark .md-meta { color: rgb(0, 0, 0); opacity: 0.3 !important; }
+@media print {
+  .typora-export h1, .typora-export h2, .typora-export h3, .typora-export h4, .typora-export h5, .typora-export h6 { break-inside: avoid; }
+}
+
+
+:root {
+    --side-bar-bg-color: #fafafa;
+    --control-text-color: #777;
+}
+
+@include-when-export url(https://fonts.loli.net/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext);
+
+/* open-sans-regular - latin-ext_latin */
+  /* open-sans-italic - latin-ext_latin */
+    /* open-sans-700 - latin-ext_latin */
+    /* open-sans-700italic - latin-ext_latin */
+  html {
+    font-size: 16px;
+}
+
+body {
+    font-family: "Open Sans","Clear Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: rgb(51, 51, 51);
+    line-height: 1.6;
+}
+
+#write {
+    max-width: 860px;
+  	margin: 0 auto;
+  	padding: 30px;
+    padding-bottom: 100px;
+}
+
+@media only screen and (min-width: 1400px) {
+	#write {
+		max-width: 1024px;
+	}
+}
+
+@media only screen and (min-width: 1800px) {
+	#write {
+		max-width: 1200px;
+	}
+}
+
+#write > ul:first-child,
+#write > ol:first-child{
+    margin-top: 30px;
+}
+
+a {
+    color: #4183C4;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    line-height: 1.4;
+    cursor: text;
+}
+h1:hover a.anchor,
+h2:hover a.anchor,
+h3:hover a.anchor,
+h4:hover a.anchor,
+h5:hover a.anchor,
+h6:hover a.anchor {
+    text-decoration: none;
+}
+h1 tt,
+h1 code {
+    font-size: inherit;
+}
+h2 tt,
+h2 code {
+    font-size: inherit;
+}
+h3 tt,
+h3 code {
+    font-size: inherit;
+}
+h4 tt,
+h4 code {
+    font-size: inherit;
+}
+h5 tt,
+h5 code {
+    font-size: inherit;
+}
+h6 tt,
+h6 code {
+    font-size: inherit;
+}
+h1 {
+    font-size: 2.25em;
+    line-height: 1.2;
+    border-bottom: 1px solid #eee;
+}
+h2 {
+    font-size: 1.75em;
+    line-height: 1.225;
+    border-bottom: 1px solid #eee;
+}
+
+/*@media print {
+    .typora-export h1,
+    .typora-export h2 {
+        border-bottom: none;
+        padding-bottom: initial;
+    }
+
+    .typora-export h1::after,
+    .typora-export h2::after {
+        content: "";
+        display: block;
+        height: 100px;
+        margin-top: -96px;
+        border-top: 1px solid #eee;
+    }
+}*/
+
+h3 {
+    font-size: 1.5em;
+    line-height: 1.43;
+}
+h4 {
+    font-size: 1.25em;
+}
+h5 {
+    font-size: 1em;
+}
+h6 {
+   font-size: 1em;
+    color: #777;
+}
+p,
+blockquote,
+ul,
+ol,
+dl,
+table{
+    margin: 0.8em 0;
+}
+li>ol,
+li>ul {
+    margin: 0 0;
+}
+hr {
+    height: 2px;
+    padding: 0;
+    margin: 16px 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+}
+
+li p.first {
+    display: inline-block;
+}
+ul,
+ol {
+    padding-left: 30px;
+}
+ul:first-child,
+ol:first-child {
+    margin-top: 0;
+}
+ul:last-child,
+ol:last-child {
+    margin-bottom: 0;
+}
+blockquote {
+    border-left: 4px solid #dfe2e5;
+    padding: 0 15px;
+    color: #777777;
+}
+blockquote blockquote {
+    padding-right: 0;
+}
+table {
+    padding: 0;
+    word-break: initial;
+}
+table tr {
+    border-top: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 0;
+}
+table tr:nth-child(2n),
+thead {
+    background-color: #f8f8f8;
+}
+table tr th {
+    font-weight: bold;
+    border: 1px solid #dfe2e5;
+    border-bottom: 0;
+    margin: 0;
+    padding: 6px 13px;
+}
+table tr td {
+    border: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 6px 13px;
+}
+table tr th:first-child,
+table tr td:first-child {
+    margin-top: 0;
+}
+table tr th:last-child,
+table tr td:last-child {
+    margin-bottom: 0;
+}
+
+.CodeMirror-lines {
+    padding-left: 4px;
+}
+
+.code-tooltip {
+    box-shadow: 0 1px 1px 0 rgba(0,28,36,.3);
+    border-top: 1px solid #eef2f2;
+}
+
+.md-fences,
+code,
+tt {
+    border: 1px solid #e7eaed;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    padding: 0;
+    padding: 2px 4px 0px 4px;
+    font-size: 0.9em;
+}
+
+code {
+    background-color: #f3f4f4;
+    padding: 0 2px 0 2px;
+}
+
+.md-fences {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    padding-top: 8px;
+    padding-bottom: 6px;
+}
+
+
+.md-task-list-item > input {
+  margin-left: -1.3em;
+}
+
+@media print {
+    html {
+        font-size: 13px;
+    }
+    table,
+    pre {
+        page-break-inside: avoid;
+    }
+    pre {
+        word-wrap: break-word;
+    }
+}
+
+.md-fences {
+	background-color: #f8f8f8;
+}
+#write pre.md-meta-block {
+	padding: 1rem;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f7f7f7;
+    border: 0;
+    border-radius: 3px;
+    color: #777777;
+    margin-top: 0 !important;
+}
+
+.mathjax-block>.code-tooltip {
+	bottom: .375rem;
+}
+
+.md-mathjax-midline {
+    background: #fafafa;
+}
+
+#write>h3.md-focus:before{
+	left: -1.5625rem;
+	top: .375rem;
+}
+#write>h4.md-focus:before{
+	left: -1.5625rem;
+	top: .285714286rem;
+}
+#write>h5.md-focus:before{
+	left: -1.5625rem;
+	top: .285714286rem;
+}
+#write>h6.md-focus:before{
+	left: -1.5625rem;
+	top: .285714286rem;
+}
+.md-image>.md-meta {
+    /*border: 1px solid #ddd;*/
+    border-radius: 3px;
+    padding: 2px 0px 0px 4px;
+    font-size: 0.9em;
+    color: inherit;
+}
+
+.md-tag {
+    color: #a7a7a7;
+    opacity: 1;
+}
+
+.md-toc { 
+    margin-top:20px;
+    padding-bottom:20px;
+}
+
+.sidebar-tabs {
+    border-bottom: none;
+}
+
+#typora-quick-open {
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+}
+
+#typora-quick-open-item {
+    background-color: #FAFAFA;
+    border-color: #FEFEFE #e5e5e5 #e5e5e5 #eee;
+    border-style: solid;
+    border-width: 1px;
+}
+
+/** focus mode */
+.on-focus-mode blockquote {
+    border-left-color: rgba(85, 85, 85, 0.12);
+}
+
+header, .context-menu, .megamenu-content, footer{
+    font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+.file-node-content:hover .file-node-icon,
+.file-node-content:hover .file-node-open-state{
+    visibility: visible;
+}
+
+.mac-seamless-mode #typora-sidebar {
+    background-color: #fafafa;
+    background-color: var(--side-bar-bg-color);
+}
+
+.md-lang {
+    color: #b4654d;
+}
+
+.html-for-mac .context-menu {
+    --item-hover-bg-color: #E6F0FE;
+}
+
+#md-notification .btn {
+    border: 0;
+}
+
+.dropdown-menu .divider {
+    border-color: #e5e5e5;
+}
+
+.ty-preferences .window-content {
+    background-color: #fafafa;
+}
+
+.ty-preferences .nav-group-item.active {
+    color: white;
+    background: #999;
+}
+
+
+</style>
+</head>
+<body class='typora-export os-windows'>
+<div id='write'  class=''><h1><a name="a-generic-approach-for-training-probabilistic-machine-learning-models" class="md-header-anchor"></a><span>A generic approach for training probabilistic machine learning models</span></h1><h6><a name="nicolas-arroyo-nicolasarroyodurangmailcom" class="md-header-anchor"></a><span>Nicolas Arroyo </span><a href='mailto:nicolas.arroyo.duran@gmail.com' target='_blank' class='url'>nicolas.arroyo.duran@gmail.com</a></h6><p>&nbsp;</p><h2><a name="introduction" class="md-header-anchor"></a><span>Introduction</span></h2><p><span>Neural networks are </span><a href='https://en.wikipedia.org/wiki/Universal_approximation_theorem' target='_blank'><span>universal function approximators</span></a><span>. Which means that having enough hidden neurons a neural network can be used to approximate any continuous function. Real world data, however, often has noise that in some cases makes producing a single deterministic value prediction insufficient. Take for example the dataset in </span><strong><span>Fig. 1a</span></strong><span>, it shows the relation between the departure delay and the arrival delay for flights out of JFK International Airport over a period of one year (Subset of </span><a href='https://www.kaggle.com/usdot/flight-delays' target='_blank' title='2015 Flight Delays and Cancellations Dataset'><span>2015 Flight Delays and Cancellations</span></a><span>).</span></p><figure><table><thead><tr><th style='text-align:center;' >&nbsp;</th></tr></thead><tbody><tr><td style='text-align:center;' ><img src="images\fig1a.png" alt="fig1a" style="zoom:100%;" /></td></tr><tr><td style='text-align:center;' ><strong><span>Fig. 1a</span></strong><span> Departure to arrival delays from JFK</span></td></tr></tbody></table></figure><p>&nbsp;</p><p><strong><span>Fig. 1a</span></strong><span> also shows the prediction of a fully trained neural network that does a good job of approximating the mean value and does provide information about the trend of the dataset. However, it does not help answer questions like </span><em><span>given a departure delay, what is the maximum expected arrival in X% of the flights?</span></em><span> or </span><em><span>given a departure delay, what is the probability that the arrival delay will be longer than Y?</span></em><span> or even more interesting, write a model that samples arrival delay values for given departure delays with the same distribution as the real thing.</span></p><p><span>There are methods to solve this problem, for example, assuming the model in </span><strong><span>Fig 1a</span></strong><span> estimates the mean, the standard deviation for the entire data set can be calculated and with those parameters you can produce the expected normal distribution. And if the variance is not constant, that is if the variance changes across the input space, you could use </span><a href='https://machinelearningmastery.com/logistic-regression-with-maximum-likelihood-estimation/' target='_blank' title='Logistic regression with maximum likelihood estimation'><span>Logistic Regression with Maximum Likelihood Estimation</span></a><span> which in a nutshell trains a model that predicts the parameters for a specific distribution function (for example the mean and the standard deviation of the normal or gaussian distribution) at a given input. The problem is that it relies on beforehand knowledge of the dataset distribution, which might be difficult in some cases or too irregular to match a known distribution.</span></p><p><span>In the case of the departure to arrival delays dataset, we can observe from the plot that the distribution appears to be similar to the normal distribution, so it makes sense to build a Maximum Likelihood Estimation model trying to calculate the parameters of a normal distribution. </span><strong><span>Fig 1b</span></strong><span> shows a plot of a fully trained model showing the mean,  the mean plus/minus the standard deviation and the mean plus/minus twice the standard deviation. The error of this model is of 2.48% which is quite good. However, the dataset&#39;s distribution is not perfectly normal, you can see that the upper tail is slightly longer than the lower tail in addition to other imperfections, which is why the accuracy is not better.</span></p><figure><table><thead><tr><th style='text-align:center;' >&nbsp;</th></tr></thead><tbody><tr><td style='text-align:center;' ><img src="images\fig1b.png" alt="fig1b" style="zoom:100%;" /></td></tr><tr><td style='text-align:center;' ><strong><span>Fig. 1b</span></strong><span> Departure to arrival delays from JFK and probabilistic model</span></td></tr></tbody></table></figure><p><span>This article presents a generic approach to training probabilistic machine learning models that will produce distributions that adapt to the real data with any distribution it may have, even branching distributions or distributions that change form across the input space.</span></p><h2><a name="the-method" class="md-header-anchor"></a><span>The method</span></h2><p><span>Given that the function producing the data has a specific distribution </span><strong><em><span>Y</span></em></strong><span> at input </span><strong><em><span>x ∈ X</span></em></strong><span> </span><sup class='md-footnote'><a href='#dfref-footnote-1' name='ref-footnote-1'>1</a></sup><span> we can define the target function, or the function we actually want to approximate, as </span><strong><em><span>y ∼ Yₓ</span></em></strong><span>. We want to create an algorithm capable of sampling an arbitrary number of data points from </span><strong><em><span>Yₓ</span></em></strong><span> </span><sup class='md-footnote'><a href='#dfref-footnote-2' name='ref-footnote-2'>2</a></sup><span> for any given </span><strong><em><span>x ∈ X</span></em></strong><span>.</span></p><p><span>To do this we introduce a secondary input </span><strong><em><span>z</span></em></strong><span> that can be sampled from a uniformly distributed space </span><strong><em><span>Z</span></em></strong><span> </span><sup class='md-footnote'><a href='#dfref-footnote-3' name='ref-footnote-3'>3</a></sup><span> by the algorithm and fed to a deterministic function </span><strong><em><span>f</span></em></strong><span> such that </span><strong><em><span>P(Z &lt; z) = P(Yₓ &lt;= f(x, z))</span></em></strong><span>.</span></p><p><span>Or put another way, we want a deterministic function that for any given input </span><strong><em><span>x</span></em></strong><span>, maps a random (but uniform) variable </span><strong><em><span>Z</span></em></strong><span> to a dependent random variable </span><strong><em><span>Yₓ</span></em></strong><span>.</span></p><h2><a name="model" class="md-header-anchor"></a><span>Model</span></h2><p><span>The proposed model to approximate </span><strong><em><span>Yₓ</span></em></strong><span> is an ordinary feed forward neural network that in addition to an input </span><strong><em><span>x</span></em></strong><span> takes an input </span><strong><em><span>z</span></em></strong><span> that can be sampled from </span><strong><em><span>Z</span></em></strong><span>.</span></p><figure><table><thead><tr><th style='text-align:center;' >&nbsp;</th></tr></thead><tbody><tr><td style='text-align:center;' ><img src="images\model.png" alt="model" /></td></tr></tbody></table></figure><h3><a name="overview" class="md-header-anchor"></a><span>Overview</span></h3><p><span>At every point </span><strong><em><span>x ∈ X</span></em></strong><span> we want our model </span><strong><em><span>f(x, z ∼ Z)</span></em></strong><span> to approximate the </span><strong><em><span>Yₓ</span></em></strong><span> distribution to an arbitrary precision. Let&#39;s picture </span><strong><em><span>f(x, z ∼ Z)</span></em></strong><span> and </span><strong><em><span>Yₓ</span></em></strong><span> as 2-dimensional (in the case where </span><strong><em><span>X</span></em></strong><span> and </span><strong><em><span>Z</span></em></strong><span> are both 1-dimensional) pieces of fabric, they can stretch and shrink in different measures at different regions, decreasing or increasing their densities respectively. We want a mechanism that stretches and shrinks </span><strong><em><span>f(x, z ∼ Z)</span></em></strong><span> in a way that matches the shrinks and stretches in </span><strong><em><span>Yₓ</span></em></strong><span>.</span></p><figure><table><thead><tr><th style='text-align:center;' >&nbsp;</th></tr></thead><tbody><tr><td style='text-align:center;' ><img src="images\fig_x2_uniform.gif" alt="const_uniform" style="zoom:66%;" /></td></tr><tr><td style='text-align:center;' ><strong><span>Fig 2</span></strong><span> An animation of the training to match </span><strong><em><span>x²</span></em></strong><span> with added uniform noise.</span></td></tr></tbody></table></figure><p><span>In </span><strong><span>Fig 2</span></strong><span> we can see how the trained model output stretches and shrinks little by little on each epoch until it matches target function.</span></p><p><span>Going on with the stretching and shrinking piece of fabric analogy, we want to put &quot;pins&quot; into an overlaying fabric (our model) so that we can superimpose it over the underlying fabric (the target data set) that we are trying to match. We will put these pins into fixed points in the overlaying fabric but we will move them to different places of the underlying fabric as we train the model. At first we will pin them to random places on the underlying fabric. As we observe the position of the pins on the underlying fabric relative to the overlaying fabric we will move them slightly upwards or downwards to improve the overlaying fabric&#39;s match on the underlying fabric. Every pin will affect its surroundings in the fabric proportionally to distance from the pin.</span></p><p><span>We&#39;ll start by putting 1 pin at a fixed position in any given longitude of the overlaying fabric and at the midpoint latitude across the fabric&#39;s height. We&#39;ll then make many observations in the underlying fabric at the same longitude, that is we will randomly pick several locations at the vertical line that goes through the selected pin location.</span></p><p><span>For every observed point, we&#39;ll move the pin position on the underlying fabric (keeping the same fixed position on the overlaying fabric) a small predefined distance downwards if the observed point is below its current position, and we&#39;ll move it upwards if it is above it. This means that if there are more observed points above the pin&#39;s position in the underlying fabric the total movement will be upwards and vice versa if there are more observed points below it. If we repeat this process enough times, the pin&#39;s position in the underlying fabric will settle in a place that divides the observed points by half, that is the same amount of observed points are above it as below it.</span></p><blockquote><p><strong><em><span>Why do we move the pin a predefined distance up or down instead of a distance proportional to the observed point?</span></em></strong><span>  </span><em><span>The reason is that we are not interested in matching the observed point. Since the target dataset is stochastic, matching a random observation is pointless. The interesting information we get from the observed points is whether or not the pin divides them by half (or by another specific ratio)</span></em></p></blockquote><figure><table><thead><tr><th style='text-align:center;' >&nbsp;</th></tr></thead><tbody><tr><td style='text-align:center;' ><img src="images\fig3.gif" alt="fig3" style="zoom:50%;" /></td></tr><tr><td style='text-align:center;' ><strong><span>Fig 3</span></strong><span> Moving 1 pin towards observed points until it settles.</span></td></tr></tbody></table></figure><p><strong><span>Fig 3</span></strong><span> shows how the pin comes to a stable position dividing all data points in half because the amount of movement for every observation is equal for data points above and data points below. If the predefined distance of movement for observations above is different from the predefined distance of movement for observations below then the pin would settle in a position dividing the data points by a different ratio (different than half). For example, let&#39;s try having 2 pins instead of 1, the first one will move 1 distance for observations above it and 0.5 distance for observations below, the second one will do the opposite. After enough iterations the first one should settle at a position that divides the data points by </span><strong><em><span>1/3</span></em></strong><span> above and </span><strong><em><span>2/3</span></em></strong><span> below while the second pin will divide by </span><strong><em><span>2/3</span></em></strong><span> above and </span><strong><em><span>1/3</span></em></strong><span> below. This means we&#39;ll have </span><strong><em><span>1/3</span></em></strong><span> above the first pin, </span><strong><em><span>1/3</span></em></strong><span> between both pins and </span><strong><em><span>1/3</span></em></strong><span> below the second pin like </span><strong><span>Fig 4</span></strong><span> shows.</span></p><figure><table><thead><tr><th style='text-align:center;' >&nbsp;</th></tr></thead><tbody><tr><td style='text-align:center;' ><img src="images\fig4.gif" alt="fig4" style="zoom:50%;" /></td></tr><tr><td style='text-align:center;' ><strong><span>Fig 4</span></strong><span> Moving 2 pins towards observed points until they settle.</span></td></tr></tbody></table></figure><p><span>If a pin divides the observed data points in 2 groups of sizes </span><strong><em><span>a</span></em></strong><span> and </span><strong><em><span>b</span></em></strong><span> and after training its fixed position settles in the underlying fabric in the </span><strong><em><span>a/(a+b)</span></em></strong><span> latitude from the top, we have a single point mapping between the 2 fabrics, that is at this longitude the densities above and below the pin are equal in both pieces of fabric. We can extrapolate this concept and use as many pins as we want in order to create a finer mapping between the 2 pieces of fabric.</span></p><h3><a name="definitions" class="md-header-anchor"></a><span>Definitions</span></h3><p><span>We&#39;ll start by selecting a fixed set of points in </span><strong><em><span>Z</span></em></strong><span>  of size </span><strong><em><span>S</span></em></strong><span> that we will call </span><strong><em><span>z-samples</span></em></strong><span>. We can define this set as:</span></p><p><span>&lt;&lt;&lt; Insert image 1 &gt;&gt;&gt;</span></p><p><span>The predictive model will be defined as:</span></p><p><span>&lt;&lt;&lt; Insert image 2 &gt;&gt;&gt;</span></p><p><span>Here </span><strong><em><span>x</span></em></strong><span> will be any input tuple from the input domain, </span><strong><em><span>z</span></em></strong><span> will be a sample from uniform random variable </span><strong><em><span>Z</span></em></strong><span> and </span><strong><em><span>θ</span></em></strong><span> is the internal state of the model, or the weight matrix.</span></p><p><span>Then we define the prediction error for any input </span><strong><em><span>x</span></em></strong><span> for a specific </span><strong><em><span>z ∈ Z</span></em></strong><span> as:</span></p><p><span>&lt;&lt;&lt; Insert image 3 &gt;&gt;&gt;</span></p><p><span>That is, the difference between the real data cumulative probability distribution and the predicted cumulative probability distribution.</span></p><p><span>Now we can define our training goals as:</span></p><h6><a name="goal-1" class="md-header-anchor"></a><span>Goal 1</span></h6><p><span>&lt;&lt;&lt; Insert image 4 &gt;&gt;&gt;</span></p><p><span>In other words, we want that for every </span><strong><em><span>z&#39;</span></em></strong><span> in </span><strong><em><span>zₛₐₘₚₗₑₛ</span></em></strong><span> and across the entire </span><strong><em><span>X</span></em></strong><span> input space the absolute error </span><strong><em><span>|E(z&#39;)|</span></em></strong><span> is minimized. This first goal gives us an approximate discrete finite mapping between the </span><strong><em><span>z-samples</span></em></strong><span> set and </span><strong><em><span>Yₓ</span></em></strong><span>. Even if it doesn&#39;t say anything about all the points </span><strong><em><span>ẑ</span></em></strong><span> in </span><strong><em><span>Z</span></em></strong><span> that are not in </span><strong><em><span>zₛₐₘₚₗₑₛ</span></em></strong><span>.</span></p><h6><a name="goal-2" class="md-header-anchor"></a><span>Goal 2</span></h6><p><span>&lt;&lt;&lt; Insert image 5 &gt;&gt;&gt;</span></p><p><span>This second goal gives us that for any given </span><strong><em><span>x</span></em></strong><span> in </span><strong><em><span>X</span></em></strong><span>, </span><strong><em><span>f</span></em></strong><span> is a monotonically increasing function in </span><strong><em><span>Z</span></em></strong><span>.</span></p><p><span>Both of these goals will be tested empirically during the testing step of the training algorithm.</span></p><h3><a name="model-accuracy" class="md-header-anchor"></a><span>Model accuracy</span></h3><p><span>For any point </span><strong><em><span>z ∼ Z</span></em></strong><span> and with </span><strong><em><span>z&#39;</span></em></strong><span> and </span><strong><em><span>z&#39;&#39;</span></em></strong><span> being the </span><strong><em><span>z-samples</span></em></strong><span> that are immediately smaller and greater respectively, and assuming </span><a href='#goal-2'><span>Goal 2</span></a><span>  is met we have:</span></p><p><span>&lt;&lt;&lt; Insert image 6 &gt;&gt;&gt;</span></p><p><span>and replacing the prediction error we have:</span></p><p><span>&lt;&lt;&lt; Insert image 7 &gt;&gt;&gt;</span></p><p><span>And if we substract </span><strong><em><span>P(Z &lt;= z)</span></em></strong><span> from every term we have:</span></p><p><span>&lt;&lt;&lt; Insert image 8 &gt;&gt;&gt;</span></p><p><span>What this means is that for any point </span><strong><em><span>z ∼ Z</span></em></strong><span> the prediction error error </span><strong><em><span>E(z)</span></em></strong><span> is lower bounded by </span><strong><em><span>P(Z &lt;= z&#39;) - P(Z &lt;= z) + E(z&#39;)</span></em></strong><span> and upper bounded by </span><strong><em><span>P(Z &lt;= z&#39;&#39;) - P(Z &lt;= z) + E(z&#39;&#39;)</span></em></strong><span>.</span></p><p><span>Assuming </span><a href='#goal-1'><span>Goal 1</span></a><span> is met we know that </span><strong><em><span>E(z&#39;)</span></em></strong><span> and </span><strong><em><span>E(z&#39;&#39;)</span></em></strong><span> are small numbers which leaves </span><strong><em><span>P(Z &lt;= z&#39;) - P(Z &lt;= z)</span></em></strong><span> and </span><strong><em><span>P(Z &lt;= z&#39;&#39;) - P(Z &lt;= z)</span></em></strong><span> as the dominant factors. The distance between any </span><strong><em><span>z</span></em></strong><span> and its neighboring </span><strong><span>z-samples</span></strong><span> can be minimized by increasing the number of </span><strong><em><span>z-samples</span></em></strong><span> or </span><strong><em><span>S</span></em></strong><span>. In other words the maximum error of </span><strong><em><span>f</span></em></strong><span> can be arbitrarily minimized by a sufficiently large </span><strong><em><span>S</span></em></strong><span>.</span></p><h3><a name="calculating-the-movement-scalars" class="md-header-anchor"></a><span>Calculating the movement scalars</span></h3><p><span>Having defined our goals and what will they buy us, we move to show how we will achieve </span><a href='#goal-1'><span>Goal 1</span></a><span>. For simplicity we will use a </span><strong><em><span>z-samples</span></em></strong><span> set that is evenly distributed in </span><strong><em><span>Z</span></em></strong><span>, that is: </span><strong><em><span>{</span><span>z[0], z[1], ... , z[S-1]</span><span>}</span><span> ∈ Z s.t. z[0] &lt; z[1], ... , &lt; z[S] ∧ P(z[0] &lt; Z &lt; z[1]) = P(z[1] &lt; Z &lt; z[2]) = ... = P(z[s-1] &lt; Z &lt; z[s])</span></em></strong><span>.</span></p><p><span>For any given </span><strong><em><span>x</span></em></strong><span> in </span><strong><em><span>X</span></em></strong><span> and any </span><strong><em><span>z&#39;</span></em></strong><span> in </span><strong><em><span>zₛₐₘₚₗₑₛ</span></em></strong><span> we want </span><strong><em><span>f</span></em></strong><span> to satisfy </span><strong><em><span>P(Yₓ &lt;= f(x, z&#39;)) = P(Z &lt;= z&#39;)</span></em></strong><span>. For this purpose we&#39;ll assume that we count with a sufficiently representative set of samples in </span><strong><em><span>Yₓ</span></em></strong><span> or </span><strong><em><span>yₜᵣₐᵢₙ ∼ Yₓ</span></em></strong><span>.</span></p><p><span>For a given </span><strong><em><span>x ∈ X</span></em></strong><span> and having </span><strong><em><span>z&#39;</span></em></strong><span> as the midpoint in </span><strong><em><span>Z</span></em></strong><span> (i.e. </span><strong><em><span>z&#39; ∈ Z s.t. Pr(z&#39; &lt;= Z) = 0.5</span></em></strong><span>) we could simply train </span><strong><em><span>f</span></em></strong><span> to change the value of </span><strong><em><span>f(x, z&#39;)</span></em></strong><span> a constant movement number </span><strong><em><span>M</span></em></strong><span> greater for every training example </span><strong><em><span>y ∈ yₜᵣₐᵢₙ</span></em></strong><span> that was greater than </span><strong><em><span>f(x, z&#39;)</span></em></strong><span> itself and the same constant number smaller for every training example that was smaller (remember the 2 pieces of fabric and the pins analogy). This would cause after enough iterations for the value of </span><strong><em><span>f(x,z&#39;)</span></em></strong><span> to settle in a position that divides in half all training examples when the total movement equals 0.</span></p><p><span>If instead of being </span><strong><em><span>Z</span></em></strong><span>&#39;s midpoint </span><strong><em><span>P(Z &lt;= z&#39;) ≠ 0.5</span></em></strong><span> then the constant numbers of movement for greater and smaller samples have to be different.</span></p><p><span>Let&#39;s say that </span><strong><em><span>a</span></em></strong><span> is the distance between </span><strong><em><span>z&#39;</span></em></strong><span> and the smallest number in </span><strong><em><span>Z</span></em></strong><span> or </span><strong><em><span>Zₘᵢₙ</span></em></strong><span>, and </span><strong><em><span>b</span></em></strong><span> the distance between </span><strong><em><span>z&#39;</span></em></strong><span> and </span><strong><em><span>Zₘₐₓ</span></em></strong><span>.</span></p><p><span>&lt;&lt;&lt; Insert image 9 &gt;&gt;&gt;</span></p><p>&nbsp;</p><p><span>Since </span><strong><em><span>a</span></em></strong><span> represents the amount of training examples we hope to find smaller than </span><strong><em><span>z&#39;</span></em></strong><span> and </span><strong><em><span>b</span></em></strong><span> the amount of training examples greater than </span><strong><em><span>z&#39;</span></em></strong><span> we need 2 scalars </span><strong><em><span>α</span></em></strong><span> and </span><strong><em><span>β</span></em></strong><span> to satisfy the following equations:</span></p><p><span>&lt;&lt;&lt; Insert image 10 &gt;&gt;&gt;</span></p><p><span>These movement scalars will be the multipliers to be used with the constant movement </span><strong><em><span>M</span></em></strong><span> on every observed point smaller and greater than </span><strong><em><span>z&#39;</span></em></strong><span> respectively. This first equation assures that the total movement when </span><strong><em><span>z&#39;</span></em></strong><span> is situated at </span><strong><em><span>Zₘᵢₙ + a</span></em></strong><span> or </span><strong><em><span>Zₘₐₓ - b</span></em></strong><span> will be 0.</span></p><p><span>&lt;&lt;&lt; Insert image 11 &gt;&gt;&gt;</span></p><p><span>This second equation normalizes the scalars so that the total movement for all </span><strong><em><span>z</span></em></strong><span> in </span><strong><em><span>zₛₐₘₚₗₑₛ</span></em></strong><span> have the same total movement.</span></p><p><span>Which gives us:</span></p><p><span>&lt;&lt;&lt; Insert image 12 &gt;&gt;&gt;</span></p><p><span>This logic however, breaks at the edges, that is when a </span><em><span>z-sample</span></em><span> is equal to </span><strong><em><span>Zₘᵢₙ</span></em></strong><span> or </span><strong><em><span>Zₘₐₓ</span></em></strong><span>. At these values either </span><strong><em><span>a</span></em></strong><span> or </span><strong><em><span>b</span></em></strong><span> is 0 and if either of them is 0 then one of </span><strong><em><span>α</span></em></strong><span> or </span><strong><em><span>β</span></em></strong><span> is undefined.</span></p><p><span>As </span><strong><em><span>a</span></em></strong><span> or </span><strong><em><span>b</span></em></strong><span> approach 0 </span><strong><em><span>α</span></em></strong><span> or </span><strong><em><span>β</span></em></strong><span> tend to infinity, one might be tempted to replace this with a large number, but that would not be practical because a large distance multiplier would dominate the training and minimize the movement of other </span><strong><em><span>zₛₐₘₚₗₑₛ</span></em></strong><span>.</span></p><p><span>Also as one of </span><strong><em><span>α</span></em></strong><span> or </span><strong><em><span>β</span></em></strong><span> tend to infinity the other one becomes a small number that is also impractical but for a different reason. The </span><strong><em><span>zₛₐₘₚₗₑₛ</span></em></strong><span> at the edges are supposed to map to the edges of </span><strong><em><span>Yₓ</span></em></strong><span> and any quantity of movement into the opposite direction will result in </span><strong><em><span>Zₘᵢₙ</span></em></strong><span> or </span><strong><em><span>Zₘₐₓ</span></em></strong><span> mapping to a greater or smaller point in </span><strong><em><span>Yₓ</span></em></strong><span> respectively. For this reason the </span><strong><em><span>α</span></em></strong><span> and </span><strong><em><span>β</span></em></strong><span> for the </span><strong><em><span>zₛₐₘₚₗₑₛ</span></em></strong><span> at the edges (i.e. </span><strong><em><span>z[0]</span></em></strong><span> and </span><strong><em><span>z[S]</span></em></strong><span>) will be assigned a value of 0 for the one that pushes inward and a predefined hyperparameter </span><strong><em><span>C ∈ [0, 1]</span></em></strong><span> that can be adjusted to the model.</span></p><h2><a name="training-the-model" class="md-header-anchor"></a><span>Training the model</span></h2><p><span>In order to train the neural network the </span><strong><em><span>z-samples</span></em></strong><span>, the set size </span><strong><em><span>S</span></em></strong><span> is chosen depending on the desired accuracy and compute available. Having decided that, </span><strong><em><span>Z</span></em></strong><span> must be defined. That is, the number of dimensions and its range must be chosen. Given </span><strong><em><span>Z</span></em></strong><span> and the training level we can create the </span><strong><em><span>z-samples</span></em></strong><span> set.</span></p><p><span>For example if </span><strong><em><span>Z</span></em></strong><span> is 1-dimensional with range defined as </span><strong><em><span>[10.0, 20.0]</span></em></strong><span> and </span><strong><em><span>S = 9</span></em></strong><span>, we have that the </span><em><span>z-sample</span></em><span> set is </span><strong><em><span>{</span><span>z₀ (10.0), z₁ (11.25), z₂ (12.5), z₃ (13.75), z₄ (15.0), z₅ (16.25), z₆ (17.5), z₇ (18.75), z₈ (20.0)</span><span>}</span></em></strong><span>.</span></p><p><span>First we select a batch of data from the training data with size </span><strong><em><span>n</span></em></strong><span>, for every data point in the batch, we evaluate the current model on every </span><em><span>z-sample</span></em><span>. This gives us the prediction matrix:</span></p><p><span>&lt;&lt;&lt; Insert image 13 &gt;&gt;&gt;</span></p><p><span>For every data point </span><strong><em><span>(xᵢ, yᵢ)</span></em></strong><span> in the batch, we take the output value </span><strong><em><span>yᵢ</span></em></strong><span> and compare it with every value of its corresponding row in the prediction matrix (i.e. </span><strong><em><span>[f(xᵢ, z₀), f(xᵢ, z₁), ..., f(xᵢ, z₈)]</span></em></strong><span>). After determining if </span><strong><em><span>yᵢ</span></em></strong><span> is greater or smaller than each predicted value, we produce 2 values for every element in the matrix:</span></p><h3><a name="movement-scalar" class="md-header-anchor"></a><span>Movement scalar</span></h3><p><span>The scalar will be </span><strong><em><span>α[z-sample]</span></em></strong><span> if </span><strong><em><span>yᵢ</span></em></strong><span> is smaller than the prediction and </span><strong><em><span>β[z-sample]</span></em></strong><span> if </span><strong><em><span>yᵢ</span></em></strong><span> is greater.</span></p><p><span>&lt;&lt;&lt; Insert image 14 &gt;&gt;&gt;</span></p><h3><a name="target-value" class="md-header-anchor"></a><span>Target value</span></h3><p><span>The target value is the prediction itself plus the preselected movement constant </span><strong><em><span>M</span></em></strong><span> multiplied by -1 if </span><strong><em><span>yᵢ</span></em></strong><span> is smaller than the prediction and 1 if </span><strong><em><span>yᵢ</span></em></strong><span> is greater. You can think of target values as the &quot;where we want the prediction to be&quot; value.</span></p><p><span>&lt;&lt;&lt; Insert image 15 &gt;&gt;&gt;</span></p><p><span>After calculating these 2 values we are ready to assemble the matrix to be used during backpropagation.</span></p><p><span>&lt;&lt;&lt; Insert image 16 &gt;&gt;&gt;</span></p><p><span>We pass the prediction matrix results in a addition to this matrix to a Weighted Mean Squared Error loss function (WMSE). The loss function will look like this:</span></p><p><span>&lt;&lt;&lt; Insert image 17 &gt;&gt;&gt;</span></p><p>&nbsp;</p><h2><a name="testing-the-model" class="md-header-anchor"></a><span>Testing the model</span></h2><p><span>The Mean Squared Error (MSE) loss function works to train the model using backpropagation and target values, but testing the model requires a different approach. Since both </span><strong><em><span>f(x, Z)</span></em></strong><span> and </span><strong><em><span>Yₓ</span></em></strong><span> are random variables, measuring the differences between their samplings is pointless. Because of this, the success of the model will be measured in 2 ways:</span></p><h3><a name="earth-movers-distance-emd" class="md-header-anchor"></a><span>Earth Movers Distance (EMD)</span></h3><blockquote><p><span>In statistics, the </span><strong><span>earth mover&#39;s distance</span></strong><span> (</span><strong><span>EMD</span></strong><span>) is a measure of the distance between two probability distributions over a region </span><em><span>D</span></em><span>. In mathematics, this is known as the Wasserstein metric. Informally, if the distributions are interpreted as two different ways of piling up a certain amount of dirt over the region </span><em><span>D</span></em><span>, the EMD is the minimum cost of turning one pile into the other; where the cost is assumed to be amount of dirt moved times the distance by which it is moved. </span><a href='https://en.wikipedia.org/wiki/Earth_mover%27s_distance' target='_blank' title='Earth Mover&#39;s Distance'><span>wikipedia.org</span></a></p></blockquote><p><span>Using </span><a href='https://en.wikipedia.org/wiki/Earth_mover%27s_distance' target='_blank' title='Earth Mover&#39;s Distance'><span>EMD</span></a><span> we can obtain an indicator of how similar </span><strong><em><span>Yₓ</span></em></strong><span> and </span><strong><em><span>f(x, Z)</span></em></strong><span> are. It can be calculated by comparing every </span><strong><em><span>x, y</span></em></strong><span> data point in the test data and prediction data sets and finding way to transform one into the other that requires the smallest total movement. What the EMD number tells us is the average amount of distance to transform every point in the predictions data set to the test data set.</span></p><p><span>On the example below you can see that the mean EMD is ~3.9 on a data set with a thickness of roughly 100. Because of the random nature of the data sets the EMD cannot be used as a literal error indicator, but it can be used as a progress indicator, that is to tell if the model improves with training.</span></p><figure><table><thead><tr><th style='text-align:center;' >&nbsp;</th></tr></thead><tbody><tr><td style='text-align:center;' ><img src="images\fig5.png" alt="fig5" style="zoom:50%;" /></td></tr><tr><td style='text-align:center;' ><strong><span>Fig 5</span></strong><span> EMD testing.</span></td></tr></tbody></table></figure><h3><a name="testing-the-training-goals" class="md-header-anchor"></a><span>Testing the training goals</span></h3><h6><a name="training-goal-1" class="md-header-anchor"></a><span>Training goal 1</span></h6><p><span>Ideally to test </span><a href='#goal-1'><span>Goal 1</span></a><span> (i.e. </span><strong><em><span>∀ x ∈ X ∧ ∀ z&#39; ∈ zₛₐₘₚₗₑₛ: arg min |E(z&#39;)|</span></em></strong><span>) we would evaluate </span><strong><em><span>f</span></em></strong><span> for a given </span><strong><em><span>x</span></em></strong><span> and on every </span><strong><em><span>z-sample</span></em></strong><span> and then compare it to an arbitrary number of test data points having the same </span><strong><em><span>x</span></em></strong><span>. We would then proceed to count for every </span><strong><em><span>z-sample</span></em></strong><span> the number of test data points smaller than it. With a vector of </span><em><span>smaller than counts</span></em><span> (i.e. </span><strong><em><span>P(Yₓ &lt;= f(x, z&#39;))</span></em></strong><span>) we could proceed to compare it with the canonical counts for every </span><strong><em><span>z-sample</span></em></strong><span> (i.e. </span><strong><em><span>P(Z &lt;= z&#39;)</span></em></strong><span>) and measure the error. However in real life data sets this is not possible. Real life data sets will not likely have an arbitrary number of data points having the same </span><strong><em><span>x</span></em></strong><span> (they will unlikely even have 2 data points with the same </span><strong><em><span>x</span></em></strong><span>) which means that we need to use a vicinity in </span><strong><em><span>x</span></em></strong><span> (values </span><strong><em><span>X</span></em></strong><span> that are close to an </span><strong><em><span>x</span></em></strong><span>) to test the goal.</span></p><p><span>We start by creating an ordering (an array of indices) </span><strong><em><span>O = </span><span>{</span><span>o₀, o₁, ..., o[m]</span><span>}</span></em></strong><span> that sorts all the elements in </span><strong><em><span>Xₜₑₛₜ</span></em></strong><span> (the </span><strong><em><span>x</span></em></strong><span> inputs in the test data set). Then we select a substring of the array </span><strong><em><span>O&#39; = </span><span>{</span><span>oᵢ, oᵢ₊₁, ..., oⱼ</span><span>}</span></em></strong><span>.</span></p><p><span>Now we can evaluate </span><strong><em><span>f</span></em></strong><span> for every </span><strong><em><span>x[o&#39;] ∣ o&#39; ∈ O&#39;</span></em></strong><span> on every </span><strong><em><span>z-sample</span></em></strong><span> which gives us the matrix:</span></p><p><span>&lt;&lt;&lt; Insert image 18 &gt;&gt;&gt;</span></p><p><span>We then proceed to compare each row with the outputs </span><strong><em><span>y[o&#39;] ∣ o&#39; ∈ O&#39;</span></em></strong></p><p><span>&lt;&lt;&lt; Insert image 19 &gt;&gt;&gt;</span></p><p><span>and create </span><em><span>smaller than counts</span></em><span> (i.e. </span><strong><em><span>P(Yₓ &lt;= f(x, z))</span></em></strong><span>) which we can then compare with the canonical counts for every </span><strong><em><span>z-sample</span></em></strong><span> (i.e. </span><strong><em><span>P(Z &lt;= z)</span></em></strong><span>) to measure the error in the selected substring.</span></p><p><span>We will create a number of such substrings and call each error the local vicinity error located at the central element of the substring.</span></p><p><span>On the example below you can see that the goal 1 mean error is ~1.6%, this can be used as an error indicator for the model.</span></p><figure><table><thead><tr><th style='text-align:center;' >&nbsp;</th></tr></thead><tbody><tr><td style='text-align:center;' ><img src="images\fig6.png" alt="fig6" style="zoom:50%;" /></td></tr><tr><td style='text-align:center;' ><strong><span>Fig 6</span></strong><span> Training goal 1 testing.</span></td></tr></tbody></table></figure><p>&nbsp;</p><h6><a name="training-goal-2" class="md-header-anchor"></a><span>Training goal 2</span></h6><p><span>In order to test </span><a href='#goal-2'><span>Goal 2</span></a><span> </span><strong><em><span>∀ x ∈ X ∧ ∀ z₀, z₁ ∈ Z s.t. z₀ &lt; z₁: f(x, z₀) &lt; f(x, z₁)</span></em></strong><span> we select some random points in </span><strong><em><span>X</span></em></strong><span> and a set of random points in </span><strong><em><span>Z</span></em></strong><span>, we run them in our model and get result matrix:</span></p><p><span>&lt;&lt;&lt; Insert image 20 &gt;&gt;&gt;</span></p><p><span>From here it is trivial to check that each row is monotonically increasing. To increase the quality of the check we can increment the sizes of the test point set in </span><strong><em><span>X</span></em></strong><span> and the test point set in </span><strong><em><span>Z</span></em></strong><span>.</span></p><h2><a name="back-to-delays" class="md-header-anchor"></a><span>Back to delays</span></h2><p><span>Now we can go back to the departure delays to arrival delays dataset, below you can see the MLE approach (</span><strong><span>Fig 7a</span></strong><span>) and the approach introduced in this article (</span><strong><span>Fig7b</span></strong><span>) side by side. As we saw before the MLE approach fails to capture the small imperfections obtaining a goal 1 error of 2.48% while the generic approach does a much better job with a 0.018% goal 1 error.</span></p><figure><table><thead><tr><th>&nbsp;</th><th>&nbsp;</th></tr></thead><tbody><tr><td><img src="images\delay_prob_plots_res.gif" alt="fig7a" style="zoom:90%;" /></td><td><img src="images\delay_gen_plots_res.gif" alt="fig7b" style="zoom:90%;" /></td></tr><tr><td><img src="images\fig_delay_prob_tensorboard.png" alt="fig7a" style="zoom:30%;" /></td><td><img src="images\fig_delay_gen_tensorboard.png" alt="fig7b" style="zoom:30%;" /></td></tr><tr><td><strong><span>Fig 7a</span></strong><span> Probabilistic model MLE approach.</span></td><td><strong><span>Fig 7b</span></strong><span> Generic approach.</span></td></tr></tbody></table></figure><h2><a name="experiments" class="md-header-anchor"></a><span>Experiments</span></h2><p><span>The following are various experiments done on different datasets.</span></p><h3><a name="x²-plus-gaussian-noise" class="md-header-anchor"></a><strong><em><span>x²</span></em></strong><span> plus gaussian noise</span></h3><p><span>Let&#39;s start with a simple example. The function </span><strong><em><span>x²</span></em></strong><span> with added gaussian noise. On the left panel you can see the training evolving over the course of 180 epochs. On the top left corner of this panel you can see the goal 1 error localized over </span><strong><em><span>X</span></em></strong><span>, at the end of the training you can see that the highest local error is around 2% and the global error is around 0.5%. On the top right corner of the same panel you can see the local Earth Mover&#39;s Distance (EMD). On the bottom left corner you can see a plot of the original test dataset (in blue) and the </span><strong><em><span>z-lines</span></em></strong><span> (in orange), you can see how they progressively conform to the test data. On the bottom right you can see a plot of the original test dataset (in blue) and random predictions (with </span><strong><em><span>z ∼ Z</span></em></strong><span>), you can see as the predicted results progressively represent the test data.</span></p><p><span>On the right panel, you can see a plot of the global goal 1 error (above) and global EMD values (below) as they change over the course of the training.</span></p><figure><table><thead><tr><th>&nbsp;</th><th>&nbsp;</th></tr></thead><tbody><tr><td><img src="images\x2_normal_plots_res.gif" alt="fig8" style="zoom:80%;" /></td><td><img src="images\fig_x2norm_tensorboard.png" alt="fig7" style="zoom:50%;" /></td></tr><tr><td><strong><span>Fig 8</span></strong><span> Training model to match </span><strong><em><span>x²</span></em></strong><span> plus gaussian.</span></td><td>&nbsp;</td></tr></tbody></table></figure><h3><a name="a-x³--bx²--cx--d-plus-truncated-gaussian-noise" class="md-header-anchor"></a><strong><em><span>a x³ + bx² + cx + d</span></em></strong><span> plus truncated gaussian noise</span></h3><p><span>This one is a bit more complicated. An order 3 polynomial with added truncated gaussian noise (that is a normal distribution clipped at specific points).</span></p><figure><table><thead><tr><th>&nbsp;</th><th>&nbsp;</th></tr></thead><tbody><tr><td><img src="images\x3x2_trunc_plots_res.gif" alt="fig9" style="zoom:80%;" /></td><td><img src="images\fig_x3x2trunc_tensorboard.png" alt="fig9" style="zoom:50%;" /></td></tr><tr><td><strong><span>Fig 9</span></strong><span> Training model to match </span><strong><em><span>x³ + bx² + cx + d</span></em></strong><span> plus truncated gaussian.</span></td><td>&nbsp;</td></tr></tbody></table></figure><h3><a name="double-sinx-plus-gaussian-noise-multiplied-by-sinx" class="md-header-anchor"></a><span>Double </span><strong><em><span>sin(x)</span></em></strong><span> plus gaussian noise multiplied by sin(x)</span></h3><p><span>This one is quite more interesting. 2 mirroring </span><strong><em><span>sin(x)</span></em></strong><span> functions with gaussian noise scaled by </span><strong><em><span>sin(x)</span></em></strong><span> itself.</span></p><p><span>&lt;&lt;&lt; Insert image 21 &gt;&gt;&gt;</span></p><p>&nbsp;</p><p><span>Notice how the model succeeds to represent the areas in the middle with lower densities.</span></p><figure><table><thead><tr><th>&nbsp;</th><th>&nbsp;</th></tr></thead><tbody><tr><td><img src="images\sin_sin_plots_res.gif" alt="fig10" style="zoom:80%;" /></td><td><img src="images\fig_sinsin_tensorboard.png" alt="fig10" style="zoom:50%;" /></td></tr><tr><td><strong><span>Fig 10</span></strong><span> Training model to match double </span><strong><em><span>sin(x)</span></em></strong><span> with added gaussian times </span><strong><em><span>sin(x)</span></em></strong><span>.</span></td><td>&nbsp;</td></tr></tbody></table></figure><h3><a name="branching-function-plus-gaussian-noise" class="md-header-anchor"></a><span>Branching function plus gaussian noise</span></h3><p><span>This one experiments with branching paths. It starts with simple gaussian noise around </span><strong><em><span>0</span></em></strong><span>, then starts splitting it with equal probabilities over the course of various segments.</span></p><p>&nbsp;</p><p><span>&lt;&lt;&lt; Insert image 22 &gt;&gt;&gt;</span></p><p><span>Despite the distribution not being continuous, the model does a reasonably good job of approximating it.</span></p><figure><table><thead><tr><th>&nbsp;</th><th>&nbsp;</th></tr></thead><tbody><tr><td><img src="images\branch_norm_plots_res.gif" alt="fig11" style="zoom:80%;" /></td><td><img src="images\fig_branchnorm_tensorboard.png" alt="fig11" style="zoom:50%;" /></td></tr><tr><td><strong><span>Fig 11</span></strong><span> Training model to match branching function plus gaussian.</span></td><td>&nbsp;</td></tr></tbody></table></figure><h3><a name="x₀²--x₁³-plus-absolute-gaussian-noise" class="md-header-anchor"></a><strong><em><span>(x₀)² + (x₁)³</span></em></strong><span> plus absolute gaussian noise</span></h3><p><span>The next example has 2 dimensions of input. </span><strong><em><span>X₀</span></em></strong><span> (the first dimension) is </span><strong><em><span>x²</span></em></strong><span> and </span><strong><em><span>X₁</span></em></strong><span> (the second dimension) is </span><strong><em><span>x³</span></em></strong><span> with added absolute gaussian noise. The display is slightly different, for the sake of space the </span><strong><em><span>z-lines</span></em></strong><span> plot is omitted. As you can see there is a panel per dimension and as always an additional panel for goal 1 error and EMD error histories.</span></p><figure><table><thead><tr><th>&nbsp;</th></tr></thead><tbody><tr><td><img src="images\x3_x2_absnormal_plots_res_0.gif" alt="fig12_0" style="zoom:80%;" /></td></tr><tr><td><img src="images\x3_x2_absnormal_plots_res_1.gif" alt="fig12_1" style="zoom:80%;" /></td></tr><tr><td><img src="images\fig_x3x2abs_tensorboard.png" alt="fig12" style="zoom:50%;" /></td></tr><tr><td><strong><span>Fig 12</span></strong><span> Training model to match </span><strong><em><span>(x₀)² + (x₁)³</span></em></strong><span> plus absolute gaussian.</span></td></tr></tbody></table></figure><h3><a name="california-housing-dataset" class="md-header-anchor"></a><span>California housing dataset</span></h3><p><span>This experiment uses real data instead of generated one which proves the model&#39;s effectivity on real data. It is the classic </span><a href='http://lib.stat.cmu.edu/datasets/houses.zip' target='_blank' title='California Housing Dataset'><span>California housing dataset</span></a><span>. It has information from the 1990 California census with 8 input dimensions (Median Income, House Age, etc ...). Below you can see the plots of each dimension.</span></p><figure><table><thead><tr><th>&nbsp;</th></tr></thead><tbody><tr><td><img src="images\california_housing_plots_res_0.gif" alt="fig13_0" style="zoom:66%;" /></td></tr><tr><td><img src="images\california_housing_plots_res_1.gif" alt="fig13_1" style="zoom:66%;" /></td></tr><tr><td><img src="images\california_housing_plots_res_2.gif" alt="fig13_1" style="zoom:66%;" /></td></tr><tr><td><img src="images\california_housing_plots_res_3.gif" alt="fig13_1" style="zoom:66%;" /></td></tr><tr><td><img src="images\california_housing_plots_res_4.gif" alt="fig13_1" style="zoom:66%;" /></td></tr><tr><td><img src="images\california_housing_plots_res_5.gif" alt="fig13_1" style="zoom:66%;" /></td></tr><tr><td><img src="images\california_housing_plots_res_6.gif" alt="fig13_1" style="zoom:66%;" /></td></tr><tr><td><img src="images\california_housing_plots_res_7.gif" alt="fig13_1" style="zoom:66%;" /></td></tr><tr><td><img src="images\fig_cal_tensorboard.png" alt="fig13" style="zoom:50%;" /></td></tr><tr><td><strong><span>Fig 13</span></strong><span> Training model to match the California housing dataset.</span></td></tr></tbody></table></figure><p>&nbsp;</p><h2><a name="conclusion" class="md-header-anchor"></a><span>Conclusion</span></h2><p><span>The method presented allows to approximate the distributions of stochastic data sets to an arbitrary precision. The model is simple, fast to train and can be implemented with a vanilla feedforward neural network. Its ability to approximate any distribution across an input space makes it a valuable tool for any task that requires prediction.</span></p><h2><a name="references" class="md-header-anchor"></a><span>References</span></h2><div class='footnotes-area'  ><hr/>
+<div class='footnote-line'><span class='md-fn-count'>1</span> <strong><em><span>X</span></em></strong><span> is the n-dimensional continuous domain of the target function.  </span> <a name='dfref-footnote-1' href='#ref-footnote-1' title='back to document' class='reversefootnote' >↩</a></div>
+<div class='footnote-line'><span class='md-fn-count'>2</span> <strong><em><span>Yₓ</span></em></strong><span> is a dependent random variable in an n-dimensional continuous space. The probability function must be continuous on </span><strong><em><span>x</span></em></strong><span>. The method presented in this article only applies to the case where </span><strong><em><span>Yₓ</span></em></strong><span> to be 1-dimensional.  </span> <a name='dfref-footnote-2' href='#ref-footnote-2' title='back to document' class='reversefootnote' >↩</a></div>
+<div class='footnote-line'><span class='md-fn-count'>3</span> <strong><em><span>Z</span></em></strong><span> is a uniformly distributed random variable in an n-dimensional continuous space with a predefined range.</span> <a name='dfref-footnote-3' href='#ref-footnote-3' title='back to document' class='reversefootnote' >↩</a></div></div></div>
+</body>
+</html>

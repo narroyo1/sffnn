@@ -15,6 +15,8 @@ class Tester:
     that produces stochastic outputs.
     """
 
+    # pylint: disable=too-few-public-methods
+
     def __init__(
         self, experiment, z_samples, datasets, plotter, writer, model, device,
     ):

@@ -120,8 +120,6 @@ class DataSets:
         """
         This named constructor builds a DataSet from the California Housing dataset.
         """
-        # pylint: disable=import-outside-toplevel
-        import numpy as np
         from sklearn.datasets import fetch_california_housing
 
         cal_housing = fetch_california_housing()
@@ -222,24 +220,3 @@ class DataSets:
             params_desc,
             device,
         )
-
-    def show(self):
-        """
-        This helper method plots the train and test data sets.
-        """
-        # pylint: disable=import-outside-toplevel
-        from matplotlib import pyplot
-
-        figure = pyplot.figure()
-        figure.set_size_inches(15, 9)
-        # pyplot.xlim(-6, 12)
-        # pyplot.ylim(-30, 30)
-        pyplot.scatter(self.x_test[:, 0], self.y_test, marker="o", s=2)
-        pyplot.scatter(self.x_train[:, 0], self.y_train, marker="o", s=0.6)
-        pyplot.legend(
-            [r"Training data points", r"Prediction"],
-            loc="lower left",
-            fontsize=15,
-            markerscale=5,
-        )
-        pyplot.show()

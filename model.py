@@ -8,6 +8,11 @@ import torch.nn as nn
 
 
 class ZSamplePredsMixin:
+    """
+    This mixin adds a method to get predictions for a set of z-samples.
+    """
+
+    # pylint: disable=too-few-public-methods
     def get_z_sample_preds(self, x_pt, z_samples):
         """
         This method evaluates the model over every point in x once for every sample in z_samples.
