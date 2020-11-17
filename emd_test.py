@@ -101,7 +101,7 @@ class EMDTest:
         # data points.
         with torch.no_grad():
             test_size = self.x_test_pt.shape[0]
-            z_test = sample_random(self.z_range, test_size, self.z_space_size)
+            z_test = sample_random(self.z_ranges_per_dimension, test_size)
             z_test_pt = to_tensor(z_test, self.device)
             y_pred = self.model.forward_z(self.x_test_pt, z_test_pt)
 
