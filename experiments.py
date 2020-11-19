@@ -140,9 +140,10 @@ EXPERIMENT_7 = {
     "x_range_test": np.array([[0.0, 0.8]]),
     "base_function": func.binder(func.fn_2out_linear),
     "noise_function": func.binder(func.fn_normal2d, std=10.5),
-    "outer_level_scalar": 0.2,
+    # "outer_level_scalar": 0.2,
     "skip_epochs": 5,
-    # "z_samples_per_dimension": np.array([6, 6]),
+    "z_samples_per_dimension": np.array([12, 12]),
+    """
     "z_samples": np.array(
         [
             [-5.0, -5.0],
@@ -156,9 +157,10 @@ EXPERIMENT_7 = {
             [5.0, 5.0],
         ]
     ),
-    "z_ranges_per_dimension": np.array([[-10.0, 10.0], [-10.0, 10.0]]),
-    "movement": 10.0,
-    "learning_rate": 1e-2,
+    """: "",
+    "z_samples_radio": 10.0,
+    "movement": 1.0,
+    "learning_rate": 1e-3,
     "num_epochs": 621,
     "gamma": 0.85,
     "milestones": [60, 120, 180, 240, 300, 360, 420, 480],

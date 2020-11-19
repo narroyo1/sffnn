@@ -91,7 +91,7 @@ class ZSamplePredsMixin:
 
 DEFAULT_HIDDEN_SIZE = 1024
 # DEFAULT_HIDDEN_SIZE = 256
-#OUT_SIZE = 1
+# OUT_SIZE = 1
 
 
 class StochasticFFNN(nn.Module, ZSamplePredsMixin):

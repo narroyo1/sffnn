@@ -29,8 +29,8 @@ class EMDTest:
         self.writer = writer
         self.model = model
         self.device = device
-        self.z_ranges_per_dimension = z_samples.z_ranges_per_dimension
-        #self.z_space_size = z_samples.Z_SPACE_SIZE
+        # self.z_ranges_per_dimension = z_samples.z_ranges_per_dimension
+        # self.z_space_size = z_samples.Z_SPACE_SIZE
 
         self.y_test = datasets.y_test
         self.x_test = datasets.x_test
@@ -96,6 +96,7 @@ class EMDTest:
         """
         Runs and plots a step of the EMD test.
         """
+        return
 
         # With grad off make a prediction over a random set of z-samples and the test x
         # data points.

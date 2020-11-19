@@ -17,14 +17,21 @@ class ZSamples:
 
         # Create a tensor of samples on z-space.
         # [z0, z1, ... , zS]
-        z_ranges_per_dimension = experiment["z_ranges_per_dimension"]
-        self.z_ranges_per_dimension = z_ranges_per_dimension
+        self.z_samples_radio = experiment["z_samples_radio"]
+        # self.z_ranges_per_dimension = z_ranges_per_dimension
         self.device = device
 
-        if "num_z_samples" in experiment:
-            z_samples = sample_uniform(
-                z_range, experiment["num_z_samples"], self.Z_SPACE_SIZE
+        if "z_samples_per_dimension" in experiment:
+            z_samples_per_dimension = experiment["z_samples_per_dimension"]
+            z_ranges_per_dimension = np.zeros((z_samples_per_dimension.shape[0], 2))
+            z_ranges_per_dimension[:, 0] = -self.z_samples_radio
+            z_ranges_per_dimension[:, 1] = self.z_samples_radio
+            z_samples = sample_uniform(z_ranges_per_dimension, z_samples_per_dimension)
+            in_hypersphere = (
+                np.sum(z_samples * z_samples, axis=1)
+                <= self.z_samples_radio * self.z_samples_radio
             )
+            z_samples = z_samples[in_hypersphere]
         else:
             z_samples = experiment["z_samples"]
         self.z_samples = to_tensor(z_samples, device)
@@ -33,11 +40,11 @@ class ZSamples:
             ["$z_{{{}}}$".format(i) for i in range(z_samples.shape[0])],
         )
 
-        #self.less_than_ratios = self.calculate_ratios()
+        # self.less_than_ratios = self.calculate_ratios()
 
         self.outer_level_scalar = experiment.get("outer_level_scalar")
 
-        #self.less_scalar, self.more_scalar = self.calculate_scalars()
+        # self.less_scalar, self.more_scalar = self.calculate_scalars()
 
     def calculate_ratios(self):
         """

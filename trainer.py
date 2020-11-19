@@ -19,15 +19,15 @@ class Trainer:
     def __init__(
         self, experiment, z_samples, model, device,
     ):
-        self.z_samples = z_samples.z_samples
+        self.z_samples = z_samples
         self.movement = experiment["movement"]
         self.model = model
         self.device = device
         # dimensions: (greater/smaller, z-samples, output dimensions)
-        #self.scalars = torch.tensor(
+        # self.scalars = torch.tensor(
         #    np.stack((z_samples.less_scalar, z_samples.more_scalar)),
         #    dtype=torch.float64,
-        #).to(device=self.device)
+        # ).to(device=self.device)
 
         self.learning_rate = experiment["learning_rate"]
         self.gamma = experiment["gamma"]
@@ -72,13 +72,57 @@ class Trainer:
         # Calculate the prediction matrix using the batch data and the z-samples.
         # dimensions: (z-samples, data points, output dimensions)
         y_predict_mat = self.model.get_z_sample_preds(
-            x_pt=x_pt, z_samples=self.z_samples
+            x_pt=x_pt, z_samples=self.z_samples.z_samples
         )
 
         # dimensions: (z-samples, data points, output dimensions)
         difference = y_pt - y_predict_mat
         # dimensions: (z-samples, data points, output dimensions)
         squared = difference * difference
+        # dimensions: (z-samples, data points)
+        summation = torch.sum(squared, dim=2)
+        # dimensions: (z-samples, data points)
+        length = torch.sqrt(summation)
+        # dimensions: (z-samples, data points, output dimensions)
+        D = difference / length.unsqueeze(2)
+        # dimensions: (z-samples, data points, output dimensions)
+        # a = D * D
+        def dot_product_batch(X, Y):
+            view_size = X.shape[0] * Y.shape[1]
+            # The dot product of a unit vector with itself is 1.0.
+            result = torch.bmm(
+                X.view(view_size, 1, X.shape[2]), Y.view(view_size, Y.shape[2], 1)
+            )
+            return result.view((X.shape[0], X.shape[1]))
+
+        a = dot_product_batch(D, D)
+        # dimensions: (z-samples, data points, output dimensions)
+        O = torch.stack([self.z_samples.z_samples] * y_pt.shape[0], dim=1)
+        # dimensions: (z-samples, data points, output dimensions)
+        b = 2 * dot_product_batch(O, D)
+        # dimensions: (z-samples, data points, output dimensions)
+        c = (
+            dot_product_batch(O, O)
+            - self.z_samples.z_samples_radio * self.z_samples.z_samples_radio
+        )
+        # dimensions: (z-samples, data points, output dimensions)
+        discriminant = b * b - 4 * a * c
+        """
+        assert discriminant > 0
+        """
+        # dimensions: (z-samples, data points, output dimensions)
+        # Elements in x0 will always be positive and elements in x1 will always be
+        # negative.
+        x0 = (-b + torch.sqrt(discriminant)) / (2 * a)
+        x1 = (-b - torch.sqrt(discriminant)) / (2 * a)
+        """
+        ax = O + x0.unsqueeze(2) * D
+        assert torch.sqrt(torch.sum(ax * ax, dim=2)) == r
+        bx = O + x1.unsqueeze(2) * D
+        assert torch.sqrt(torch.sum(bx * bx, dim=2)) == r
+        """
+
+        """
         # dimensions: (z-samples, data points, 1)
         summation = torch.sum(squared, dim=2).unsqueeze(2)
         # dimensions: (z-samples, data points, 1)
@@ -110,25 +154,30 @@ class Trainer:
         ]
         ind1 = torch.tensor(ind1, device=self.device, dtype=torch.long)
         ind3 = torch.tensor(ind3, device=self.device, dtype=torch.long)
-        w_bp = 0#self.scalars[greater_than, ind1, ind3]
+        w_bp = 0  # self.scalars[greater_than, ind1, ind3]
         w_bp *= magnitude
         # func(w_bp[7])
         # dimensions: (z-samples * data points, output dimensions)
         w_bp = w_bp.reshape((w_bp.shape[0] * w_bp.shape[1], w_bp.shape[2]))
+        """
 
+        crossdist = torch.abs(x0) + torch.abs(x1)
+        crossdistratio = crossdist / (2 * self.z_samples.z_samples_radio)
+        w_bp = 1 / (2 * x0)
+        w_bp = w_bp.view((w_bp.shape[0] * w_bp.shape[1], 1))
         # dimensions: (z-samples, data points, output dimensions)
-        y_bp = y_predict_mat + ((greater_than * 2) - 1) * (cosine * self.movement)
+        y_bp = y_predict_mat + D * self.movement * crossdistratio.unsqueeze(2)
         # dimensions: (z-samples * data points, output dimensions)
         y_bp = y_bp.reshape((y_bp.shape[0] * y_bp.shape[1], y_bp.shape[2]))
 
         # dimensions: (z-samples * data points, z-sample dimensions)
-        z_samples_bp = torch.repeat_interleave(self.z_samples, x_pt.shape[0], dim=0).to(
-            device=self.device
-        )
+        z_samples_bp = torch.repeat_interleave(
+            self.z_samples.z_samples, x_pt.shape[0], dim=0
+        ).to(device=self.device)
 
         # dimensions: (z-samples * data points, input dimensions)
         repeat_shape = [1 for _ in range(len(x_pt.shape))]
-        repeat_shape[0] = self.z_samples.shape[0]
+        repeat_shape[0] = self.z_samples.z_samples.shape[0]
         x_bp = x_pt.repeat(tuple(repeat_shape))
 
         # Run backpropagation with the calculated targets.

@@ -144,7 +144,7 @@ class Plotter:
         if len(self.x_dimension_names) != 1:
             return
 
-        axe = self.figures[0].add_subplot(2, 2, 3)
+        axe = self.figures[0].add_subplot(2, 2, 3)  # , projection='3d')
         # Filter the z-sample lines so that they are not as dense.
         zline_skip = self.options.get("zline_skip", 1)
 
@@ -170,16 +170,16 @@ class Plotter:
             x_label_pos = self.x_test[orderings[dimension][-1]]
 
             axe.scatter(
-                self.x_test[:, dimension],
-                # self.y_test[:, 0],
+                # self.x_test[:, dimension],
+                self.y_test[:, 0],
                 self.y_test[:, 1],
                 marker="o",
                 s=self.options.get("test_s", 0.5),
             )
 
             axe.scatter(
-                x_tiled[:, dimension],
-                # y_predict_mat_flat[:, 0],
+                # x_tiled[:, dimension],
+                y_predict_mat_flat[:, 0],
                 y_predict_mat_flat[:, 1],
                 marker="o",
                 s=self.options.get("zline_s", 0.1),
@@ -212,27 +212,27 @@ class Plotter:
 
         if len(self.x_dimension_names) == 1:
             axes = [
-                self.figures[i].add_subplot(2, 2, 4)
+                self.figures[i].add_subplot(2, 2, 4)  # , projection='3d')
                 for i in range(len(self.x_dimension_names))
             ]
         else:
             axes = [
-                self.figures[i].add_subplot(1, 2, 2)
+                self.figures[i].add_subplot(1, 2, 2)  # , projection='3d')
                 for i in range(len(self.x_dimension_names))
             ]
         # Add the scatter plots.
         for dimension in range(len(self.x_dimension_names)):
             axes[dimension].scatter(
-                self.x_test[:, dimension],
-                # self.y_test[:, 0],
+                # self.x_test[:, dimension],
+                self.y_test[:, 0],
                 self.y_test[:, 1],
                 marker="o",
                 s=self.options.get("test_s", 0.9),
             )
 
             axes[dimension].scatter(
-                self.x_test[:, dimension],
-                # y_pred_d[:, 0],
+                # self.x_test[:, dimension],
+                y_pred_d[:, 0],
                 y_pred_d[:, 1],
                 marker="x",
                 s=self.options.get("train_s", 0.5),

@@ -73,7 +73,12 @@ def fn_x0_2_x1_2(x_np, multipler0=1, multiplier1=1):
 
 
 def fn_2out_linear(x_np, multiplier1=1.0, multiplier2=1.0):
-    return x_np * 0.0001 * np.array([multiplier1, multiplier2])
+    result = np.zeros((x_np.shape[0], 2))
+    for i in range(x_np.shape[0]):
+        result[i, 0] = np.random.random()  # + x_np[i]
+        result[i, 1] = result[i, 0] + (np.random.random() - 0.5)
+    # return x_np * 0.0001 * np.array([multiplier1, multiplier2])
+    return result
 
 
 ###########################################
@@ -121,12 +126,12 @@ def fn_normalx(x_np, std=5.0):
 
 def fn_normal2d(x_np, std=5.0):
     """ Normal distribution noise multipled by the value of "x". """
-    #c = np.random.rand(x_np.shape[0])
-    #n = np.random.rand(x_np.shape[0])
-    x1 = np.random.rand(x_np.shape[0])[:,np.newaxis]
-    x2 = np.random.rand(x_np.shape[0])[:,np.newaxis]
+    # c = np.random.rand(x_np.shape[0])
+    # n = np.random.rand(x_np.shape[0])
+    x1 = np.random.rand(x_np.shape[0])[:, np.newaxis]
+    x2 = np.random.rand(x_np.shape[0])[:, np.newaxis]
     return np.concatenate((x1, x2 + x1), axis=1)
-    #return np.random.rand(x_np.shape[0], 2) * std
+    # return np.random.rand(x_np.shape[0], 2) * std
 
 
 def fn_uniform(x_np, multiplier=1.0):
