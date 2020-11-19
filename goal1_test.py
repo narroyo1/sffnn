@@ -1,6 +1,7 @@
 """
 This module contains class Goal1Test.
 """
+# pylint: disable=no-member
 
 import numpy as np
 
@@ -21,11 +22,9 @@ class Goal1Test:
     the predictions for the z-samples have the right distribution ratios.
     """
 
-    def __init__(self, z_samples, datasets, plotter, writer, model, device):
+    def __init__(self, z_samples, datasets, plotter, writer, device):
         self.plotter = plotter
         self.writer = writer
-        self.model = model
-        self.z_samples = z_samples.z_samples
 
         self.less_than_ratios = z_samples.less_than_ratios
 
@@ -36,9 +35,6 @@ class Goal1Test:
         self.x_test_pt = to_tensor(datasets.x_test, device)
         self.x_orderings_pt = [
             torch.sort(self.x_test_pt[:, i])[1] for i in range(self.x_test_pt.shape[1])
-        ]
-        self.x_orderings_np = [
-            np.argsort(self.x_test[:, i]) for i in range(self.x_test.shape[1])
         ]
 
     def test_goal1(self, y_predict_mat):
@@ -124,30 +120,19 @@ class Goal1Test:
             self.plotter.plot_goal1(
                 x_np=x_np,
                 local_goal1_err=local_goal1_err,
-                # local_goal1_max_err=local_goal1_max_err,
                 global_goal1_err=goal1_mean_err_abs,
-                # mon_incr=mon_incr,
                 dimension=dimension,
                 local_goal1_err_zsample=local_goal1_err_zsample,
             )
 
         return goal1_mean_err_abs
 
-    def step(self, epoch):
+    def step(self, epoch, y_predict_mat):
         """
         Runs and plots a step of the goal 1 test.
         """
 
-        # Get the z-sample predictions for every test data point.
-        y_predict_mat = self.model.get_z_sample_preds(
-            x_pt=self.x_test_pt, z_samples=self.z_samples,
-        )
-
-        y_predict_mat_d = y_predict_mat.cpu().detach().numpy()
-
         # Second test: Test training goal 1.
         mean_goal1 = self.test_goal1(y_predict_mat)
-
-        self.plotter.plot_datasets_zlines(y_predict_mat_d, self.x_orderings_np)
 
         self.writer.log_goal1_error(mean_goal1, epoch)
