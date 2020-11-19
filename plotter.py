@@ -220,6 +220,7 @@ class Plotter:
                 self.figures[i].add_subplot(1, 2, 2)  # , projection='3d')
                 for i in range(len(self.x_dimension_names))
             ]
+
         # Add the scatter plots.
         for dimension in range(len(self.x_dimension_names)):
             axes[dimension].scatter(

@@ -1,6 +1,7 @@
 """
 This module contains class EMDTest.
 """
+# pylint: disable=no-member
 
 import numpy as np
 
@@ -9,7 +10,7 @@ import torch
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
-from utils import sample_random, to_tensor
+from utils import to_tensor
 
 # The number of points in X to test for goal 1.
 EMD_TEST_POINTS = 50
@@ -24,13 +25,9 @@ class EMDTest:
     This class implements the EMD (Earth Movers Distance) test on the model.
     """
 
-    def __init__(self, z_samples, datasets, plotter, writer, model, device):
+    def __init__(self, datasets, plotter, writer, device):
         self.plotter = plotter
         self.writer = writer
-        self.model = model
-        self.device = device
-        # self.z_ranges_per_dimension = z_samples.z_ranges_per_dimension
-        # self.z_space_size = z_samples.Z_SPACE_SIZE
 
         self.y_test = datasets.y_test
         self.x_test = datasets.x_test
@@ -92,26 +89,13 @@ class EMDTest:
         mean_emd = np.mean(mean_emds)
         return mean_emd
 
-    def step(self, epoch):
+    def step(self, epoch, y_pred_d):
         """
         Runs and plots a step of the EMD test.
         """
         return
 
-        # With grad off make a prediction over a random set of z-samples and the test x
-        # data points.
-        with torch.no_grad():
-            test_size = self.x_test_pt.shape[0]
-            z_test = sample_random(self.z_ranges_per_dimension, test_size)
-            z_test_pt = to_tensor(z_test, self.device)
-            y_pred = self.model.forward_z(self.x_test_pt, z_test_pt)
-
-        # Create a numpy version of the prediction tensor.
-        y_pred_d = y_pred.cpu().detach()
-
         # First test: calculate the emd.
         mean_emd = self.calculate_emd(y_pred_d)
-
-        self.plotter.plot_datasets_preds(y_pred_d)
 
         self.writer.log_emd(mean_emd, epoch)
