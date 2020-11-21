@@ -8,7 +8,7 @@ import torch
 from emd_test import EMDTest
 from goal1_test import Goal1Test
 from goal2_test import Goal2Test
-from utils import to_tensor, sample_random
+from utils import to_tensor
 
 # pylint: disable=bad-continuation
 
@@ -29,7 +29,7 @@ class Tester:
         self.model = model
         self.device = device
 
-        self.z_samples = z_samples.z_samples
+        self.z_samples = z_samples
         # self.z_range = z_samples.z_range
         # self.z_space_size = z_samples.Z_SPACE_SIZE
         self.x_test_pt = to_tensor(datasets.x_test, device)
@@ -76,7 +76,7 @@ class Tester:
             # data points.
             with torch.no_grad():
                 test_size = self.x_test_pt.shape[0]
-                z_test = sample_random(self.z_range, test_size, self.z_space_size)
+                z_test = self.z_samples.sample_random(test_size)
                 z_test_pt = to_tensor(z_test, self.device)
                 y_pred = self.model.forward_z(self.x_test_pt, z_test_pt)
 
@@ -89,7 +89,7 @@ class Tester:
         if self.goal1_test:
             # Get the z-sample predictions for every test data point.
             y_predict_mat = self.model.get_z_sample_preds(
-                x_pt=self.x_test_pt, z_samples=self.z_samples,
+                x_pt=self.x_test_pt, z_samples=self.z_samples.z_samples,
             )
             self.goal1_test.step(epoch, y_predict_mat)
 

@@ -122,51 +122,22 @@ class Trainer:
         assert torch.sqrt(torch.sum(bx * bx, dim=2)) == r
         """
 
-        """
-        # dimensions: (z-samples, data points, 1)
-        summation = torch.sum(squared, dim=2).unsqueeze(2)
-        # dimensions: (z-samples, data points, 1)
-        distance = torch.sqrt(summation)
-        # dimensions: (z-samples, data points, output dimensions)
-        cosine = torch.abs(difference) / distance
-        # dimensions: (z-samples, data points, output dimensions)
-        angle = torch.acos(cosine)
-        # dimensions: (z-samples, data points, output dimensions)
-        magnitude = (np.pi / 2.0 - angle) / (np.pi / 2.0)
+        crossdist = x0 + torch.abs(x1)
+        # crossdistratio = crossdist / (2 * self.z_samples.z_samples_radio)
+        outer_level0 = x0 <= 0.01
+        outer_level1 = x1 >= -0.01
 
-        # This matrix tells if the training data is greater than the prediction.
-        # dimensions: (z-samples, data points, output dimensions)
-        greater_than = torch.gt(y_pt, y_predict_mat) + 0
-
-        # def func(vec):
-        #    from collections import Counter
-        #    ass = Counter()
-        #    for el in vec:
-        #        ass[(el.cpu().numpy()[0], el.cpu().numpy()[1])] += 1
-        #    print(ass)
-        # func((greater_than[7] * 2) - 1)
-        # This matrix will have he weights to be used on the loss function.
-        # dimensions: (z-samples, data points, output dimensions)
-        ind1, _, ind3 = np.ogrid[
-            0 : greater_than.shape[0],
-            0 : greater_than.shape[1],
-            0 : greater_than.shape[2],
-        ]
-        ind1 = torch.tensor(ind1, device=self.device, dtype=torch.long)
-        ind3 = torch.tensor(ind3, device=self.device, dtype=torch.long)
-        w_bp = 0  # self.scalars[greater_than, ind1, ind3]
-        w_bp *= magnitude
-        # func(w_bp[7])
-        # dimensions: (z-samples * data points, output dimensions)
-        w_bp = w_bp.reshape((w_bp.shape[0] * w_bp.shape[1], w_bp.shape[2]))
-        """
-
-        crossdist = torch.abs(x0) + torch.abs(x1)
-        crossdistratio = crossdist / (2 * self.z_samples.z_samples_radio)
+        # x0[x0 <= 0.01] = 0.01
+        # w_bp = crossdist / (2 * x0)
         w_bp = 1 / (2 * x0)
+        # w_bp[
+        #    outer_level0
+        # ] = 0.1  # crossdist[outer_level0] / (2 * 30)#self.z_samples.outer_level_scalar
+        # w_bp[outer_level1] = 0.0
         w_bp = w_bp.view((w_bp.shape[0] * w_bp.shape[1], 1))
         # dimensions: (z-samples, data points, output dimensions)
-        y_bp = y_predict_mat + D * self.movement * crossdistratio.unsqueeze(2)
+        # y_bp = y_predict_mat + D * self.movement * crossdistratio.unsqueeze(2)
+        y_bp = y_predict_mat + D * self.movement
         # dimensions: (z-samples * data points, output dimensions)
         y_bp = y_bp.reshape((y_bp.shape[0] * y_bp.shape[1], y_bp.shape[2]))
 

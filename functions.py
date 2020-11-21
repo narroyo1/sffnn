@@ -73,6 +73,16 @@ def fn_x0_2_x1_2(x_np, multipler0=1, multiplier1=1):
 
 
 def fn_2out_linear(x_np, multiplier1=1.0, multiplier2=1.0):
+    result = np.random.rand(x_np.shape[0], 2) * 3
+    # result[:, 1] += result[:, 0]
+
+    return result
+
+    result = np.random.randn(x_np.shape[0], 2)
+    result[:, 1] += result[:, 0]
+
+    return result
+
     result = np.zeros((x_np.shape[0], 2))
     for i in range(x_np.shape[0]):
         result[i, 0] = np.random.random()  # + x_np[i]
@@ -122,6 +132,11 @@ def fn_invertednormal(x_np, std=1.2, separation=1.2):
 def fn_normalx(x_np, std=5.0):
     """ Normal distribution noise multipled by the value of "x". """
     return np.random.randn(*x_np.shape) * x_np * std
+
+
+def fn_noop2d(x_np):
+    result = np.zeros((x_np.shape[0], 2))
+    return result
 
 
 def fn_normal2d(x_np, std=5.0):
