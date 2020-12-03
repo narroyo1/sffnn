@@ -1,4 +1,5 @@
-# Stochastic Feedforward Neural Network
+# Approximating stochastic functions
+## A generic approach for training probabilistic machine learning models
 
 [![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
 
@@ -37,6 +38,11 @@ tensorboard --logdir=runs
 ```
 
 Then open `http://localhost:6006/` on any browser.
+
+The default experiment is the first one shown in the article, to reproduce any other change the following line on main.py
+```
+experiment = experiments.EXPERIMENT_<experiment number>
+```
 
 ## Documentation
 
