@@ -61,7 +61,7 @@ def get_direction_slots(D, device):
     return D1, D2
 
 
-def get_distances(D, z_samples):
+def get_distances(D, z_samples, z_samples_radio):
     def dot_product_batch(X, Y):
         view_size = X.shape[0] * Y.shape[1]
         # The dot product of a unit vector with itself is 1.0.
@@ -76,11 +76,11 @@ def get_distances(D, z_samples):
     assert (err < EPSILON).all()
     ########################
     # dimensions: (z-samples, data points, output dimensions)
-    O = torch.stack([z_samples.z_samples] * D.shape[1], dim=1)
+    O = torch.stack([z_samples] * D.shape[1], dim=1)
     # dimensions: (z-samples, data points, output dimensions)
     b = 2 * dot_product_batch(O, D)
     # dimensions: (z-samples, data points, output dimensions)
-    c = dot_product_batch(O, O) - z_samples.z_samples_radio * z_samples.z_samples_radio
+    c = dot_product_batch(O, O) - z_samples_radio ** 2
     # dimensions: (z-samples, data points, output dimensions)
     discriminant = b * b - 4 * a * c
     # Every ray should intersect the circle twice.
@@ -97,31 +97,29 @@ def get_distances(D, z_samples):
     # Check that adding the distances to the origins gives a point in the circumference
     ########################
     ax = O + x0.unsqueeze(2) * D
-    err = torch.abs(torch.sqrt(torch.sum(ax * ax, dim=2)) - z_samples.z_samples_radio)
+    err = torch.abs(torch.sqrt(torch.sum(ax * ax, dim=2)) - z_samples_radio)
     assert (err < EPSILON).all()
     bx = O + x1.unsqueeze(2) * D
-    err = torch.abs(torch.sqrt(torch.sum(bx * bx, dim=2)) - z_samples.z_samples_radio)
+    err = torch.abs(torch.sqrt(torch.sum(bx * bx, dim=2)) - z_samples_radio)
     assert (err < EPSILON).all()
     ########################
 
     return x0, x1
 
 
-def get_movement_scalars(D1, D2, z_samples):
-    x0_1, x1_1 = get_distances(D1, z_samples)
-    x0_2, x1_2 = get_distances(D2, z_samples)
+def get_movement_scalars(D1, D2, z_samples, z_samples_radio):
+    x0_1, x1_1 = get_distances(D1, z_samples, z_samples_radio)
+    x0_2, x1_2 = get_distances(D2, z_samples, z_samples_radio)
 
     x0 = x0_1 * x0_2 * np.sin(SLOT_SIZE) * 0.5
     x1 = x1_1 * x1_2 * np.sin(SLOT_SIZE) * 0.5
 
     crossarea = x0 + x1
     # crossarearatio = crossarea / (
-    #    2.0 * 0.5 * np.sin(SLOT_SIZE) * z_samples.z_samples_radio ** 2
+    #    2.0 * 0.5 * np.sin(SLOT_SIZE) * z_samples_radio ** 2
     # )
     # This doesn't seem to help.
-    crossarearatio = (
-        2.0 * 0.5 * np.sin(SLOT_SIZE) * z_samples.z_samples_radio ** 2
-    ) / crossarea
+    crossarearatio = (2.0 * 0.5 * np.sin(SLOT_SIZE) * z_samples_radio ** 2) / crossarea
     ########################
     # assert (crossarearatio < 1.0).all()
     ########################
@@ -197,17 +195,16 @@ class Trainer:
         """
         This method is called once for every training batch in an epoch.
         """
+        z_samples = self.z_samples.selection()
         # Calculate the prediction matrix using the batch data and the z-samples.
         # dimensions: (z-samples, data points, output dimensions)
-        y_predict_mat = self.model.get_z_sample_preds(
-            x_pt=x_pt, z_samples=self.z_samples.z_samples
-        )
+        y_predict_mat = self.model.get_z_sample_preds(x_pt=x_pt, z_samples=z_samples)
 
         D, _ = get_unit_and_mag(y_pt - y_predict_mat)
 
         D1, D2 = get_direction_slots(D, self.device)
 
-        w_bp = get_movement_scalars(D1, D2, self.z_samples)
+        w_bp = get_movement_scalars(D1, D2, z_samples, self.z_samples.z_samples_radio)
         w_bp = w_bp.view((w_bp.shape[0] * w_bp.shape[1], 1))
 
         # dimensions: (z-samples, data points, output dimensions)
@@ -218,13 +215,13 @@ class Trainer:
         y_bp = y_bp.reshape((y_bp.shape[0] * y_bp.shape[1], y_bp.shape[2]))
 
         # dimensions: (z-samples * data points, z-sample dimensions)
-        z_samples_bp = torch.repeat_interleave(
-            self.z_samples.z_samples, x_pt.shape[0], dim=0
-        ).to(device=self.device)
+        z_samples_bp = torch.repeat_interleave(z_samples, x_pt.shape[0], dim=0).to(
+            device=self.device
+        )
 
         # dimensions: (z-samples * data points, input dimensions)
         repeat_shape = [1 for _ in range(len(x_pt.shape))]
-        repeat_shape[0] = self.z_samples.z_samples.shape[0]
+        repeat_shape[0] = z_samples.shape[0]
         x_bp = x_pt.repeat(tuple(repeat_shape))
 
         # Run backpropagation with the calculated targets.

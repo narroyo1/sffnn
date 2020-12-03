@@ -89,7 +89,7 @@ class Tester:
         if self.goal1_test:
             # Get the z-sample predictions for every test data point.
             y_predict_mat = self.model.get_z_sample_preds(
-                x_pt=self.x_test_pt, z_samples=self.z_samples.z_samples,
+                x_pt=self.x_test_pt, z_samples=self.z_samples.samples,
             )
             d, l, c = self.goal1_test.step(epoch, y_predict_mat)
 

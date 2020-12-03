@@ -38,14 +38,28 @@ class ZSamples:
         else:
             z_samples = experiment["z_samples"]
 
-        self.z_samples = to_tensor(z_samples, device)
+        self.samples = to_tensor(z_samples, device)
         # self.outer_samples = to_tensor(outer_samples, device)
-        self.z_sample_labels = experiment.get(
+        self.labels = experiment.get(
             "z_sample_labels",
             ["$z_{{{}}}$".format(i) for i in range(z_samples.shape[0])],
         )
+        self.selection_size = int(
+            z_samples.shape[0] * experiment.get("selection_size", 1.0)
+        )
 
         self.outer_level_scalar = experiment.get("outer_level_scalar")
+
+    def selection(self):
+        # return self.samples
+        import torch
+
+        indices = np.random.choice(
+            self.samples.shape[0], self.selection_size, replace=False
+        )
+        indices = torch.tensor(indices, dtype=torch.long).to(self.device)
+        indices = torch.sort(indices).values
+        return self.samples[indices, :]
 
     """
     @staticmethod

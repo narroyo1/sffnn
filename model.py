@@ -89,9 +89,9 @@ class ZSamplePredsMixin:
             return y_predict_mat
 
 
-DEFAULT_HIDDEN_SIZE = 1024
+DEFAULT_HIDDEN_SIZE = 512
+# DEFAULT_HIDDEN_SIZE = 1024
 # DEFAULT_HIDDEN_SIZE = 256
-# OUT_SIZE = 1
 
 
 class StochasticFFNN(nn.Module, ZSamplePredsMixin):

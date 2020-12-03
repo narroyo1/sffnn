@@ -72,10 +72,9 @@ def fn_x0_2_x1_2(x_np, multipler0=1, multiplier1=1):
     return result[..., np.newaxis]
 
 
-def fn_circle(x_np):
-    """
-    #length = np.sqrt(np.random.uniform(0, 10, (x_np.shape[0],)))
-    length = np.random.uniform(0, 10, (x_np.shape[0],))
+def fn_circle(x_np, radius=10.0):
+    # length = np.sqrt(np.random.uniform(0, radius, (x_np.shape[0],)))
+    length = np.random.uniform(0, radius, (x_np.shape[0],))
     angle = np.pi * np.random.uniform(0, 2, (x_np.shape[0],))
 
     result = np.zeros((x_np.shape[0], 2))
@@ -83,14 +82,10 @@ def fn_circle(x_np):
     result[:, 1] = length * np.sin(angle)
 
     return result
-    """
 
     # Circle
-    result = np.random.rand(x_np.shape[0] * 2, 2) * np.array([20, 20]) - np.array(
-        [10, 10]
-    )
-    # result = sample_uniform(np.array([[-10, 10], [-10, 10]]), x_np.shape[0] * 2)
-    in_hypersphere = np.sum(result * result, axis=1) <= 10 * 10
+    result = np.random.rand(x_np.shape[0] * 2, 2) * np.array([radius, radius])
+    in_hypersphere = np.sum(result * result, axis=1) <= radius ** 2
     result = result[in_hypersphere]
 
     return result[: x_np.shape[0]]
@@ -99,11 +94,6 @@ def fn_circle(x_np):
 def fn_rectangle(x_np):
     # Rectangle
     result = np.random.rand(x_np.shape[0], 2) * np.array([3, 0.5])
-    # result[:, 1] += result[:, 0]
-
-    return result
-
-    result = np.random.randn(x_np.shape[0], 2)
     result[:, 1] += result[:, 0]
 
     return result
@@ -168,10 +158,14 @@ def fn_noop2d(x_np):
 
 def fn_normal2d(x_np, std=5.0):
     """ Normal distribution noise multipled by the value of "x". """
+    mean = [0, 0]
+    cov = [[5, 1], [2, 5]]
+    return np.random.multivariate_normal(mean, cov, x_np.shape[0])
     # c = np.random.rand(x_np.shape[0])
     # n = np.random.rand(x_np.shape[0])
-    x1 = np.random.rand(x_np.shape[0])[:, np.newaxis]
-    x2 = np.random.rand(x_np.shape[0])[:, np.newaxis]
+    x1 = np.random.rand(x_np.shape[0])[:, np.newaxis] * std
+    x2 = np.random.rand(x_np.shape[0])[:, np.newaxis] * std
+    return np.concatenate((x1, x2), axis=1)
     return np.concatenate((x1, x2 + x1), axis=1)
     # return np.random.rand(x_np.shape[0], 2) * std
 

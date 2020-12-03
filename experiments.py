@@ -138,11 +138,12 @@ EXPERIMENT_6 = {
 EXPERIMENT_7 = {
     "x_range_train": np.array([[0.0, 1.0]]),
     "x_range_test": np.array([[0.0, 0.8]]),
-    "base_function": func.binder(func.fn_rectangle),
-    "noise_function": func.binder(func.fn_noop2d),
+    "base_function": func.binder(func.fn_circle, radius=0.1),
+    "noise_function": func.binder(func.fn_normal2d),
     "outer_level_scalar": 0.1,
     "skip_epochs": 5,
-    "z_samples_per_dimension": [12, 12],
+    "z_samples_per_dimension": [18, 18],
+    "selection_size": 0.4,
     # "z_samples": np.array([[-5.0, 8.0], [-2.5, 8.0], [0.0, 8.0], [2.5, 8.0], [5.0, 8.0]]),
     # "z_samples": np.array(
     #    [[0.0, 8.0], [0.0, -8.0], [0.0, 5.0], [0.0, -5.0], [0.0, 2.0], [0.0, -2.0]]
@@ -152,8 +153,8 @@ EXPERIMENT_7 = {
     "movement": 1.0,
     "learning_rate": 1e-4,
     "num_epochs": 621,
-    "gamma": 0.5,
-    "milestones": [30, 60, 90, 120, 150, 180, 210, 240, 300, 360, 420, 480],
+    "gamma": 0.8,
+    "milestones": [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 360, 420, 480],
 }
 
 EXPERIMENT_DELAYS = {

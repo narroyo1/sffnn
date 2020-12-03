@@ -50,7 +50,9 @@ class Goal1Test:
 
         D1, D2 = get_direction_slots(D, self.device)
 
-        w_bp = get_movement_scalars(D1, D2, self.z_samples)
+        w_bp = get_movement_scalars(
+            D1, D2, self.z_samples.samples, self.z_samples.z_samples_radio
+        )
 
         total_movement = torch.sum(D * w_bp.unsqueeze(2), dim=1)
         d, l = get_unit_and_mag(total_movement)

@@ -39,8 +39,8 @@ if "dataset_builder" not in experiment:
     TRAIN_SIZE = np.array([31013])
     # TRAIN_SIZE = 9611
 
-    TEST_SIZE = np.array([9007])
-    # TEST_SIZE = 1001
+    # TEST_SIZE = np.array([9007])
+    TEST_SIZE = np.array([5007])
 
     datasets = DataSets.generated_dataset(
         experiment=experiment,

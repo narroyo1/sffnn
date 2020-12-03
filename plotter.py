@@ -25,8 +25,8 @@ class Plotter:
         self.x_test = datasets.x_test
         self.y_test = datasets.y_test
 
-        self.z_samples_size = z_samples.z_samples.shape[0]
-        self.z_sample_labels = z_samples.z_sample_labels
+        self.z_samples_size = z_samples.samples.shape[0]
+        self.z_sample_labels = z_samples.labels
 
         self.figures = []
 
