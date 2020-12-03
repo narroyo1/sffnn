@@ -91,10 +91,12 @@ class Tester:
             y_predict_mat = self.model.get_z_sample_preds(
                 x_pt=self.x_test_pt, z_samples=self.z_samples.z_samples,
             )
-            self.goal1_test.step(epoch, y_predict_mat)
+            d, l, c = self.goal1_test.step(epoch, y_predict_mat)
 
             y_predict_mat_d = y_predict_mat.cpu().detach().numpy()
-            self.plotter.plot_datasets_zlines(y_predict_mat_d, self.x_orderings_np)
+            self.plotter.plot_datasets_zlines(
+                y_predict_mat_d, self.x_orderings_np, d, l, c
+            )
 
         if self.goal2_test:
             self.goal2_test.step()

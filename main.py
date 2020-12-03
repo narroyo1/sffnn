@@ -28,7 +28,7 @@ from writer import Writer
 
 experiment = experiments.EXPERIMENT_7
 
-BATCH_SIZE = 128
+BATCH_SIZE = 1024
 # BATCH_SIZE = 2048
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -39,7 +39,7 @@ if "dataset_builder" not in experiment:
     TRAIN_SIZE = np.array([31013])
     # TRAIN_SIZE = 9611
 
-    TEST_SIZE = np.array([5007])
+    TEST_SIZE = np.array([9007])
     # TEST_SIZE = 1001
 
     datasets = DataSets.generated_dataset(
@@ -75,7 +75,7 @@ plotter = Plotter(
     train_s=0.2,
     # zline_s=2,
     # zline_skip=datasets.x_test.shape[0] // 600,
-    zline_s=5,
+    zline_s=15,
     zline_skip=datasets.x_test.shape[0] // 50,
 )
 

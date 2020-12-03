@@ -25,7 +25,9 @@ class Goal1Test:
     def __init__(self, z_samples, datasets, plotter, writer, device):
         self.plotter = plotter
         self.writer = writer
+        self.device = device
 
+        self.z_samples = z_samples
         # self.less_than_ratios = z_samples.less_than_ratios
 
         self.y_test = datasets.y_test
@@ -41,11 +43,30 @@ class Goal1Test:
         """
         This method tests the hypothesis that every z-line divides the level by half.
         """
-        return 0
+        from trainer import get_movement_scalars, get_unit_and_mag, get_direction_slots
+
+        differences = self.y_test_pt - y_predict_mat
+        D, _ = get_unit_and_mag(differences)
+
+        D1, D2 = get_direction_slots(D, self.device)
+
+        w_bp = get_movement_scalars(D1, D2, self.z_samples)
+
+        total_movement = torch.sum(D * w_bp.unsqueeze(2), dim=1)
+        d, l = get_unit_and_mag(total_movement)
 
         # This matrix tells for every test data point if it is smaller than each
         # z-sample prediction.
         # dimensions: (z-samples, test datapoints)
+        # differences[differences < 0] = float("inf")
+        squared = differences ** 2
+        summation = torch.sum(squared, dim=2)
+        closest, indices = torch.min(summation, axis=0)
+        # closest = differences[closest, torch.arange(differences.shape[1])]
+        c = torch.bincount(indices)
+
+        return d.cpu().numpy(), l.cpu().numpy(), c.cpu().numpy()
+
         smaller_than = torch.le(self.y_test_pt.squeeze(), y_predict_mat) + 0.0
 
         # This is the number of test points separting group middle points.
@@ -134,6 +155,6 @@ class Goal1Test:
         """
 
         # Second test: Test training goal 1.
-        mean_goal1 = self.test_goal1(y_predict_mat)
+        return self.test_goal1(y_predict_mat)
 
-        self.writer.log_goal1_error(mean_goal1, epoch)
+        # self.writer.log_goal1_error(mean_goal1, epoch)

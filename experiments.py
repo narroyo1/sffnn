@@ -138,18 +138,22 @@ EXPERIMENT_6 = {
 EXPERIMENT_7 = {
     "x_range_train": np.array([[0.0, 1.0]]),
     "x_range_test": np.array([[0.0, 0.8]]),
-    "base_function": func.binder(func.fn_2out_linear),
+    "base_function": func.binder(func.fn_rectangle),
     "noise_function": func.binder(func.fn_noop2d),
-    "outer_level_scalar": 0.5,
+    "outer_level_scalar": 0.1,
     "skip_epochs": 5,
-    "z_samples_per_dimension": [8, 8],
+    "z_samples_per_dimension": [12, 12],
+    # "z_samples": np.array([[-5.0, 8.0], [-2.5, 8.0], [0.0, 8.0], [2.5, 8.0], [5.0, 8.0]]),
+    # "z_samples": np.array(
+    #    [[0.0, 8.0], [0.0, -8.0], [0.0, 5.0], [0.0, -5.0], [0.0, 2.0], [0.0, -2.0]]
+    # ),
     "z_samples_dimensions": 2,
     "z_samples_radio": 10.0,
     "movement": 1.0,
-    "learning_rate": 1e-3,
+    "learning_rate": 1e-4,
     "num_epochs": 621,
-    "gamma": 0.6,
-    "milestones": [60, 120, 180, 240, 300, 360, 420, 480],
+    "gamma": 0.5,
+    "milestones": [30, 60, 90, 120, 150, 180, 210, 240, 300, 360, 420, 480],
 }
 
 EXPERIMENT_DELAYS = {

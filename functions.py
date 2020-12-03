@@ -72,8 +72,33 @@ def fn_x0_2_x1_2(x_np, multipler0=1, multiplier1=1):
     return result[..., np.newaxis]
 
 
-def fn_2out_linear(x_np, multiplier1=1.0, multiplier2=1.0):
-    result = np.random.rand(x_np.shape[0], 2) * 3
+def fn_circle(x_np):
+    """
+    #length = np.sqrt(np.random.uniform(0, 10, (x_np.shape[0],)))
+    length = np.random.uniform(0, 10, (x_np.shape[0],))
+    angle = np.pi * np.random.uniform(0, 2, (x_np.shape[0],))
+
+    result = np.zeros((x_np.shape[0], 2))
+    result[:, 0] = length * np.cos(angle)
+    result[:, 1] = length * np.sin(angle)
+
+    return result
+    """
+
+    # Circle
+    result = np.random.rand(x_np.shape[0] * 2, 2) * np.array([20, 20]) - np.array(
+        [10, 10]
+    )
+    # result = sample_uniform(np.array([[-10, 10], [-10, 10]]), x_np.shape[0] * 2)
+    in_hypersphere = np.sum(result * result, axis=1) <= 10 * 10
+    result = result[in_hypersphere]
+
+    return result[: x_np.shape[0]]
+
+
+def fn_rectangle(x_np):
+    # Rectangle
+    result = np.random.rand(x_np.shape[0], 2) * np.array([3, 0.5])
     # result[:, 1] += result[:, 0]
 
     return result
@@ -83,6 +108,8 @@ def fn_2out_linear(x_np, multiplier1=1.0, multiplier2=1.0):
 
     return result
 
+
+def fn_2out_linear(x_np, multiplier1=1.0, multiplier2=1.0):
     result = np.zeros((x_np.shape[0], 2))
     for i in range(x_np.shape[0]):
         result[i, 0] = np.random.random()  # + x_np[i]

@@ -31,6 +31,7 @@ class Plotter:
         self.figures = []
 
         self.options = kwargs
+        self.maxl = None
 
     def start_frame(self, epoch):
         """
@@ -136,7 +137,7 @@ class Plotter:
 
         pyplot.show()
 
-    def plot_datasets_zlines(self, y_predict_mat, orderings):
+    def plot_datasets_zlines(self, y_predict_mat, orderings, d, l, c):
         """
         This method plots the test dataset along with the zlines.
         """
@@ -146,20 +147,20 @@ class Plotter:
 
         axe = self.figures[0].add_subplot(2, 2, 3)  # , projection='3d')
         # Filter the z-sample lines so that they are not as dense.
-        zline_skip = self.options.get("zline_skip", 1)
+        # zline_skip = self.options.get("zline_skip", 1)
 
-        x_skipped = self.x_test[::zline_skip]
-        y_predict_mat_skipped = y_predict_mat[:, ::zline_skip]
+        # x_skipped = self.x_test[::zline_skip]
+        # y_predict_mat_skipped = y_predict_mat[:, ::zline_skip]
 
-        x_tiled = np.tile(
-            x_skipped, (y_predict_mat_skipped.shape[0], x_skipped.shape[1])
-        )
+        # x_tiled = np.tile(
+        #    x_skipped, (y_predict_mat_skipped.shape[0], x_skipped.shape[1])
+        # )
         # Reshape y_predict_mat_skipped to be flat.
         # y_predict_mat_flat = y_predict_mat_skipped.flatten()
-        shape = y_predict_mat_skipped.shape
-        y_predict_mat_flat = y_predict_mat_skipped.reshape(
-            (shape[0] * shape[1], shape[2])
-        )
+        # shape = y_predict_mat_skipped.shape
+        # y_predict_mat_flat = y_predict_mat_skipped.reshape(
+        #    (shape[0] * shape[1], shape[2])
+        # )
 
         # Add the scatter plots.
         for dimension in range(len(self.x_dimension_names)):
@@ -179,11 +180,27 @@ class Plotter:
 
             axe.scatter(
                 # x_tiled[:, dimension],
-                y_predict_mat_flat[:, 0],
-                y_predict_mat_flat[:, 1],
+                y_predict_mat[:, -1, 0],
+                y_predict_mat[:, -1, 1],
                 marker="o",
                 s=self.options.get("zline_s", 0.1),
             )
+            # for i in range(c.shape[0]):
+            #    axe.annotate(
+            #        c[i], (y_predict_mat[i, -1, 0], y_predict_mat[i, -1, 1]), fontsize=8
+            #    )
+            # continue
+            if self.maxl is None:
+                self.maxl = np.max(l)
+
+            for i in range(d.shape[0]):
+                axe.arrow(
+                    y_predict_mat[i, -1, 0],
+                    y_predict_mat[i, -1, 1],
+                    d[i, 0] * l[i] / self.maxl,
+                    d[i, 1] * l[i] / self.maxl,
+                )
+            axe.set_title(f"{np.sum(l)/l.shape[0]}")
             continue
 
             for j, label in enumerate(self.z_sample_labels):
