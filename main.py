@@ -1,7 +1,3 @@
-"""
-This module can be used to compose a stochastic function and train a neural network
-to aproximate it.
-"""
 # pylint: disable=invalid-name
 # To add a new cell, type '# %%'
 # To add a new markdown cell, type '# %% [markdown]'
@@ -13,7 +9,7 @@ import torch
 
 import experiments
 
-from model import StochasticFFNN
+from model import Model
 from trainer import Trainer
 from tester import Tester
 from zsamples import ZSamples
@@ -50,9 +46,11 @@ if "dataset_builder" not in experiment:
 else:
     datasets = experiment["dataset_builder"](BATCH_SIZE, device)
 
+# Create the z-samples set.
 z_samples = ZSamples(experiment=experiment, device=device,)
 
-model = StochasticFFNN(
+# Create the trainable model.
+model = Model(
     z_samples.Z_SPACE_SIZE,
     len(datasets.x_dimension_names),
     device=device,
@@ -61,27 +59,29 @@ model = StochasticFFNN(
 
 # %%
 
+# Create the trainer.
 trainer = Trainer(
     experiment=experiment, z_samples=z_samples, model=model, device=device,
 )
 
+# Create the plotter, this object will render all plots to the notebook.
 plotter = Plotter(
     datasets=datasets,
     z_samples=z_samples,
     test_s=0.9,
     train_s=0.2,
-    # zline_s=2,
-    # zline_skip=datasets.x_test.shape[0] // 600,
     zline_s=5,
     zline_skip=datasets.x_test.shape[0] // 50,
 )
 
+# Create the writer, this object will write information that can be browsed using tensorboard.
 writer = Writer(
     datasets_target_function=datasets.target_function_desc,
     trainer_params=trainer.params_desc,
     datasets_params=datasets.params_desc,
 )
 
+# Create the tester, this object will run goal 1, goal 2 and emd tests.
 tester = Tester(
     experiment=experiment,
     z_samples=z_samples,
@@ -94,6 +94,7 @@ tester = Tester(
 
 # %%
 
+# Iterate running the training algorithm.
 for epoch in range(0, experiment["num_epochs"]):
     start = time.time()
 

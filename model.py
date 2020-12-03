@@ -1,5 +1,5 @@
 """
-This module contains class StochasticFFNN.
+This module contains class Model.
 """
 # pylint: disable=bad-continuation
 
@@ -92,7 +92,7 @@ DEFAULT_HIDDEN_SIZE = 1024
 OUT_SIZE = 1
 
 
-class StochasticFFNN(nn.Module, ZSamplePredsMixin):
+class Model(nn.Module, ZSamplePredsMixin):
     """
     This is the neural network model.
     """
@@ -102,7 +102,7 @@ class StochasticFFNN(nn.Module, ZSamplePredsMixin):
     ):
         super().__init__()
         # Perform initialization of the pytorch superclass
-        super(StochasticFFNN, self).__init__()
+        super(Model, self).__init__()
         self.device = device
         self.hidden_size = hidden_size
 
