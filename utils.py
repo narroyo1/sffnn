@@ -35,14 +35,14 @@ def sample_uniform(ranges, sizes):
 
 
 # %%
-def sample_random(ranges, size):
+def sample_random(ranges, sizes):
     """
     @return nparray with shape (size, dims)
     """
     dims = ranges.shape[0]
     start = ranges[:, 0]
     end = ranges[:, 1]
-    samples = (np.random.rand(size, dims) * (end - start)) + start
+    samples = (np.random.rand(sizes, dims) * (end - start)) + start
 
     return samples
 

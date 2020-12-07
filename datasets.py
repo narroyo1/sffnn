@@ -81,18 +81,19 @@ class DataSets:
         x_range_test = experiment["x_range_test"]
 
         target_function_desc = "{}/{}".format(base_function.name, noise_function.name)
-        target_function = lambda x: base_function(x) + noise_function(x)
+        target_function = lambda x, y: noise_function(*base_function(x, y))
 
         params_desc = "train size: {}/test size: {}".format(train_size, test_size)
 
-        def create_dataset(function, size, x_range):
+        def create_dataset(function, sizes, x_ranges):
             """
             This function takes a composed function a size and a range and
             then creates an artificial dataset based on the function.
             """
-            # x_np = sample_random(x_range, size, base_function.x_space_size)
-            x_np = sample_uniform(x_range, size)
-            y_np = function(x_np)
+            # x_np = sample_random(x_ranges, size, base_function.x_space_size)
+            x_np = sample_uniform(x_ranges, sizes)
+            y_np = np.zeros((x_np.shape[0], base_function.y_space_size))
+            x_np, y_np = function(x_np, y_np)
 
             return x_np, y_np
 
