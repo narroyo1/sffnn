@@ -138,7 +138,7 @@ EXPERIMENT_6 = {
 EXPERIMENT_7 = {
     "x_range_train": np.array([[0.0, 1.0]]),
     "x_range_test": np.array([[0.0, 0.8]]),
-    "base_function": func.binder(func.fn_circle, radius=0.1),
+    "base_function": func.binder(func.fn_circle, y_space_size=2, radius=0.1),
     "noise_function": func.binder(func.fn_normal2d),
     "outer_level_scalar": 0.1,
     "skip_epochs": 5,
