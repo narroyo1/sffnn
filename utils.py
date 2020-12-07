@@ -8,7 +8,7 @@ import numpy as np
 import torch
 
 # %%
-def sample_uniform(range_, size, dims):
+def sample_uniform(ranges, size, dims):
     """
     This function returns a uniformly distributed sample (grid) in a space
     of dims dimensions.
@@ -21,8 +21,8 @@ def sample_uniform(range_, size, dims):
 
     slices = []
     for i in range(dims):
-        start = range_[i, 0]
-        end = range_[i, 1]
+        start = ranges[i, 0]
+        end = ranges[i, 1]
         step = (end - start) / (dim_size - 1)
         slices.append(slice(start, end + 0.000000001, step))
     slices = tuple(slices)
@@ -37,12 +37,12 @@ def sample_uniform(range_, size, dims):
 
 
 # %%
-def sample_random(range_, size, dims):
+def sample_random(ranges, size, dims):
     """
     @return nparray with shape (size, dims)
     """
-    start = range_[:, 0]
-    end = range_[:, 1]
+    start = ranges[:, 0]
+    end = ranges[:, 1]
     samples = (np.random.rand(size, dims) * (end - start)) + start
 
     return samples
