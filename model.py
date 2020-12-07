@@ -1,5 +1,5 @@
 """
-This module contains class StochasticFFNN.
+This module contains class Model.
 """
 # pylint: disable=bad-continuation
 
@@ -94,7 +94,7 @@ DEFAULT_HIDDEN_SIZE = 512
 # DEFAULT_HIDDEN_SIZE = 256
 
 
-class StochasticFFNN(nn.Module, ZSamplePredsMixin):
+class Model(nn.Module, ZSamplePredsMixin):
     """
     This is the neural network model.
     """
@@ -104,7 +104,7 @@ class StochasticFFNN(nn.Module, ZSamplePredsMixin):
     ):
         super().__init__()
         # Perform initialization of the pytorch superclass
-        super(StochasticFFNN, self).__init__()
+        super(Model, self).__init__()
         self.device = device
         self.hidden_size = hidden_size
 
@@ -112,7 +112,7 @@ class StochasticFFNN(nn.Module, ZSamplePredsMixin):
         self.linear1 = nn.Linear(x_space_size + z_space_size, self.hidden_size)
         self.linear2 = nn.Linear(self.hidden_size, self.hidden_size)
         self.linear3 = nn.Linear(self.hidden_size, self.hidden_size)
-        # self.linear31 = nn.Linear(self.hidden_size, self.hidden_size)
+        self.linear31 = nn.Linear(self.hidden_size, self.hidden_size)
         self.linear4 = nn.Linear(self.hidden_size, z_space_size)
 
     def forward_z(self, x_pt, z_pt):
@@ -138,8 +138,8 @@ class StochasticFFNN(nn.Module, ZSamplePredsMixin):
         x_pt = torch.nn.functional.leaky_relu(x_pt, 0.1)
         x_pt = self.linear3(x_pt)
         x_pt = torch.nn.functional.leaky_relu(x_pt, 0.1)
-        # x_pt = self.linear31(x_pt)
-        # x_pt = torch.nn.functional.leaky_relu(x_pt, 0.1)
+        x_pt = self.linear31(x_pt)
+        x_pt = torch.nn.functional.leaky_relu(x_pt, 0.1)
 
         x_pt = self.linear4(x_pt)
 
