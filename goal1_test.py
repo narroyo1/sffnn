@@ -8,6 +8,7 @@ import numpy as np
 import torch
 
 from utils import to_tensor
+from trainer import MovementScalarCalculator
 
 # The number of points in X to test for goal 1.
 GOAL1_TEST_POINTS = 50
@@ -28,6 +29,9 @@ class Goal1Test:
         self.device = device
 
         self.z_samples = z_samples
+        self.scalar_calculator = MovementScalarCalculator(
+            z_samples.z_samples_radio, device
+        )
         # self.less_than_ratios = z_samples.less_than_ratios
 
         self.y_test = datasets.y_test
@@ -43,19 +47,17 @@ class Goal1Test:
         """
         This method tests the hypothesis that every z-line divides the level by half.
         """
-        from trainer import get_movement_scalars, get_unit_and_mag, get_direction_slots
+        from trainer import get_unit_vector_and_magnitude
 
         differences = self.y_test_pt - y_predict_mat
-        D, _ = get_unit_and_mag(differences)
 
-        D1, D2 = get_direction_slots(D, self.device)
-
-        w_bp = get_movement_scalars(
-            D1, D2, self.z_samples.samples, self.z_samples.z_samples_radio
+        w_bp, D = self.scalar_calculator.calculate_scalars(
+            differences, self.z_samples.samples, self.z_samples.outer_level
         )
 
-        total_movement = torch.sum(D * w_bp.unsqueeze(2), dim=1)
-        d, l = get_unit_and_mag(total_movement)
+        # total_movement = torch.sum(D * w_bp.unsqueeze(2), dim=1)
+        total_movement = D * w_bp.unsqueeze(2)
+        d, l = get_unit_vector_and_magnitude(total_movement)
 
         # This matrix tells for every test data point if it is smaller than each
         # z-sample prediction.
@@ -67,14 +69,27 @@ class Goal1Test:
         # closest = differences[closest, torch.arange(differences.shape[1])]
         c = torch.bincount(indices)
 
+        for j in range(0, total_movement.shape[1], 500):
+            ts = torch.sum(total_movement[:, j : j + 500], dim=1)
+            print(j)
+            for i in range(total_movement.shape[0]):
+                print(i, ts[i, 0], ts[i, 1])
+
         return d.cpu().numpy(), l.cpu().numpy(), c.cpu().numpy()
 
-        smaller_than = torch.le(self.y_test_pt.squeeze(), y_predict_mat) + 0.0
+        # Boolean (0/1) matrix indicating if each test sample is smaller than each z-sample ring.
+        smaller_than = (
+            torch.le(
+                torch.sum(self.y_test_pt ** 2, dim=1),
+                torch.sum(y_predict_mat ** 2, dim=2),
+            )
+            + 0.0
+        )
 
         # This is the number of test points separting group middle points.
         test_point_spacing = int(self.y_test.shape[0] / GOAL1_TEST_POINTS)
 
-        # This is the mean ratio of smaller than over all test data points for each z-sample.
+        # This is the mean ratio of smaller than over all test data points for each z-sample ring.
         # dimensions: (z-samples)
         goal1_mean = torch.mean(smaller_than, dim=1,)
         # This is the error for every mean ratio above.
@@ -86,6 +101,8 @@ class Goal1Test:
         goal1_err_abs = torch.abs(goal1_err)
         # This is the single mean value of the absolute error of all z-samples.
         goal1_mean_err_abs = torch.mean(goal1_err_abs)
+        print(goal1_mean_err_abs)
+        return None, None, None
 
         num_dimensions = self.x_test.shape[1]
         for dimension in range(num_dimensions):

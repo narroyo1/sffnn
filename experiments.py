@@ -136,14 +136,14 @@ EXPERIMENT_6 = {
 }
 
 EXPERIMENT_7 = {
-    "x_range_train": np.array([[0.0, 1.0]]),
-    "x_range_test": np.array([[0.0, 0.8]]),
-    "base_function": func.binder(func.fn_circle, y_space_size=2, radius=0.1),
-    "noise_function": func.binder(func.fn_normal2d),
+    "x_range_train": np.array([[-5.0, 5.0]]),
+    "x_range_test": np.array([[-4.0, 4.0]]),
+    "base_function": func.binder(func.fn_x2_2d, y_space_size=2, multiplier=5.0),
+    "noise_function": func.binder(func.fn_normal2d, std=52.5),
     "outer_level_scalar": 0.1,
     "skip_epochs": 5,
-    "z_samples_per_dimension": [18, 18],
-    "selection_size": 0.4,
+    "z_samples_per_dimension": [15, 5],
+    "selection_size": 0.5,
     # "z_samples": np.array([[-5.0, 8.0], [-2.5, 8.0], [0.0, 8.0], [2.5, 8.0], [5.0, 8.0]]),
     # "z_samples": np.array(
     #    [[0.0, 8.0], [0.0, -8.0], [0.0, 5.0], [0.0, -5.0], [0.0, 2.0], [0.0, -2.0]]

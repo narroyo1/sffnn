@@ -229,12 +229,12 @@ class Plotter:
 
         if len(self.x_dimension_names) == 1:
             axes = [
-                self.figures[i].add_subplot(2, 2, 4)  # , projection='3d')
+                self.figures[i].add_subplot(2, 2, 4))
                 for i in range(len(self.x_dimension_names))
             ]
         else:
             axes = [
-                self.figures[i].add_subplot(1, 2, 2)  # , projection='3d')
+                self.figures[i].add_subplot(1, 2, 2))
                 for i in range(len(self.x_dimension_names))
             ]
 

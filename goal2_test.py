@@ -59,4 +59,4 @@ class Goal2Test:
         # Second test: Test training goal 2.
         mon_incr = self.test_goal2()
 
-        self.plotter.display_goal2(mon_incr=mon_incr)
+        # self.plotter.display_goal2(mon_incr=mon_incr)

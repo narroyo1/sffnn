@@ -9,7 +9,7 @@ from torch import optim
 
 # pylint: disable=bad-continuation, not-callable
 
-EPSILON = np.finfo(np.float32).eps * 100
+EPSILON = np.finfo(np.float32).eps * 1000
 
 
 def assert_unit_vector(unit_vector):
@@ -19,10 +19,11 @@ def assert_unit_vector(unit_vector):
     length = torch.sqrt(summation)
 
     err = torch.abs(length - 1.0)
-    assert (err < EPSILON).all()
+    if (err >= EPSILON).any():
+        assert False
 
 
-def get_unit_and_mag(difference):
+def get_unit_vector_and_magnitude(difference):
     last_dimension = len(difference.shape) - 1
     # dimensions: (z-samples, data points, output dimensions)
     squared = difference * difference
@@ -37,105 +38,147 @@ def get_unit_and_mag(difference):
     return D, length
 
 
-SLOT_SIZE = np.pi / 15.0
+class MovementScalarCalculator:
 
+    SLOT_SIZE = np.pi / 15.0
 
-def get_direction_slots(D, device):
-    angles = torch.atan2(D[:, :, 1], D[:, :, 0])
+    def __init__(self, z_samples_radio, device):
+        self.z_samples_radio = z_samples_radio
+        self.device = device
 
-    slots = torch.tensor((angles + np.pi) / SLOT_SIZE, dtype=torch.long, device=device)
-    slots = torch.tensor(slots, dtype=torch.float32, device=device)
+    def get_slot_unit_vectors(self, D):
+        """
+        This method takes a unit vector and returns 2 unit vectors defining the slot it
+        belongs to.
+        """
+        # Transform the unit vector into an angle.
+        angles = torch.atan2(D[:, :, 1], D[:, :, 0])
 
-    open_angles = slots * SLOT_SIZE - np.pi
-
-    D1 = torch.zeros(D.shape, device=device)
-    D2 = torch.zeros(D.shape, device=device)
-
-    D1[:, :, 0] = torch.cos(open_angles)
-    D1[:, :, 1] = torch.sin(open_angles)
-    D2[:, :, 0] = torch.cos(open_angles + SLOT_SIZE)
-    D2[:, :, 1] = torch.sin(open_angles + SLOT_SIZE)
-    assert_unit_vector(D1)
-    assert_unit_vector(D2)
-
-    return D1, D2
-
-
-def get_distances(D, z_samples, z_samples_radio):
-    def dot_product_batch(X, Y):
-        view_size = X.shape[0] * Y.shape[1]
-        # The dot product of a unit vector with itself is 1.0.
-        result = torch.bmm(
-            X.view(view_size, 1, X.shape[2]), Y.view(view_size, Y.shape[2], 1)
+        # Transform the angle to the lower bound slot index. Dividing by the slot size and then
+        # casting to integer. Why adding pi and then substracting it?
+        slots = torch.tensor(
+            (angles + np.pi) / self.SLOT_SIZE, dtype=torch.long, device=self.device
         )
-        return result.view((X.shape[0], X.shape[1]))
+        # Convert back to float.
+        slots = torch.tensor(slots, dtype=torch.float32, device=self.device)
 
-    a = dot_product_batch(D, D)
-    ########################
-    err = torch.abs(a - 1.0)
-    assert (err < EPSILON).all()
-    ########################
-    # dimensions: (z-samples, data points, output dimensions)
-    O = torch.stack([z_samples] * D.shape[1], dim=1)
-    # dimensions: (z-samples, data points, output dimensions)
-    b = 2 * dot_product_batch(O, D)
-    # dimensions: (z-samples, data points, output dimensions)
-    c = dot_product_batch(O, O) - z_samples_radio ** 2
-    # dimensions: (z-samples, data points, output dimensions)
-    discriminant = b * b - 4 * a * c
-    # Every ray should intersect the circle twice.
-    assert (discriminant > 0).all()
+        # Convert to angles.
+        open_angles = slots * self.SLOT_SIZE - np.pi
 
-    # dimensions: (z-samples, data points, output dimensions)
-    # Elements in x0 will always be positive and elements in x1 will always be
-    # negative.
-    x0 = (-b + torch.sqrt(discriminant)) / (2 * a)
-    assert (x0 > 0.0).all()
-    x1 = (-b - torch.sqrt(discriminant)) / (2 * a)
-    assert (x1 < 0.0).all()
+        D1 = torch.zeros(D.shape, device=self.device)
+        D2 = torch.zeros(D.shape, device=self.device)
 
-    # Check that adding the distances to the origins gives a point in the circumference
-    ########################
-    ax = O + x0.unsqueeze(2) * D
-    err = torch.abs(torch.sqrt(torch.sum(ax * ax, dim=2)) - z_samples_radio)
-    assert (err < EPSILON).all()
-    bx = O + x1.unsqueeze(2) * D
-    err = torch.abs(torch.sqrt(torch.sum(bx * bx, dim=2)) - z_samples_radio)
-    assert (err < EPSILON).all()
-    ########################
+        D1[:, :, 0] = torch.cos(open_angles)
+        D1[:, :, 1] = torch.sin(open_angles)
+        D2[:, :, 0] = torch.cos(open_angles + self.SLOT_SIZE)
+        D2[:, :, 1] = torch.sin(open_angles + self.SLOT_SIZE)
+        assert_unit_vector(D1)
+        assert_unit_vector(D2)
 
-    return x0, x1
+        return D1, D2
 
+    def get_distances(self, D, z_samples):
+        def dot_product_batch(X, Y):
+            view_size = X.shape[0] * Y.shape[1]
+            # The dot product of a unit vector with itself is 1.0.
+            result = torch.bmm(
+                X.view(view_size, 1, X.shape[2]), Y.view(view_size, Y.shape[2], 1)
+            )
+            return result.view((X.shape[0], X.shape[1]))
 
-def get_movement_scalars(D1, D2, z_samples, z_samples_radio):
-    x0_1, x1_1 = get_distances(D1, z_samples, z_samples_radio)
-    x0_2, x1_2 = get_distances(D2, z_samples, z_samples_radio)
+        a = dot_product_batch(D, D)
+        ########################
+        err = torch.abs(a - 1.0)
+        assert (err < EPSILON).all()
+        ########################
+        # dimensions: (z-samples, data points, output dimensions)
+        O = torch.stack([z_samples] * D.shape[1], dim=1)
+        # dimensions: (z-samples, data points, output dimensions)
+        b = 2 * dot_product_batch(O, D)
+        # dimensions: (z-samples, data points, output dimensions)
+        c = dot_product_batch(O, O) - self.z_samples_radio ** 2
+        # dimensions: (z-samples, data points, output dimensions)
+        discriminant = b * b - 4 * a * c
+        # Every ray should intersect the circle twice.
+        assert (discriminant > 0).all()
 
-    x0 = x0_1 * x0_2 * np.sin(SLOT_SIZE) * 0.5
-    x1 = x1_1 * x1_2 * np.sin(SLOT_SIZE) * 0.5
+        # dimensions: (z-samples, data points, output dimensions)
+        # Elements in x0 will always be positive and elements in x1 will always be
+        # negative.
+        x0 = (-b + torch.sqrt(discriminant)) / (2 * a)
+        ########################
+        if (x0 <= -EPSILON).any():
+            assert False
+        ########################
+        x1 = (-b - torch.sqrt(discriminant)) / (2 * a)
+        ########################
+        assert (x1 < EPSILON).all()
+        ########################
 
-    crossarea = x0 + x1
-    # crossarearatio = crossarea / (
-    #    2.0 * 0.5 * np.sin(SLOT_SIZE) * z_samples_radio ** 2
-    # )
-    # This doesn't seem to help.
-    crossarearatio = (2.0 * 0.5 * np.sin(SLOT_SIZE) * z_samples_radio ** 2) / crossarea
-    ########################
-    # assert (crossarearatio < 1.0).all()
-    ########################
-    # outer_level0 = x0 <= 0.01
-    # outer_level1 = x1 >= -0.01
+        # Check that adding the distances to the origins gives a point in the circumference
+        ########################
+        ax = O + x0.unsqueeze(2) * D
+        err = torch.abs(torch.sqrt(torch.sum(ax * ax, dim=2)) - self.z_samples_radio)
+        assert (err < EPSILON).all()
+        bx = O + x1.unsqueeze(2) * D
+        err = torch.abs(torch.sqrt(torch.sum(bx * bx, dim=2)) - self.z_samples_radio)
+        assert (err < EPSILON).all()
+        ########################
 
-    # x0[x0 <= 0.01] = 0.01
-    #
-    # w_bp = crossarearatio / (2 * x0)
-    w_bp = 1 / (2 * x0)
-    # w_bp[outer_level0] = crossdist[outer_level0] * z_samples.outer_level_scalar
-    # w_bp[outer_level1] = 0.0
-    assert not torch.isnan(w_bp).any()
-    assert not torch.isinf(w_bp).any()
+        return x0, x1
 
-    return w_bp
+    def calculate_scalars(self, difference, z_samples, outer_level):
+        """
+        Calculate the movement scalars for every difference.
+        """
+
+        # Get the unit vector of the differences.
+        D, _ = get_unit_vector_and_magnitude(difference)
+
+        # Get the unit vectors of the slots of each difference.
+        D1, D2 = self.get_slot_unit_vectors(D)
+
+        # Get the positive and negative distances for each difference.
+        x0_1, x1_1 = self.get_distances(D1, z_samples)
+        x0_2, x1_2 = self.get_distances(D2, z_samples)
+
+        # Get the area for the slot of each difference.
+        x0 = x0_1 * x0_2 * np.sin(self.SLOT_SIZE) * 0.5
+        x1 = x1_1 * x1_2 * np.sin(self.SLOT_SIZE) * 0.5
+
+        crossarea = x0 + x1
+        # crossarearatio = crossarea / (
+        #    2.0 * 0.5 * np.sin(self.SLOT_SIZE) * z_samples_radio ** 2
+        # )
+        # This doesn't seem to help.
+        crossarearatio = (
+            2.0 * 0.5 * np.sin(self.SLOT_SIZE) * self.z_samples_radio ** 2
+        ) / crossarea
+        ########################
+        # assert (crossarearatio < 1.0).all()
+        ########################
+        # A difference is in the positive outer level if it is in outer level and the positive
+        # area is 0.
+        outer_level0 = (torch.abs(x0) < EPSILON) & outer_level.unsqueeze(1)
+        # A difference is in the negative outer level if it is in the outer level and the
+        # positive area is greater than 0.
+        outer_level1 = (x0 > EPSILON) & outer_level.unsqueeze(1)
+
+        # w_bp = crossarearatio / (2 * x0)
+        w_bp = 1 / (2 * x0)
+        w_bp[
+            outer_level0
+        ] = 0.1  # crossdist[outer_level0] * z_samples.outer_level_scalar
+        w_bp[outer_level1] = 0.0
+
+        # w_bp[~outer_level] = w_bp[~outer_level] * (
+        #    torch.max(w_bp[~outer_level]) / torch.max(w_bp[~outer_level], dim=1).values
+        # ).unsqueeze(1)
+        if torch.isnan(w_bp).any():
+            assert False
+        assert not torch.isinf(w_bp).any()
+
+        return w_bp, D
 
 
 class Trainer:
@@ -148,6 +191,9 @@ class Trainer:
         self, experiment, z_samples, model, device,
     ):
         self.z_samples = z_samples
+        self.scalar_calculator = MovementScalarCalculator(
+            z_samples.z_samples_radio, device
+        )
         self.movement = experiment["movement"]
         self.model = model
         self.device = device
@@ -166,6 +212,7 @@ class Trainer:
 
         # Create an Weighted Mean Squared Error (WMSE) loss function for the targets.
         def weighted_mse_loss(inputs, targets, weights):
+            # MSE
             sqerr = (inputs - targets) ** 2
             ## MAE
             # sqerr = torch.abs(inputs - targets)
@@ -195,16 +242,14 @@ class Trainer:
         """
         This method is called once for every training batch in an epoch.
         """
-        z_samples = self.z_samples.selection()
+        z_samples, outer_level = self.z_samples.selection()
         # Calculate the prediction matrix using the batch data and the z-samples.
         # dimensions: (z-samples, data points, output dimensions)
         y_predict_mat = self.model.get_z_sample_preds(x_pt=x_pt, z_samples=z_samples)
 
-        D, _ = get_unit_and_mag(y_pt - y_predict_mat)
-
-        D1, D2 = get_direction_slots(D, self.device)
-
-        w_bp = get_movement_scalars(D1, D2, z_samples, self.z_samples.z_samples_radio)
+        w_bp, D = self.scalar_calculator.calculate_scalars(
+            y_pt - y_predict_mat, z_samples, outer_level
+        )
         w_bp = w_bp.view((w_bp.shape[0] * w_bp.shape[1], 1))
 
         # dimensions: (z-samples, data points, output dimensions)

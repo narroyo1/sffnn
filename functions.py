@@ -74,12 +74,19 @@ def fn_x0_2_x1_2(x_np, y_np, *, multipler0=1, multiplier1=1):
     return x_np, y_np
 
 
+def fn_x2_2d(x_np, y_np, *, multiplier=2.0):
+    """ x^2 function. """
+    # y_np += x_np * x_np * multiplier
+    y_np[:, 0] += x_np[:, 0] * x_np[:, 0] * multiplier
+    return x_np, y_np
+
+
 def fn_circle(x_np, y_np, *, radius=10.0):
-    # length = np.sqrt(np.random.uniform(0, radius, (x_np.shape[0],)))
-    length = np.random.uniform(0, radius, (x_np.shape[0],))
+    length = np.sqrt(np.random.uniform(0, radius, (x_np.shape[0],)))
+    # length = np.random.uniform(0, radius, (x_np.shape[0],))
     angle = np.pi * np.random.uniform(0, 2, (x_np.shape[0],))
 
-    #result = np.zeros((x_np.shape[0], 2))
+    # result = np.zeros((x_np.shape[0], 2))
     y_np[:, 0] += length * np.cos(angle)
     y_np[:, 1] += length * np.sin(angle)
 
@@ -156,15 +163,14 @@ def fn_normalx(x_np, *, std=5.0):
     return np.random.randn(*x_np.shape) * x_np * std
 
 
-def fn_noop2d(x_np):
-    result = np.zeros((x_np.shape[0], 2))
-    return result
+def fn_noop2d(x_np, y_np):
+    return x_np, y_np
 
 
 def fn_normal2d(x_np, y_np, *, std=5.0):
     """ Normal distribution noise multipled by the value of "x". """
     mean = [0, 0]
-    cov = [[5, 1], [2, 5]]
+    cov = [[std, 0], [0, std]]
     y_np += np.random.multivariate_normal(mean, cov, x_np.shape[0])
     return x_np, y_np
 

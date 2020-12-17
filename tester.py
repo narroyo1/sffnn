@@ -66,7 +66,7 @@ class Tester:
         self.writer.log_weights(model=self.model, epoch=epoch)
 
         # Only run tests every number of epochs.
-        if epoch % self.skip_epochs != 0 or epoch < 10:
+        if epoch % self.skip_epochs != 0:
             # if epoch != 267:
             return
 
