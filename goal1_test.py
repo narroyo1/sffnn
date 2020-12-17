@@ -22,8 +22,7 @@ class Goal1Test:
     the predictions for the z-samples have the right distribution ratios.
     """
 
-    def __init__(self, z_samples, datasets, plotter, writer, device):
-        self.plotter = plotter
+    def __init__(self, z_samples, datasets, writer, device):
         self.writer = writer
 
         self.less_than_ratios = z_samples.less_than_ratios
@@ -62,6 +61,9 @@ class Goal1Test:
         goal1_err_abs = torch.abs(goal1_err)
         # This is the single mean value of the absolute error of all z-samples.
         goal1_mean_err_abs = torch.mean(goal1_err_abs)
+
+        # The local errors for every dimension will be returned in this variable.
+        local_goal1_errs = []
 
         num_dimensions = self.x_test.shape[1]
         for dimension in range(num_dimensions):
@@ -109,7 +111,6 @@ class Goal1Test:
                     ]
                 )
 
-            # mean_goal1_errs[dimension] = np.mean(local_goal1_err)
             x_np[0] = self.x_test[self.x_orderings_pt[dimension][0]][dimension]
             local_goal1_err[0] = local_goal1_err[1]
             local_goal1_max_err[0] = local_goal1_max_err[1]
@@ -117,15 +118,9 @@ class Goal1Test:
             local_goal1_err[-1] = local_goal1_err[-2]
             local_goal1_max_err[-1] = local_goal1_max_err[-2]
 
-            self.plotter.plot_goal1(
-                x_np=x_np,
-                local_goal1_err=local_goal1_err,
-                global_goal1_err=goal1_mean_err_abs,
-                dimension=dimension,
-                local_goal1_err_zsample=local_goal1_err_zsample,
-            )
+            local_goal1_errs.append((x_np, local_goal1_err, local_goal1_err_zsample))
 
-        return goal1_mean_err_abs
+        return goal1_mean_err_abs, local_goal1_errs
 
     def step(self, epoch, y_predict_mat):
         """
@@ -133,6 +128,8 @@ class Goal1Test:
         """
 
         # Second test: Test training goal 1.
-        mean_goal1 = self.test_goal1(y_predict_mat)
+        global_goal1_err, local_goal1_errs = self.test_goal1(y_predict_mat)
 
-        self.writer.log_goal1_error(mean_goal1, epoch)
+        self.writer.log_goal1_error(global_goal1_err, epoch)
+
+        return global_goal1_err, local_goal1_errs
