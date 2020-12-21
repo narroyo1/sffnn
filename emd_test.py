@@ -93,7 +93,7 @@ class EMDTest:
         """
         Runs and plots a step of the EMD test.
         """
-        return
+        # return
 
         # First test: calculate the emd.
         mean_emd = self.calculate_emd(y_pred_d)

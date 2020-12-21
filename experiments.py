@@ -142,7 +142,7 @@ EXPERIMENT_7 = {
     "noise_function": func.binder(func.fn_normal2d, std=52.5),
     "outer_level_scalar": 0.1,
     "skip_epochs": 5,
-    "z_samples_per_dimension": [15, 5],
+    "z_samples_per_dimension": [18, 8],
     "selection_size": 0.5,
     # "z_samples": np.array([[-5.0, 8.0], [-2.5, 8.0], [0.0, 8.0], [2.5, 8.0], [5.0, 8.0]]),
     # "z_samples": np.array(

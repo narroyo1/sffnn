@@ -98,7 +98,12 @@ class ProcessPlotter:
                         self.axes_emd[dimension].autoscale_view(True, True, True)
 
                 elif data_type == "goal1":
-                    x_np, local_goal1_err, global_goal1_err, mon_incr = data
+                    (
+                        x_np,
+                        local_goal1_err,
+                        global_goal1_err,
+                        local_goal1_err_zsample,
+                    ) = data
                     if x_np is not None:
                         (line_goal1,) = self.axes_goals[dimension].plot(
                             x_np, local_goal1_err, "o--", label="goal 1 - local error"
@@ -112,29 +117,29 @@ class ProcessPlotter:
                             transform=self.axes_goals[dimension].transAxes,
                         )
                         self.text_goal1.append(text_goal1)
-                        text_goal2 = self.axes_goals[dimension].text(
-                            0.1,
-                            0.90,
-                            "goal 2 - monotonically increasing {}".format(
-                                "yes" if mon_incr else "no"
-                            ),
-                            {"color": "green" if mon_incr else "red"},
-                            transform=self.axes_goals[dimension].transAxes,
-                        )
-                        self.text_goal2.append(text_goal2)
+                        # text_goal2 = self.axes_goals[dimension].text(
+                        #    0.1,
+                        #    0.90,
+                        #    "goal 2 - monotonically increasing {}".format(
+                        #        "yes" if mon_incr else "no"
+                        #    ),
+                        #    {"color": "green" if mon_incr else "red"},
+                        #    transform=self.axes_goals[dimension].transAxes,
+                        # )
+                        # self.text_goal2.append(text_goal2)
                     else:
                         self.line_goal1[dimension].set_ydata(local_goal1_err)
                         self.text_goal1[dimension].set_text(
                             f"goal 1 - mean error {global_goal1_err:.4f}"
                         )
-                        self.text_goal2[dimension].set_text(
-                            "goal 2 - monotonically increasing {}".format(
-                                "yes" if mon_incr else "no"
-                            )
-                        )
-                        self.text_goal2[dimension].set_color(
-                            "green" if mon_incr else "red"
-                        )
+                        # self.text_goal2[dimension].set_text(
+                        #    "goal 2 - monotonically increasing {}".format(
+                        #        "yes" if mon_incr else "no"
+                        #    )
+                        # )
+                        # self.text_goal2[dimension].set_color(
+                        #    "green" if mon_incr else "red"
+                        # )
                         self.axes_goals[dimension].relim()
                         self.axes_goals[dimension].autoscale_view(True, True, True)
 
@@ -198,7 +203,7 @@ class ProcessPlotter:
                             )
 
                 elif data_type == "preds":
-                    continue
+                    # continue
                     x_test, y_test = data
                     if x_test is not None:
                         self.scatter_preds[dimension] = self.axes_plot_preds[
@@ -210,6 +215,7 @@ class ProcessPlotter:
                             marker="x",
                             s=self.options.get("train_s", 0.5),
                         )
+
                         self.x_tests_preds[dimension] = x_test
                         legend = [r"test dataset ($y \sim Y_{x \in X}$)"]
                         legend.append(r"random preds ($f(x \in X, z \sim Z)$)")
@@ -218,13 +224,18 @@ class ProcessPlotter:
                             legend, loc="upper right",
                         )
                     else:
-                        X = np.c_[self.x_tests_preds[dimension], y_test]
+                        self.scatter_preds[dimension]._offsets3d = (
+                            self.x_tests_preds[dimension],
+                            y_test[:, 0],
+                            y_test[:, 1],
+                        )
+                        # X = np.c_[self.x_tests_preds[dimension], y_test]
                         # X = np.c_[y_test[:, 0], y_test[:, 1]]
-                        self.scatter_preds[dimension].set_offsets(X)
-                        xmin = X[:, 0].min()
-                        xmax = X[:, 0].max()
-                        ymin = X[:, 1].min()
-                        ymax = X[:, 1].max()
+                        # self.scatter_preds[dimension].set_offsets(X)
+                        xmin = self.x_tests_preds[dimension].min()
+                        xmax = self.x_tests_preds[dimension].max()
+                        # ymin = X[:, 1].min()
+                        # ymax = X[:, 1].max()
                         self.axes_plot_preds[dimension].set_xlim(
                             xmin - 0.1 * (xmax - xmin), xmax + 0.1 * (xmax - xmin)
                         )
@@ -271,13 +282,12 @@ class ProcessPlotter:
         for dimension in range(total_dimensions):
             figure_idx = dimension // 4
             figure_dimension = dimension % figure_dimensions
-            """
             ############################################################################
             position = 1 if total_dimensions == 1 else figure_dimension * 4 + 1
             axes_goals = self.figures[figure_idx].add_subplot(
                 goal_rows, columns, position
             )
-            axes_goals.set_ylim(0.0, 0.2)
+            # axes_goals.set_ylim(0.0, 0.2)
             axes_goals.set_title("Training goals")
             axes_goals.set_xlabel(f"$X_{dimension}$")
             axes_goals.grid()
@@ -305,16 +315,18 @@ class ProcessPlotter:
             axes_plot_preds.grid()
             self.axes_plot_preds.append(axes_plot_preds)
             ############################################################################
-            """
 
             ############################################################################
             if total_dimensions == 1:
                 self.axes_plot_zlines = self.figures[0].add_subplot(
-                    # plot_rows, columns, 4, projection="3d"
-                    1,
-                    1,
-                    1,
-                    projection="3d",
+                    plot_rows,
+                    columns,
+                    4,
+                    projection="3d"
+                    # 1,
+                    # 1,
+                    # 1,
+                    # projection="3d",
                 )
                 self.axes_plot_zlines.set_title("test dataset & z-lines")
                 self.axes_plot_zlines.set_xlabel(f"$X_{dimension}$")
@@ -374,20 +386,29 @@ class Plotter:
         """
         self.plot_pipe.send(("start", None, (epoch),))
 
-    def plot_goals(
-        self, x_np, local_goal1_err, global_goal1_err, mon_incr, dimension,
+    def plot_goal1(
+        self,
+        x_np,
+        local_goal1_err,
+        global_goal1_err,
+        dimension,
+        local_goal1_err_zsample,
     ):
         """
         This method sends the goal 1 and goal 2 information to the plotter process.
         """
-        return
         if not self.first:
             x_np = None
         self.plot_pipe.send(
             (
                 "goal1",
                 dimension,
-                (x_np, local_goal1_err, global_goal1_err.data.cpu().numpy(), mon_incr,),
+                (
+                    x_np,
+                    local_goal1_err,
+                    global_goal1_err.data.cpu().numpy(),
+                    local_goal1_err_zsample,
+                ),
             )
         )
 
@@ -413,7 +434,7 @@ class Plotter:
         self.first = False
         self.plot_pipe.send(("end", None, None))
 
-    def plot_datasets_zlines(self, y_predict_mat, orderings, d, l, c):
+    def plot_datasets_zlines(self, y_predict_mat, orderings):
         # Filter the z-sample lines so that they are not as dense.
         zline_skip = self.options.get("zline_skip", 1)
 

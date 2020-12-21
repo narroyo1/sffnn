@@ -13,12 +13,12 @@ from utils import sample_uniform, sample_random, to_tensor
 def sample_hypersphere(z_ranges, z_samples):
     """
     This function will return multiple samples with coordinates 0, 0. This is by
-    design, since having only one sample at 0, 0 will leave it in an unfair competition
-    and will be learned more slowly.
+    design, since having only one sample at 0, 0 would leave it in an unfair competition
+    and would be learned more slowly.
     """
     angle = np.linspace(-np.pi, np.pi, z_samples[0] + 1)
     angle = angle[1:]
-    line = np.sqrt(np.linspace(0.0, 1.0, z_samples[1] + 1)) * z_ranges[0][1]
+    line = np.sqrt(np.linspace(0.0, 1.0, z_samples[1])) * z_ranges[0][1]
     # line = np.linspace(0.0, 1.0, z_samples[1] + 1) * z_ranges[0][1]
     # line = line[1:]
     # line = line[:-1]
@@ -28,7 +28,10 @@ def sample_hypersphere(z_ranges, z_samples):
     b = (line[:, np.newaxis] * np.sin(angle)).flatten()
 
     # return np.append(np.column_stack((a, b)), [[0, 0]], axis=0)
-    return np.column_stack((a, b))
+    return (
+        np.column_stack((a, b)),
+        np.tile(np.arange(z_samples[1]), z_samples[0]).flatten(),
+    )
 
 
 class ZSamples:
@@ -50,7 +53,7 @@ class ZSamples:
             )
             z_samples_per_dimension = experiment["z_samples_per_dimension"]
             # z_samples = sample_uniform(z_ranges_per_dimension, z_samples_per_dimension)
-            z_samples = sample_hypersphere(
+            z_samples, ring_indices = sample_hypersphere(
                 z_ranges_per_dimension, z_samples_per_dimension
             )
             # z_samples_rs = z_samples.reshape(
@@ -66,6 +69,8 @@ class ZSamples:
             z_samples = experiment["z_samples"]
 
         self.samples = to_tensor(z_samples, device)
+        self.ring_indices = torch.tensor(ring_indices, dtype=torch.long, device=device)
+        self.ring_numbers = z_samples_per_dimension[1]
         self.outer_level = torch.tensor(outer_level, dtype=torch.bool).to(device=device)
         # self.outer_samples = to_tensor(outer_samples, device)
         self.labels = experiment.get(
@@ -79,7 +84,7 @@ class ZSamples:
         self.outer_level_scalar = experiment.get("outer_level_scalar")
 
     def selection(self):
-        return self.samples, self.outer_level
+        # return self.samples, self.outer_level
         import torch
 
         indices = np.random.choice(

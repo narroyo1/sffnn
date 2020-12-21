@@ -45,14 +45,12 @@ class Tester:
             self.emd_test = None
 
         if experiment.get("goal1_test", True):
-            self.goal1_test = Goal1Test(
-                z_samples, datasets, plotter, self.writer, device,
-            )
+            self.goal1_test = Goal1Test(z_samples, datasets, self.writer, device,)
         else:
             self.goal1_test = None
 
         if experiment.get("goal2_test", True):
-            self.goal2_test = Goal2Test(z_samples, datasets, plotter, model, device)
+            self.goal2_test = Goal2Test(z_samples, datasets, model, device)
         else:
             self.goal2_test = None
 
@@ -67,7 +65,6 @@ class Tester:
 
         # Only run tests every number of epochs.
         if epoch % self.skip_epochs != 0:
-            # if epoch != 267:
             return
 
         self.plotter.start_frame(epoch)
@@ -81,7 +78,7 @@ class Tester:
                 y_pred = self.model.forward_z(self.x_test_pt, z_test_pt)
 
             # Create a numpy version of the prediction tensor.
-            y_pred_d = y_pred.cpu().detach()
+            y_pred_d = y_pred.cpu().detach().numpy()
             self.emd_test.step(epoch, y_pred_d)
 
             self.plotter.plot_datasets_preds(y_pred_d)
@@ -91,15 +88,29 @@ class Tester:
             y_predict_mat = self.model.get_z_sample_preds(
                 x_pt=self.x_test_pt, z_samples=self.z_samples.samples,
             )
-            d, l, c = self.goal1_test.step(epoch, y_predict_mat)
+
+            global_goal1_err, local_goal1_errs = self.goal1_test.step(
+                epoch, y_predict_mat
+            )
+            for (
+                dimension,
+                (x_np, local_goal1_err, local_goal1_err_zsample),
+            ) in enumerate(local_goal1_errs):
+                self.plotter.plot_goal1(
+                    x_np=x_np,
+                    local_goal1_err=local_goal1_err,
+                    global_goal1_err=global_goal1_err,
+                    dimension=dimension,
+                    local_goal1_err_zsample=local_goal1_err_zsample,
+                )
 
             y_predict_mat_d = y_predict_mat.cpu().detach().numpy()
-            self.plotter.plot_datasets_zlines(
-                y_predict_mat_d, self.x_orderings_np, d, l, c
-            )
+            self.plotter.plot_datasets_zlines(y_predict_mat_d, self.x_orderings_np)
 
         if self.goal2_test:
-            self.goal2_test.step()
+            mon_incr = self.goal2_test.step()
+
+            # self.plotter.display_goal2(mon_incr=mon_incr)
         self.plotter.end_frame(epoch)
 
         # self.writer.log_plot(self.plotter.figures, epoch)

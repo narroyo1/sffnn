@@ -15,8 +15,7 @@ class Goal2Test:
     the model's output is monotonically increasing.
     """
 
-    def __init__(self, z_samples, datasets, plotter, model, device):
-        self.plotter = plotter
+    def __init__(self, z_samples, datasets, model, device):
         self.model = model
         self.device = device
         # self.z_ranges_per_dimension = z_samples.z_ranges_per_dimension
@@ -59,4 +58,4 @@ class Goal2Test:
         # Second test: Test training goal 2.
         mon_incr = self.test_goal2()
 
-        # self.plotter.display_goal2(mon_incr=mon_incr)
+        return mon_incr
