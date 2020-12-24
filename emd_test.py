@@ -25,9 +25,7 @@ class EMDTest:
     This class implements the EMD (Earth Movers Distance) test on the model.
     """
 
-    def __init__(self, datasets, plotter, writer, device):
-        self.plotter = plotter
-        self.writer = writer
+    def __init__(self, datasets, device):
 
         self.y_test = datasets.y_test
         self.x_test = datasets.x_test
@@ -51,10 +49,11 @@ class EMDTest:
 
         test_point_spacing = int(self.y_test.shape[0] / EMD_TEST_POINTS)
 
+        local_emds = []
         num_dimensions = self.x_test.shape[1]
         mean_emds = np.zeros(num_dimensions)
         for dimension in range(num_dimensions):
-            local_emds = np.zeros(EMD_TEST_POINTS + 2)
+            local_emd = np.zeros(EMD_TEST_POINTS + 2)
             x_np = np.zeros(EMD_TEST_POINTS + 2)
             for point in range(EMD_TEST_POINTS):
                 start = point * test_point_spacing - EMD_SAMPLES_PER_TEST_POINT / 2
@@ -71,30 +70,30 @@ class EMDTest:
 
                 # Calculate the point to point matching the minimizes the EMD.
                 assignment = linear_sum_assignment(distances)
-                local_emds[point + 1] = distances[assignment].sum() / (stop - start)
+                local_emd[point + 1] = distances[assignment].sum() / (stop - start)
                 x_np[point + 1] = np.mean(
                     self.x_test[self.x_orderings_np[dimension]][start:stop][
                         :, dimension
                     ]
                 )
 
-            mean_emds[dimension] = np.mean(local_emds)
+            mean_emds[dimension] = np.mean(local_emd)
             x_np[0] = self.x_test[self.x_orderings_pt[dimension][0]][dimension]
-            local_emds[0] = local_emds[1]
+            local_emd[0] = local_emd[1]
             x_np[-1] = self.x_test[self.x_orderings_pt[dimension][-1]][dimension]
-            local_emds[-1] = local_emds[-2]
+            local_emd[-1] = local_emd[-2]
 
-            self.plotter.plot_emd(x_np=x_np, local_emds=local_emds, dimension=dimension)
+            local_emds.append((x_np, local_emd))
 
         mean_emd = np.mean(mean_emds)
-        return mean_emd
+        return mean_emd, local_emds
 
-    def step(self, epoch, y_pred_d):
+    def step(self, y_pred_d):
         """
         Runs and plots a step of the EMD test.
         """
 
         # First test: calculate the emd.
-        mean_emd = self.calculate_emd(y_pred_d)
+        mean_emd, local_emds = self.calculate_emd(y_pred_d)
 
-        self.writer.log_emd(mean_emd, epoch)
+        return mean_emd, local_emds

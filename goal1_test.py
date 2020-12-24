@@ -22,8 +22,7 @@ class Goal1Test:
     the predictions for the z-samples have the right distribution ratios.
     """
 
-    def __init__(self, z_samples, datasets, writer, device):
-        self.writer = writer
+    def __init__(self, z_samples, datasets, device):
 
         self.less_than_ratios = z_samples.less_than_ratios
 
@@ -122,14 +121,12 @@ class Goal1Test:
 
         return goal1_mean_err_abs, local_goal1_errs
 
-    def step(self, epoch, y_predict_mat):
+    def step(self, y_predict_mat):
         """
         Runs and plots a step of the goal 1 test.
         """
 
         # Second test: Test training goal 1.
         global_goal1_err, local_goal1_errs = self.test_goal1(y_predict_mat)
-
-        self.writer.log_goal1_error(global_goal1_err, epoch)
 
         return global_goal1_err, local_goal1_errs

@@ -40,12 +40,12 @@ class Tester:
         self.skip_epochs = experiment["skip_epochs"]
 
         if experiment.get("emd_test", True):
-            self.emd_test = EMDTest(datasets, plotter, self.writer, device)
+            self.emd_test = EMDTest(datasets, device)
         else:
             self.emd_test = None
 
         if experiment.get("goal1_test", True):
-            self.goal1_test = Goal1Test(z_samples, datasets, self.writer, device,)
+            self.goal1_test = Goal1Test(z_samples, datasets, device,)
         else:
             self.goal1_test = None
 
@@ -79,7 +79,14 @@ class Tester:
 
             # Create a numpy version of the prediction tensor.
             y_pred_d = y_pred.cpu().detach()
-            self.emd_test.step(epoch, y_pred_d)
+            mean_emd, local_emds = self.emd_test.step(y_pred_d)
+
+            self.writer.log_emd(mean_emd, epoch)
+
+            for dimension, (x_np, local_emd) in enumerate(local_emds):
+                self.plotter.plot_emd(
+                    x_np=x_np, local_emds=local_emd, dimension=dimension
+                )
 
             self.plotter.plot_datasets_preds(y_pred_d)
 
@@ -89,9 +96,10 @@ class Tester:
                 x_pt=self.x_test_pt, z_samples=self.z_samples,
             )
 
-            global_goal1_err, local_goal1_errs = self.goal1_test.step(
-                epoch, y_predict_mat
-            )
+            global_goal1_err, local_goal1_errs = self.goal1_test.step(y_predict_mat)
+
+            self.writer.log_goal1_error(global_goal1_err, epoch)
+
             for (
                 dimension,
                 (x_np, local_goal1_err, local_goal1_err_zsample),
