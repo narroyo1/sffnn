@@ -234,13 +234,18 @@ class ProcessPlotter:
                         # self.scatter_preds[dimension].set_offsets(X)
                         xmin = self.x_tests_preds[dimension].min()
                         xmax = self.x_tests_preds[dimension].max()
-                        # ymin = X[:, 1].min()
-                        # ymax = X[:, 1].max()
+                        ymin = y_test[:, 0].min()
+                        ymax = y_test[:, 0].max()
+                        zmin = y_test[:, 1].min()
+                        zmax = y_test[:, 1].max()
                         self.axes_plot_preds[dimension].set_xlim(
                             xmin - 0.1 * (xmax - xmin), xmax + 0.1 * (xmax - xmin)
                         )
                         self.axes_plot_preds[dimension].set_ylim(
                             ymin - 0.1 * (ymax - ymin), ymax + 0.1 * (ymax - ymin)
+                        )
+                        self.axes_plot_preds[dimension].set_zlim(
+                            zmin - 0.1 * (zmax - zmin), zmax + 0.1 * (zmax - zmin)
                         )
 
                 elif data_type == "z-lines pos":
@@ -416,7 +421,6 @@ class Plotter:
         """
         This method sends the emd information to the plotter process.
         """
-        return
         if not self.first:
             x_np = None
         self.plot_pipe.send(("emd", dimension, (x_np, local_emds)))

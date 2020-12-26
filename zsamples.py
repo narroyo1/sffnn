@@ -28,10 +28,11 @@ def sample_hypersphere(z_ranges, z_samples):
     b = (line[:, np.newaxis] * np.sin(angle)).flatten()
 
     # return np.append(np.column_stack((a, b)), [[0, 0]], axis=0)
-    return (
-        np.column_stack((a, b)),
-        np.tile(np.arange(z_samples[1]), z_samples[0]).flatten(),
-    )
+    #return (
+    #    np.column_stack((a, b)),
+    #    np.tile(np.arange(z_samples[1]), z_samples[0]).flatten(),
+    #)
+    return np.column_stack((a, b))
 
 
 class ZSamples:
@@ -52,24 +53,23 @@ class ZSamples:
                 self.z_samples_radio, self.z_samples_dimensions
             )
             z_samples_per_dimension = experiment["z_samples_per_dimension"]
-            # z_samples = sample_uniform(z_ranges_per_dimension, z_samples_per_dimension)
-            z_samples, ring_indices = sample_hypersphere(
-                z_ranges_per_dimension, z_samples_per_dimension
-            )
+            z_samples = sample_uniform(z_ranges_per_dimension, z_samples_per_dimension)
+            #z_samples, ring_indices = sample_hypersphere(
+            #    z_ranges_per_dimension, z_samples_per_dimension
+            #)
             # z_samples_rs = z_samples.reshape(
             #    z_samples_per_dimension[0], z_samples_per_dimension[1], 2
             # )
             # z_samples_rs, outer_samples = self.rescale_samples(
             #    z_samples, self.z_samples_radio
             # )
-            # self.quadrants = self.calculate_quadrants(outer_samples)
-            # z_samples = self.clip_samples(z_samples, self.z_samples_radio)
+            z_samples = self.clip_samples(z_samples, self.z_samples_radio)
             outer_level = self.get_outer_level(z_samples, self.z_samples_radio)
         else:
             z_samples = experiment["z_samples"]
 
         self.samples = to_tensor(z_samples, device)
-        self.ring_indices = torch.tensor(ring_indices, dtype=torch.long, device=device)
+        #self.ring_indices = torch.tensor(ring_indices, dtype=torch.long, device=device)
         self.ring_numbers = z_samples_per_dimension[1]
         self.outer_level = torch.tensor(outer_level, dtype=torch.bool).to(device=device)
         # self.outer_samples = to_tensor(outer_samples, device)
@@ -94,28 +94,6 @@ class ZSamples:
         indices = torch.sort(indices).values
 
         return self.samples[indices, :], self.outer_level[indices]
-
-    """
-    @staticmethod
-    def calculate_quadrants(outer_samples):
-        def t2s(i, j_card, j):
-            return i * j_card + j
-
-        quadrants = {}
-        j_card = outer_samples.shape[1]
-        for i in range(outer_samples.shape[0] - 1):
-            for j in range(outer_samples.shape[1] - 1):
-                if outer_samples[i, j]:
-                    continue
-                quadrants[(i, j)] = np.array(
-                    [
-                        [t2s(i, j_card, j), t2s(i, j_card, j + 1)],
-                        [t2s(i + 1, j_card, j), t2s(i + 1, j_card, j + 1)],
-                    ]
-                )
-
-        return quadrants
-        """
 
     @staticmethod
     def get_ranges_per_dimension(z_samples_radio, dimensions):

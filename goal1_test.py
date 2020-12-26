@@ -23,9 +23,7 @@ class Goal1Test:
     the predictions for the z-samples have the right distribution ratios.
     """
 
-    def __init__(self, z_samples, datasets, writer, device):
-        self.writer = writer
-        self.device = device
+    def __init__(self, z_samples, datasets, device):
 
         self.z_samples = z_samples
         self.scalar_calculator = MovementScalarCalculator(
@@ -53,7 +51,7 @@ class Goal1Test:
         w_bp, D = self.scalar_calculator.calculate_scalars(
             differences, self.z_samples.samples, self.z_samples.outer_level
         )
-        ring_indices = self.z_samples.ring_indices
+        #ring_indices = self.z_samples.ring_indices
 
         total_movement = torch.sum(D * w_bp.unsqueeze(2), dim=1)
         # total_movement = D * w_bp.unsqueeze(2)
@@ -148,14 +146,12 @@ class Goal1Test:
 
         return goal1_mean_err_abs, local_goal1_errs
 
-    def step(self, epoch, y_predict_mat):
+    def step(self, y_predict_mat):
         """
         Runs and plots a step of the goal 1 test.
         """
 
         # Second test: Test training goal 1.
         global_goal1_err, local_goal1_errs = self.test_goal1(y_predict_mat)
-
-        self.writer.log_goal1_error(global_goal1_err, epoch)
 
         return global_goal1_err, local_goal1_errs
