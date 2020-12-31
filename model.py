@@ -18,46 +18,46 @@ class ZSamplePredsMixin:
         This method evaluates the model over every point in x once for every sample in z_samples.
         """
         z_samples_size = z_samples.shape[0]
-        # Turn off grad while we calculate our targets.
+        # Create a tensor with all the z samples repeated once for every element in the
+        # batch. This will be matched with x_ex when finding targets.
+        # [z0, -> for x datapoint 0
+        #  z0, -> for x datapoint 1
+        #  ...
+        #  z0, -> for x datapoint n
+        #  z1, -> for x datapoint 0
+        #  z1, -> for x datapoint 1
+        #  ...
+        #  z1, -> for x datapoint n
+        #  ...
+        #  zS, -> for x datapoint 0
+        #  zS, -> for x datapoint 1
+        #  ...
+        #  zS, -> for x datapoint n]
+        # dimensions: (data points * z-samples, z-sample dimensions)
+        z_samples_ex = torch.repeat_interleave(z_samples, x_pt.shape[0], dim=0).to(
+            device=self.device
+        )
+
+        # Create a tensor with a copy of the elements in the batch for every z sample. This
+        # will be matched with z_samples_ex when finding targets.
+        # [x0, -> for z sample 0
+        #  x1, -> for z sample 0
+        #  ...
+        #  xn, -> for z sample 0
+        #  x0, -> for z sample 1
+        #  x1, -> for z sample 1
+        #  ...
+        #  xn, -> for z sample 1
+        #  ...
+        #  x0, -> for z sample S
+        #  x1, -> for z sample S
+        #  ...
+        #  xn, -> for z sample S]
+        # dimensions: (data points * z-samples, input dimensions)
+        x_ex = torch.cat(z_samples_size * [x_pt]).to(device=self.device)
+
+        # Turn off grad while we get our predictions.
         with torch.no_grad():
-            # Create a tensor with all the z samples repeated once for every element in the
-            # batch. This will be matched with x_ex when finding targets.
-            # [z0, -> for x datapoint 0
-            #  z0, -> for x datapoint 1
-            #  ...
-            #  z0, -> for x datapoint n
-            #  z1, -> for x datapoint 0
-            #  z1, -> for x datapoint 1
-            #  ...
-            #  z1, -> for x datapoint n
-            #  ...
-            #  zS, -> for x datapoint 0
-            #  zS, -> for x datapoint 1
-            #  ...
-            #  zS, -> for x datapoint n]
-            # dimensions: (data points * z-samples, z-sample dimensions)
-            z_samples_ex = torch.repeat_interleave(z_samples, x_pt.shape[0], dim=0).to(
-                device=self.device
-            )
-
-            # Create a tensor with a copy of the elements in the batch for every z sample. This
-            # will be matched with z_samples_ex when finding targets.
-            # [x0, -> for z sample 0
-            #  x1, -> for z sample 0
-            #  ...
-            #  xn, -> for z sample 0
-            #  x0, -> for z sample 1
-            #  x1, -> for z sample 1
-            #  ...
-            #  xn, -> for z sample 1
-            #  ...
-            #  x0, -> for z sample S
-            #  x1, -> for z sample S
-            #  ...
-            #  xn, -> for z sample S]
-            # dimensions: (data points * z-samples, input dimensions)
-            x_ex = torch.cat(z_samples_size * [x_pt]).to(device=self.device)
-
             # Run the model with all the elements x on every z sample.
             # [y <- x0 z0,
             #  y <- x1 z0,
