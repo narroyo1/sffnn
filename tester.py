@@ -45,7 +45,7 @@ class Tester:
             self.emd_test = None
 
         if experiment.get("goal1_test", True):
-            self.goal1_test = Goal1Test(z_samples, datasets, device,)
+            self.goal1_test = Goal1Test(z_samples, datasets, model, device,)
         else:
             self.goal1_test = None
 

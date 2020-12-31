@@ -23,9 +23,10 @@ class Goal1Test:
     the predictions for the z-samples have the right distribution ratios.
     """
 
-    def __init__(self, z_samples, datasets, device):
+    def __init__(self, z_samples, datasets, model, device):
 
         self.z_samples = z_samples
+        self.model = model
         self.scalar_calculator = MovementScalarCalculator(
             z_samples.z_samples_radio, device
         )
@@ -46,12 +47,34 @@ class Goal1Test:
         """
         from trainer import get_unit_vector_and_magnitude
 
-        differences = self.y_test_pt - y_predict_mat
+        difference = self.y_test_pt - y_predict_mat
+
+        D, _ = get_unit_vector_and_magnitude(difference)
+
+        radios = self.z_samples.radios
+        targets = self.z_samples.samples.unsqueeze(1) + D * radios.view(-1, 1, 1)
+
+        y_predict_mat = self.model.get_z_sample_preds(
+            x_pt=self.x_test_pt, z_samples=targets,
+        )
+
+        distances = torch.sqrt(torch.sum(differences ** 2, dim=2))
+
+        less_than = (distances < radios.unsqueeze(1)) + 0
+
+        sums = torch.sum(less_than, dim=1)
+        ratios = sums / y_predict_mat.shape[1]
+
+        areas = (radios ** 2) * np.pi
+        area = (self.z_samples.z_samples_radio ** 2) * np.pi
+        expected_ratios = areas /area
+
+        """
+        from trainer import get_unit_vector_and_magnitude
 
         w_bp, D = self.scalar_calculator.calculate_scalars(
             differences, self.z_samples.samples, self.z_samples.outer_level
         )
-        #ring_indices = self.z_samples.ring_indices
 
         total_movement = torch.sum(D * w_bp.unsqueeze(2), dim=1)
         # total_movement = D * w_bp.unsqueeze(2)
@@ -62,6 +85,7 @@ class Goal1Test:
         #    print(j)
         #    for i in range(total_movement.shape[0]):
         #        print(i, ts[i, 0], ts[i, 1])
+        """
 
         # This is the number of test points separting group middle points.
         test_point_spacing = int(self.y_test.shape[0] / GOAL1_TEST_POINTS)
@@ -72,17 +96,20 @@ class Goal1Test:
         # This is the error for every mean ratio above.
         # dimensions: (z-samples)
         # goal1_err = goal1_mean - self.less_than_ratios
+        goal1_err = (ratios - expected_ratios) / expected_ratios
         # This is the absolute error for every z-sample. It has to be absolute so that
         # they doesn't cancel each other when averaging.
         # dimensions: (z-samples)
         # goal1_err_abs = torch.abs(goal1_err)
+        goal1_err_abs = torch.abs(goal1_err)
         # This is the single mean value of the absolute error of all z-samples.
-        goal1_mean_err_abs = torch.mean(tm)
+        goal1_mean_err_abs = torch.mean(goal1_err_abs)
         print(goal1_mean_err_abs)
         # return None, None, None
 
         # The local errors for every dimension will be returned in this variable.
         local_goal1_errs = []
+        return goal1_mean_err_abs, local_goal1_errs
 
         num_dimensions = self.x_test.shape[1]
         for dimension in range(num_dimensions):

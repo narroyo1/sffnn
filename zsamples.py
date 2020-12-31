@@ -54,23 +54,18 @@ class ZSamples:
             )
             z_samples_per_dimension = experiment["z_samples_per_dimension"]
             z_samples = sample_uniform(z_ranges_per_dimension, z_samples_per_dimension)
-            #z_samples, ring_indices = sample_hypersphere(
+            #z_samples = sample_hypersphere(
             #    z_ranges_per_dimension, z_samples_per_dimension
             #)
-            # z_samples_rs = z_samples.reshape(
-            #    z_samples_per_dimension[0], z_samples_per_dimension[1], 2
-            # )
-            # z_samples_rs, outer_samples = self.rescale_samples(
-            #    z_samples, self.z_samples_radio
-            # )
             z_samples = self.clip_samples(z_samples, self.z_samples_radio)
+            radios = self.calculate_radios(z_samples, self.z_samples_radio)
             outer_level = self.get_outer_level(z_samples, self.z_samples_radio)
         else:
             z_samples = experiment["z_samples"]
 
         self.samples = to_tensor(z_samples, device)
-        #self.ring_indices = torch.tensor(ring_indices, dtype=torch.long, device=device)
-        self.ring_numbers = z_samples_per_dimension[1]
+        self.radios = to_tensor(radios, device)
+        #self.ring_numbers = z_samples_per_dimension[1]
         self.outer_level = torch.tensor(outer_level, dtype=torch.bool).to(device=device)
         # self.outer_samples = to_tensor(outer_samples, device)
         self.labels = experiment.get(
@@ -82,6 +77,14 @@ class ZSamples:
         )
 
         self.outer_level_scalar = experiment.get("outer_level_scalar")
+
+    @staticmethod
+    def calculate_radios(z_samples, z_samples_radio, max_radio=5.0):
+        d = np.sqrt(np.sum(z_samples ** 2, axis=1))
+        r = z_samples_radio - d
+        radios = np.minimum(max_radio, r)
+
+        return radios
 
     def selection(self):
         # return self.samples, self.outer_level
