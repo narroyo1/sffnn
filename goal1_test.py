@@ -47,36 +47,55 @@ class Goal1Test:
         """
         from trainer import get_unit_vector_and_magnitude
 
-        difference = self.y_test_pt - y_predict_mat
+        radios = self.z_samples.radios
+        radios_filter = radios > self.z_samples.z_sample_spacing
+        filtered_radios = radios[radios_filter]
+        filtered_predict_mat = y_predict_mat[radios_filter]
+        filtered_samples = self.z_samples.samples[radios_filter]
 
+        difference = self.y_test_pt - filtered_predict_mat
         D, _ = get_unit_vector_and_magnitude(difference)
 
-        radios = self.z_samples.radios
-        targets = self.z_samples.samples.unsqueeze(1) + D * radios.view(-1, 1, 1)
+        targets = filtered_samples.unsqueeze(1) + D * filtered_radios.view(-1, 1, 1)
 
-        y_predict_mat = self.model.get_z_sample_preds(
+        y_radio_mat = self.model.get_sample_preds(
             x_pt=self.x_test_pt, z_samples=targets,
         )
 
-        distances = torch.sqrt(torch.sum(differences ** 2, dim=2))
+        difference = y_radio_mat - filtered_predict_mat
+        distances1 = torch.sum(difference ** 2, dim=2)
 
-        less_than = (distances < radios.unsqueeze(1)) + 0
+        difference = self.y_test_pt - filtered_predict_mat
+        distances2 = torch.sum(difference ** 2, dim=2)
+
+        less_than = (distances2 < distances1) + 0
 
         sums = torch.sum(less_than, dim=1)
-        ratios = sums / y_predict_mat.shape[1]
+        areas = (filtered_radios ** 2) * np.pi
 
-        areas = (radios ** 2) * np.pi
-        area = (self.z_samples.z_samples_radio ** 2) * np.pi
-        expected_ratios = areas /area
+        total_area = (self.z_samples.z_samples_radio ** 2) * np.pi
+        # area_ratio = torch.sum(areas) / total_area
+        area_ratios = areas / total_area
 
-        """
+        # ratios = sums / y_predict_mat.shape[1]
+        # ratios = sums / torch.sum(sums)
+        ratios = sums / (filtered_predict_mat.shape[1] * area_ratios)
+
+        # area = (self.z_samples.z_samples_radio ** 2) * np.pi
+        # expected_ratios = areas / area
+        # expected_ratios = areas / torch.sum(areas)
+
         from trainer import get_unit_vector_and_magnitude
 
         w_bp, D = self.scalar_calculator.calculate_scalars(
-            differences, self.z_samples.samples, self.z_samples.outer_level
+            self.y_test_pt - y_predict_mat,
+            self.z_samples.samples,
+            self.z_samples.outer_level,
         )
 
         total_movement = torch.sum(D * w_bp.unsqueeze(2), dim=1)
+        print("total_movement", torch.mean(total_movement, dim=0))
+        """
         # total_movement = D * w_bp.unsqueeze(2)
         _, tm = get_unit_vector_and_magnitude(total_movement)
 
@@ -90,20 +109,25 @@ class Goal1Test:
         # This is the number of test points separting group middle points.
         test_point_spacing = int(self.y_test.shape[0] / GOAL1_TEST_POINTS)
 
+        multiplier = filtered_radios / torch.max(filtered_radios)
+        multiplier = multiplier / torch.sum(multiplier)
+
         # This is the mean ratio of smaller than over all test data points for each z-sample ring.
         # dimensions: (z-samples)
         # goal1_mean = torch.mean(smaller_than, dim=1,)
         # This is the error for every mean ratio above.
         # dimensions: (z-samples)
         # goal1_err = goal1_mean - self.less_than_ratios
-        goal1_err = (ratios - expected_ratios) / expected_ratios
+        # goal1_err = (ratios - expected_ratios) / expected_ratios
+        goal1_err = 1.0 - ratios  # - expected_ratios
         # This is the absolute error for every z-sample. It has to be absolute so that
         # they doesn't cancel each other when averaging.
         # dimensions: (z-samples)
         # goal1_err_abs = torch.abs(goal1_err)
         goal1_err_abs = torch.abs(goal1_err)
         # This is the single mean value of the absolute error of all z-samples.
-        goal1_mean_err_abs = torch.mean(goal1_err_abs)
+        # goal1_mean_err_abs = torch.mean(goal1_err_abs)
+        goal1_mean_err_abs = torch.sum(goal1_err_abs * multiplier)
         print(goal1_mean_err_abs)
         # return None, None, None
 

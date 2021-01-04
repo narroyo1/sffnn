@@ -163,7 +163,7 @@ def fn_normalx(x_np, *, std=5.0):
     return np.random.randn(*x_np.shape) * x_np * std
 
 
-def fn_noop2d(x_np, y_np):
+def fn_noop(x_np, y_np):
     return x_np, y_np
 
 

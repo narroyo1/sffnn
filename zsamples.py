@@ -28,10 +28,10 @@ def sample_hypersphere(z_ranges, z_samples):
     b = (line[:, np.newaxis] * np.sin(angle)).flatten()
 
     # return np.append(np.column_stack((a, b)), [[0, 0]], axis=0)
-    #return (
+    # return (
     #    np.column_stack((a, b)),
     #    np.tile(np.arange(z_samples[1]), z_samples[0]).flatten(),
-    #)
+    # )
     return np.column_stack((a, b))
 
 
@@ -54,18 +54,25 @@ class ZSamples:
             )
             z_samples_per_dimension = experiment["z_samples_per_dimension"]
             z_samples = sample_uniform(z_ranges_per_dimension, z_samples_per_dimension)
-            #z_samples = sample_hypersphere(
+            # z_samples = sample_hypersphere(
             #    z_ranges_per_dimension, z_samples_per_dimension
-            #)
+            # )
+            z_sample_spacing = (
+                self.z_samples_radio * 2 / (z_samples_per_dimension[0] - 1)
+            )
             z_samples = self.clip_samples(z_samples, self.z_samples_radio)
-            radios = self.calculate_radios(z_samples, self.z_samples_radio)
+            # z_samples = self.rescale_samples(z_samples, self.z_samples_radio)
+            radios = self.calculate_radios(
+                z_samples, self.z_samples_radio, z_sample_spacing
+            )
+            self.z_sample_spacing = z_sample_spacing
             outer_level = self.get_outer_level(z_samples, self.z_samples_radio)
         else:
             z_samples = experiment["z_samples"]
 
         self.samples = to_tensor(z_samples, device)
         self.radios = to_tensor(radios, device)
-        #self.ring_numbers = z_samples_per_dimension[1]
+        # self.ring_numbers = z_samples_per_dimension[1]
         self.outer_level = torch.tensor(outer_level, dtype=torch.bool).to(device=device)
         # self.outer_samples = to_tensor(outer_samples, device)
         self.labels = experiment.get(
@@ -79,10 +86,11 @@ class ZSamples:
         self.outer_level_scalar = experiment.get("outer_level_scalar")
 
     @staticmethod
-    def calculate_radios(z_samples, z_samples_radio, max_radio=5.0):
-        d = np.sqrt(np.sum(z_samples ** 2, axis=1))
-        r = z_samples_radio - d
-        radios = np.minimum(max_radio, r)
+    def calculate_radios(z_samples, z_samples_radio, z_sample_spacing):
+        distance_from_center = np.sqrt(np.sum(z_samples ** 2, axis=1))
+        distance_to_circle = z_samples_radio - distance_from_center
+        # radios = np.minimum(z_sample_spacing / 2.0, distance_to_circle)
+        radios = np.minimum(z_sample_spacing * 2.0, distance_to_circle)
 
         return radios
 
@@ -129,14 +137,14 @@ class ZSamples:
     def rescale_samples(samples, z_samples_radio):
         out_of_hypersphere = np.sum(samples ** 2, axis=1) > z_samples_radio ** 2
 
-        length = samples[out_of_hypersphere] * samples[out_of_hypersphere]
+        length = samples[out_of_hypersphere] ** 2
         length = np.sum(length, axis=1)
         length = np.sqrt(length)
         length = samples[out_of_hypersphere] / length[..., np.newaxis]
 
-        samples[out_of_hypersphere] = length * z_samples_radio * 0.95
+        samples[out_of_hypersphere] = length * z_samples_radio  # * 0.95
 
-        return samples, out_of_hypersphere
+        return samples  # , out_of_hypersphere
 
     def sample_random(self, size):
         """

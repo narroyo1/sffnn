@@ -12,7 +12,6 @@ class ZSamplePredsMixin:
     This mixin adds a method to get predictions for a set of z-samples.
     """
 
-    # pylint: disable=too-few-public-methods
     def get_z_sample_preds(self, x_pt, z_samples):
         """
         This method evaluates the model over every point in x once for every sample in z_samples.
@@ -56,6 +55,37 @@ class ZSamplePredsMixin:
         # dimensions: (data points * z-samples, input dimensions)
         x_ex = torch.cat(z_samples_size * [x_pt]).to(device=self.device)
 
+        return self.get_preds(x_ex, z_samples_ex, x_pt.shape[0], z_samples_size)
+
+    def get_sample_preds(self, x_pt, z_samples):
+        assert x_pt.shape[0] == z_samples.shape[1]
+        z_samples_size = z_samples.shape[0]
+
+        # Create a tensor with a copy of the elements in the batch for every z sample. This
+        # will be matched with z_samples_ex when finding targets.
+        # [x0, -> for z sample 0
+        #  x1, -> for z sample 0
+        #  ...
+        #  xn, -> for z sample 0
+        #  x0, -> for z sample 1
+        #  x1, -> for z sample 1
+        #  ...
+        #  xn, -> for z sample 1
+        #  ...
+        #  x0, -> for z sample S
+        #  x1, -> for z sample S
+        #  ...
+        #  xn, -> for z sample S]
+        # dimensions: (data points * z-samples, input dimensions)
+        x_ex = torch.cat(z_samples_size * [x_pt]).to(device=self.device)
+
+        z_samples_ex = z_samples.view(
+            z_samples.shape[0] * z_samples.shape[1], z_samples.shape[2]
+        )
+
+        return self.get_preds(x_ex, z_samples_ex, x_pt.shape[0], z_samples_size)
+
+    def get_preds(self, x_ex, z_samples_ex, input_size, z_samples_size):
         # Turn off grad while we get our predictions.
         with torch.no_grad():
             # Run the model with all the elements x on every z sample.
@@ -83,7 +113,7 @@ class ZSamplePredsMixin:
             #  [y <- x0 zS, y <- x1 zS, ..., y <- xn zS]]
             # dimensions: (z-samples, data points, output dimensions)
             y_predict_mat = y_predict.view(
-                z_samples_size, x_pt.shape[0], y_predict.shape[1]
+                z_samples_size, input_size, y_predict.shape[1]
             )
 
             return y_predict_mat
