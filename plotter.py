@@ -137,7 +137,7 @@ class Plotter:
 
         pyplot.show()
 
-    def plot_datasets_zlines(self, y_predict_mat, orderings, d, l, c):
+    def plot_datasets_zlines(self, y_predict_mat, orderings, d, l, r, p):
         """
         This method plots the test dataset along with the zlines.
         """
@@ -185,6 +185,19 @@ class Plotter:
                 marker="o",
                 s=self.options.get("zline_s", 0.1),
             )
+
+            for i in range(r.shape[0]):
+                axe.scatter(
+                    r[i, :, 0],
+                    r[i, :, 1],
+                    marker=".",
+                    s=self.options.get("zline_s", 0.01),
+                )
+
+            if p:
+                axe.scatter(
+                    p[:, 0], p[:, 1], marker="o", s=self.options.get("zline_s", 0.01),
+                )
             # for i in range(c.shape[0]):
             #    axe.annotate(
             #        c[i], (y_predict_mat[i, -1, 0], y_predict_mat[i, -1, 1]), fontsize=8

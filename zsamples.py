@@ -60,8 +60,8 @@ class ZSamples:
             z_sample_spacing = (
                 self.z_samples_radio * 2 / (z_samples_per_dimension[0] - 1)
             )
-            z_samples = self.clip_samples(z_samples, self.z_samples_radio)
-            # z_samples = self.rescale_samples(z_samples, self.z_samples_radio)
+            # z_samples = self.clip_samples(z_samples, self.z_samples_radio)
+            z_samples = self.rescale_samples(z_samples, self.z_samples_radio)
             radios = self.calculate_radios(
                 z_samples, self.z_samples_radio, z_sample_spacing
             )
@@ -89,8 +89,8 @@ class ZSamples:
     def calculate_radios(z_samples, z_samples_radio, z_sample_spacing):
         distance_from_center = np.sqrt(np.sum(z_samples ** 2, axis=1))
         distance_to_circle = z_samples_radio - distance_from_center
-        # radios = np.minimum(z_sample_spacing / 2.0, distance_to_circle)
-        radios = np.minimum(z_sample_spacing * 2.0, distance_to_circle)
+        radios = np.minimum(z_sample_spacing / 2.0, distance_to_circle)
+        # radios = np.minimum(z_sample_spacing * 1.0, distance_to_circle)
 
         return radios
 

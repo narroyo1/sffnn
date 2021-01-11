@@ -16,7 +16,7 @@ from trainer import Trainer
 from tester import Tester
 from zsamples import ZSamples
 from datasets import DataSets
-from plotterw import Plotter
+from plotter import Plotter
 from writer import Writer
 
 
@@ -35,8 +35,9 @@ if "dataset_builder" not in experiment:
     TRAIN_SIZE = np.array([31013])
     # TRAIN_SIZE = 9611
 
-    TEST_SIZE = np.array([9007])
+    # TEST_SIZE = np.array([9007])
     # TEST_SIZE = np.array([5007])
+    TEST_SIZE = np.array([3007])
 
     datasets = DataSets.generated_dataset(
         experiment=experiment,

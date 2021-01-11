@@ -26,7 +26,7 @@ def assert_unit_vector(unit_vector):
 def get_unit_vector_and_magnitude(difference):
     last_dimension = len(difference.shape) - 1
     # dimensions: (z-samples, data points, output dimensions)
-    squared = difference * difference
+    squared = difference ** 2
     # dimensions: (z-samples, data points)
     summation = torch.sum(squared, dim=last_dimension)
     # dimensions: (z-samples, data points)
@@ -37,6 +37,7 @@ def get_unit_vector_and_magnitude(difference):
 
     return D, length
 
+
 def dot_product_batch(X, Y):
     view_size = X.shape[0] * Y.shape[1]
     # The dot product of a unit vector with itself is 1.0.
@@ -44,6 +45,7 @@ def dot_product_batch(X, Y):
         X.view(view_size, 1, X.shape[2]), Y.view(view_size, Y.shape[2], 1)
     )
     return result.view((X.shape[0], X.shape[1]))
+
 
 class MovementScalarCalculator:
 
@@ -58,11 +60,11 @@ class MovementScalarCalculator:
         This method takes a unit vector and returns 2 unit vectors defining the slot it
         belongs to.
         """
-        # Transform the unit vector into an angle.
+        # Transform the unit vector into an angle. range [-pi, pi]
         angles = torch.atan2(D[:, :, 1], D[:, :, 0])
 
         # Transform the angle to the lower bound slot index. Dividing by the slot size and then
-        # casting to integer. Why adding pi and then substracting it?
+        # casting to integer. Add pi to keep it positive.
         slots = torch.tensor(
             (angles + np.pi) / self.SLOT_SIZE, dtype=torch.long, device=self.device
         )
@@ -131,31 +133,21 @@ class MovementScalarCalculator:
 
         return t_pos, t_neg, x_pos, x_neg
 
-    #@staticmethod
-    """
-    def get_areas(self, t_1, t_2, x_1, x_2):
-        triangle = t_1 * t_2 * np.sin(self.SLOT_SIZE) * 0.5
-        def atan2(x):
-            res = torch.atan2(x[:, :, 1], x[:, :, 0])
-            res[res < 0.0] += 2 * np.pi
-            #res += 2 * np.pi
-            return res
-        angles = atan2(x_2) - atan2(x_1)
-
-        segment = (angles - torch.sin(angles)) * 0.5 * self.z_samples_radio ** 2
-
-        return triangle + segment
-        """
+    # @staticmethod
     def get_areas(self, t_1, t_2, x_1, x_2):
         triangle = t_1 * t_2 * np.sin(self.SLOT_SIZE) * 0.5
 
         Dx_1, _ = get_unit_vector_and_magnitude(x_1)
         Dx_2, _ = get_unit_vector_and_magnitude(x_2)
-        angles = torch.acos(dot_product_batch(Dx_1, Dx_2))
+        # angles = torch.acos(dot_product_batch(Dx_1, Dx_2))
+        epsilon = 1e-8
+        angles = torch.acos(
+            torch.clamp(dot_product_batch(Dx_1, Dx_2), -1 + epsilon, 1 - epsilon)
+        )
 
         segment = (angles - torch.sin(angles)) * 0.5 * self.z_samples_radio ** 2
 
-        return triangle# + segment
+        return triangle + segment
 
     def calculate_scalars(self, difference, z_samples, outer_level):
         """
@@ -177,9 +169,7 @@ class MovementScalarCalculator:
         # Get the area for the slot of each difference.
         # dimensions: (z-samples, data points)
         area_pos = self.get_areas(t_pos_1, t_pos_2, x_pos_1, x_pos_2)
-        #area_pos = t_pos_1 * t_pos_2 * np.sin(self.SLOT_SIZE) * 0.5
         # dimensions: (z-samples, data points)
-        #area_neg = t_neg_1 * t_neg_2 * np.sin(self.SLOT_SIZE) * 0.5
         area_neg = self.get_areas(t_neg_1, t_neg_2, x_neg_1, x_neg_2)
         # area_pos[area_pos < area_neg] *= 0.666
 
@@ -216,6 +206,104 @@ class MovementScalarCalculator:
         assert not torch.isinf(w_bp).any()
 
         return w_bp, D3
+
+    def rotate_vectors(self, vectors, angle):
+        Dxx = torch.zeros(vectors.shape, device=self.device)
+        Dxx[:, :, 0] = (
+            np.cos(angle) * vectors[:, :, 0] - np.sin(angle) * vectors[:, :, 1]
+        )
+        Dxx[:, :, 1] = (
+            np.sin(angle) * vectors[:, :, 0] + np.cos(angle) * vectors[:, :, 1]
+        )
+
+        return Dxx
+
+    # @staticmethod
+    def get_areas1(self, x_1, x_2, pos_greater):
+
+        Dx_1, _ = get_unit_vector_and_magnitude(x_1)
+        Dx_2, _ = get_unit_vector_and_magnitude(x_2)
+        # angles = torch.acos(dot_product_batch(Dx_1, Dx_2))
+        epsilon = 1e-8
+        angles = torch.acos(
+            torch.clamp(dot_product_batch(Dx_1, Dx_2), -1 + epsilon, 1 - epsilon)
+        )
+
+        segment = (angles - torch.sin(angles)) * 0.5 * self.z_samples_radio ** 2
+
+        area = np.pi * self.z_samples_radio ** 2
+        segment[pos_greater] = area - segment[pos_greater]
+
+        return segment
+
+    def calculate_scalars1(self, difference, z_samples, outer_level):
+        """
+        Calculate the movement scalars for every difference.
+        """
+
+        # Get the unit vector of the differences.
+        D, _ = get_unit_vector_and_magnitude(difference)
+
+        # D1 = self.rotate_vectors(D, np.pi / 2.0)
+        # D2 = self.rotate_vectors(D, -np.pi / 2.0)
+
+        # Get the positive and negative distances for each difference.
+        # dimensions: (z-samples, data points)
+        # t_pos_1, t_neg_1, x_pos_1, x_neg_1 = self.get_distances(D1, z_samples)
+        # dimensions: (z-samples, data points)
+        # t_pos_2, t_neg_2, x_pos_2, x_neg_2 = self.get_distances(D2, z_samples)
+        # dimensions: (z-samples, data points)
+        t_pos, t_neg, x_pos, x_neg = self.get_distances(D, z_samples)
+
+        # Get the area for the slot of each difference.
+        # dimensions: (z-samples, data points)
+        # area_pos = self.get_areas1(x_pos_1, x_pos_2, t_pos > -t_neg)
+        # area_pos = t_pos
+        # dist = t_pos / (t_pos - t_neg)
+        # area_pos = 0.333 * dist ** 3
+        # area_pos = 0.333 * t_pos ** 3
+        area_pos = t_pos ** 2
+        ###########################################
+        # area_pos = 0.333 * t_pos ** 3
+        # area_neg = -0.333 * t_neg ** 3
+        # area_pos = area_pos / (area_pos + area_neg)
+        ###########################################
+        # dimensions: (z-samples, data points)
+        # area_neg = self.get_areas1(x_neg_1, x_neg_2)
+        # area_pos[area_pos < area_neg] *= 0.666
+
+        # crossarea = area_pos + area_neg
+        # crossarearatio = crossarea / (
+        #    2.0 * 0.5 * np.sin(self.SLOT_SIZE) * z_samples_radio ** 2
+        # )
+        # This doesn't seem to help.
+        # crossarearatio = (
+        #    2.0 * 0.5 * np.sin(self.SLOT_SIZE) * self.z_samples_radio ** 2
+        # ) / crossarea
+        ########################
+        # assert (crossarearatio < 1.0).all()
+        ########################
+        # A difference is in the positive outer level if it is in outer level and the positive
+        # area is 0.
+        outer_level0 = (torch.abs(area_pos) < EPSILON) & outer_level.unsqueeze(1)
+        # A difference is in the negative outer level if it is in the outer level and the
+        # positive area is greater than 0.
+        outer_level1 = (area_pos > EPSILON) & outer_level.unsqueeze(1)
+
+        # w_bp = crossarearatio / (2 * area_pos)
+        w_bp = 1 / (2 * area_pos)
+        w_bp[outer_level0] = 0.01#torch.mean(w_bp[~torch.isinf(w_bp)])  # 1.0  # crossdist[outer_level0] * z_samples.outer_level_scalar
+        w_bp[outer_level1] = 0.0
+
+        # w_bp[~outer_level] = w_bp[~outer_level] * (
+        #    torch.max(w_bp[~outer_level]) / torch.max(w_bp[~outer_level], dim=1).values
+        # ).unsqueeze(1)
+        if torch.isnan(w_bp).any():
+            assert False
+        if torch.isinf(w_bp).any():
+            assert False
+
+        return w_bp, D
 
 
 class Trainer:
@@ -284,7 +372,7 @@ class Trainer:
         # dimensions: (z-samples, data points, output dimensions)
         y_predict_mat = self.model.get_z_sample_preds(x_pt=x_pt, z_samples=z_samples)
 
-        w_bp, D = self.scalar_calculator.calculate_scalars(
+        w_bp, D = self.scalar_calculator.calculate_scalars1(
             y_pt - y_predict_mat, z_samples, outer_level
         )
         w_bp = w_bp.view((w_bp.shape[0] * w_bp.shape[1], 1))

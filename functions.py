@@ -88,7 +88,7 @@ def fn_circle(x_np, y_np, *, radius=10.0):
 
     # result = np.zeros((x_np.shape[0], 2))
     y_np[:, 0] += length * np.cos(angle)
-    y_np[:, 1] += length * np.sin(angle)
+    y_np[:, 1] += length * np.sin(angle)  # * 0.5
 
     return x_np, y_np
 
@@ -100,12 +100,12 @@ def fn_circle(x_np, y_np, *, radius=10.0):
     return result[: x_np.shape[0]]
 
 
-def fn_rectangle(x_np):
+def fn_rectangle(x_np, y_np, side1=3.0, side2=3.0):
     # Rectangle
-    result = np.random.rand(x_np.shape[0], 2) * np.array([3, 0.5])
-    result[:, 1] += result[:, 0]
+    y_np = np.random.rand(x_np.shape[0], 2) * np.array([side1, side2])
+    # result[:, 1] += result[:, 0]
 
-    return result
+    return x_np, y_np
 
 
 def fn_2out_linear(x_np, multiplier1=1.0, multiplier2=1.0):

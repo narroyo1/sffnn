@@ -27,10 +27,10 @@ class Goal1Test:
 
         self.z_samples = z_samples
         self.model = model
+        self.device = device
         self.scalar_calculator = MovementScalarCalculator(
             z_samples.z_samples_radio, device
         )
-        # self.less_than_ratios = z_samples.less_than_ratios
 
         self.y_test = datasets.y_test
         self.x_test = datasets.x_test
@@ -41,6 +41,82 @@ class Goal1Test:
             torch.sort(self.x_test_pt[:, i])[1] for i in range(self.x_test_pt.shape[1])
         ]
 
+    @staticmethod
+    def get_angles(vectors):
+        epsilon = 1e-8
+        # https://github.com/pytorch/pytorch/issues/8069
+        # dot_prods = dot_product_batch(D_nom, Dx)
+        # angles = torch.acos(torch.clamp(dot_prods, -1 + epsilon, 1 - epsilon))
+        angles = torch.acos(torch.clamp(vectors[:, :, 0], -1 + epsilon, 1 - epsilon))
+        # Add sign information.
+        angles[vectors[:, :, 1] < 0.0] = -angles[vectors[:, :, 1] < 0.0]
+        # Add sign information and use [0, 2 * pi] range.
+        # angles[vectors[:, :, 1] < 0.0] = 2 * np.pi - angles[vectors[:, :, 1] < 0.0]
+
+        return angles
+
+    def calculate_targets(self, samples, D_curr, D_nom, radios, predict_mat):
+        from trainer import get_unit_vector_and_magnitude
+
+        targets = samples.unsqueeze(1) + D_curr * radios.view(-1, 1, 1)
+
+        y_radio_mat = self.model.get_sample_preds(
+            x_pt=self.x_test_pt, z_samples=targets,
+        )
+
+        difference = y_radio_mat - predict_mat
+        Dx, _ = get_unit_vector_and_magnitude(difference)
+
+        err_angles1 = self.get_angles(D_nom)
+        err_angles2 = self.get_angles(Dx)
+        err_angles = err_angles1 - err_angles2
+        # err_angles += 2 * np.pi
+        # err_angles = err_angles % 2 * np.pi
+        # err_angles[err_angles > np.pi] = -2 * np.pi + err_angles[err_angles > np.pi]
+        print(
+            "sum err_angles",
+            torch.sum(torch.abs(err_angles)),
+            torch.max(torch.abs(err_angles)),
+        )
+
+        return y_radio_mat, err_angles
+
+    def rotate_vectors(self, vectors, angles):
+        # angles[angles > np.pi] = -2 * np.pi + angles[angles > np.pi]
+        # angles[angles < -np.pi] = -2 * np.pi + angles[angles < -np.pi]
+        angles *= 0.5
+        Dxx = torch.zeros(vectors.shape, device=self.device)
+        Dxx[:, :, 0] = (
+            torch.cos(angles) * vectors[:, :, 0] - torch.sin(angles) * vectors[:, :, 1]
+        )
+        Dxx[:, :, 1] = (
+            torch.sin(angles) * vectors[:, :, 0] + torch.cos(angles) * vectors[:, :, 1]
+        )
+
+        return Dxx
+
+    def get_projection(self, filtered_predict_mat, filtered_samples, filtered_radios):
+        from trainer import get_unit_vector_and_magnitude
+
+        difference = self.y_test_pt - filtered_predict_mat
+        D, _ = get_unit_vector_and_magnitude(difference)
+
+        y_radio_mat, err_angles = self.calculate_targets(
+            filtered_samples, D, D, filtered_radios, filtered_predict_mat
+        )
+
+        Dxx = D
+        for _ in range(51):
+            Dxx = self.rotate_vectors(Dxx, err_angles)
+
+            y_radio_mat, err_angles = self.calculate_targets(
+                filtered_samples, Dxx, D, filtered_radios, filtered_predict_mat
+            )
+            if torch.max(torch.abs(err_angles)) < 0.0005:
+                break
+
+        return y_radio_mat
+
     def test_goal1(self, y_predict_mat):
         """
         This method tests the hypothesis that every z-line divides the level by half.
@@ -48,18 +124,13 @@ class Goal1Test:
         from trainer import get_unit_vector_and_magnitude
 
         radios = self.z_samples.radios
-        radios_filter = radios > self.z_samples.z_sample_spacing
+        radios_filter = radios >= self.z_samples.z_sample_spacing / 2.0
         filtered_radios = radios[radios_filter]
         filtered_predict_mat = y_predict_mat[radios_filter]
         filtered_samples = self.z_samples.samples[radios_filter]
 
-        difference = self.y_test_pt - filtered_predict_mat
-        D, _ = get_unit_vector_and_magnitude(difference)
-
-        targets = filtered_samples.unsqueeze(1) + D * filtered_radios.view(-1, 1, 1)
-
-        y_radio_mat = self.model.get_sample_preds(
-            x_pt=self.x_test_pt, z_samples=targets,
+        y_radio_mat = self.get_projection(
+            filtered_predict_mat, filtered_samples, filtered_radios
         )
 
         difference = y_radio_mat - filtered_predict_mat
@@ -87,14 +158,21 @@ class Goal1Test:
 
         from trainer import get_unit_vector_and_magnitude
 
-        w_bp, D = self.scalar_calculator.calculate_scalars(
+        w_bp, D = self.scalar_calculator.calculate_scalars1(
             self.y_test_pt - y_predict_mat,
             self.z_samples.samples,
             self.z_samples.outer_level,
         )
 
-        total_movement = torch.sum(D * w_bp.unsqueeze(2), dim=1)
-        print("total_movement", torch.mean(total_movement, dim=0))
+        movement = D * w_bp.unsqueeze(2)
+        distances = torch.sqrt(torch.sum(movement ** 2, dim=2))
+        tm = torch.sum(distances ** 2, dim=1)
+        print(
+            "total_movement",
+            torch.mean(tm, dim=0),
+            torch.std(tm, dim=0),
+            torch.max(tm, dim=0),
+        )
         """
         # total_movement = D * w_bp.unsqueeze(2)
         _, tm = get_unit_vector_and_magnitude(total_movement)
@@ -128,12 +206,22 @@ class Goal1Test:
         # This is the single mean value of the absolute error of all z-samples.
         # goal1_mean_err_abs = torch.mean(goal1_err_abs)
         goal1_mean_err_abs = torch.sum(goal1_err_abs * multiplier)
-        print(goal1_mean_err_abs)
+        print("goal1_mean_err_abs", goal1_mean_err_abs)
         # return None, None, None
 
         # The local errors for every dimension will be returned in this variable.
         local_goal1_errs = []
-        return goal1_mean_err_abs, local_goal1_errs
+        # import random
+        # num = random.randint(0, y_radio_mat.shape[0])
+        num = torch.argmax(ratios)
+        return (
+            goal1_mean_err_abs,
+            local_goal1_errs,
+            torch.mean(D, dim=1),
+            torch.mean(w_bp, dim=1),
+            y_radio_mat,  # [num],
+            None,  # self.y_test_pt[less_than[num] == 1],
+        )
 
         num_dimensions = self.x_test.shape[1]
         for dimension in range(num_dimensions):
@@ -203,6 +291,13 @@ class Goal1Test:
         """
 
         # Second test: Test training goal 1.
-        global_goal1_err, local_goal1_errs = self.test_goal1(y_predict_mat)
+        global_goal1_err, local_goal1_errs, d, l, r, p = self.test_goal1(y_predict_mat)
 
-        return global_goal1_err, local_goal1_errs
+        return (
+            global_goal1_err,
+            local_goal1_errs,
+            d.cpu().detach().numpy(),
+            l.cpu().detach().numpy(),
+            r.cpu().detach().numpy(),
+            p.cpu().detach().numpy() if p else None,
+        )
