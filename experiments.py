@@ -139,10 +139,10 @@ EXPERIMENT_7 = {
     "x_range_train": np.array([[-5.0, 5.0]]),
     "x_range_test": np.array([[-4.0, 4.0]]),
     # "base_function": func.binder(func.fn_x2_2d, y_space_size=2, multiplier=5.0),
-    "noise_function": func.binder(func.fn_normal2d, std=15.5),
-    # "noise_function": func.binder(func.fn_noop),
-    "base_function": func.binder(func.fn_noop, y_space_size=2),
-    # "base_function": func.binder(func.fn_circle, y_space_size=2),
+    # "noise_function": func.binder(func.fn_normal2d, std=15.5),
+    "noise_function": func.binder(func.fn_noop),
+    # "base_function": func.binder(func.fn_noop, y_space_size=2),
+    "base_function": func.binder(func.fn_circle, y_space_size=2),
     # "base_function": func.binder(func.fn_rectangle, y_space_size=2),
     "outer_level_scalar": 0.1,
     "skip_epochs": 20,
@@ -159,8 +159,8 @@ EXPERIMENT_7 = {
     "learning_rate": 1e-3 / 2,
     "num_epochs": 921,
     "gamma": 0.8,
-    # "milestones": [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 360, 420, 480],
-    "milestones": [60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780],
+    "milestones": [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 360, 420, 480],
+    # "milestones": [60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 780],
 }
 
 EXPERIMENT_DELAYS = {

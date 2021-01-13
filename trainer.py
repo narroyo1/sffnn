@@ -106,7 +106,8 @@ class MovementScalarCalculator:
         # dimensions: (z-samples, data points, output dimensions)
         discriminant = b * b - 4 * a * c
         # Every ray should intersect the circle twice.
-        assert (discriminant > 0).all()
+        if (discriminant <= 0).any():
+            assert False
 
         # dimensions: (z-samples, data points, output dimensions)
         # Elements in t_pos will always be positive and elements in t_neg will always be
@@ -262,7 +263,10 @@ class MovementScalarCalculator:
         # dist = t_pos / (t_pos - t_neg)
         # area_pos = 0.333 * dist ** 3
         # area_pos = 0.333 * t_pos ** 3
-        area_pos = t_pos ** 2
+        ###########################################
+        #area_pos = t_pos ** 2
+        ###########################################
+        area_pos = np.pi * 0.5 * t_pos ** 2
         ###########################################
         # area_pos = 0.333 * t_pos ** 3
         # area_neg = -0.333 * t_neg ** 3
@@ -292,7 +296,9 @@ class MovementScalarCalculator:
 
         # w_bp = crossarearatio / (2 * area_pos)
         w_bp = 1 / (2 * area_pos)
-        w_bp[outer_level0] = 0.01#torch.mean(w_bp[~torch.isinf(w_bp)])  # 1.0  # crossdist[outer_level0] * z_samples.outer_level_scalar
+        w_bp[
+            outer_level0
+        ] = 0.005  # torch.mean(w_bp[~torch.isinf(w_bp)])  # 1.0  # crossdist[outer_level0] * z_samples.outer_level_scalar
         w_bp[outer_level1] = 0.0
 
         # w_bp[~outer_level] = w_bp[~outer_level] * (

@@ -194,9 +194,9 @@ class Plotter:
                     s=self.options.get("zline_s", 0.01),
                 )
 
-            if p:
+            if p is not None:
                 axe.scatter(
-                    p[:, 0], p[:, 1], marker="o", s=self.options.get("zline_s", 0.01),
+                    p[:, :, 0], p[:, :, 1], marker=".", s=self.options.get("zline_s", 0.01),
                 )
             # for i in range(c.shape[0]):
             #    axe.annotate(

@@ -60,8 +60,8 @@ class ZSamples:
             z_sample_spacing = (
                 self.z_samples_radio * 2 / (z_samples_per_dimension[0] - 1)
             )
-            # z_samples = self.clip_samples(z_samples, self.z_samples_radio)
-            z_samples = self.rescale_samples(z_samples, self.z_samples_radio)
+            z_samples = self.clip_samples(z_samples, self.z_samples_radio)
+            # z_samples = self.rescale_samples(z_samples, self.z_samples_radio)
             radios = self.calculate_radios(
                 z_samples, self.z_samples_radio, z_sample_spacing
             )

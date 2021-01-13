@@ -211,16 +211,29 @@ class Goal1Test:
 
         # The local errors for every dimension will be returned in this variable.
         local_goal1_errs = []
+        ########################################################################
         # import random
         # num = random.randint(0, y_radio_mat.shape[0])
         num = torch.argmax(ratios)
+        angle = np.linspace(-np.pi, np.pi, 720)
+        a = (self.z_samples.z_sample_spacing / 2.0 * np.cos(angle)).flatten()
+        b = (self.z_samples.z_sample_spacing / 2.0 * np.sin(angle)).flatten()
+
+        xx = np.column_stack((a, b))
+        f = filtered_samples.repeat((xx.shape[0], 1))
+        f = f.cpu().detach().numpy()
+        targets = f + xx.repeat(32, axis=0)
+        xxx = self.model.get_sample_preds(
+            x_pt=torch.zeros((targets.shape[0], 1), device=self.device), z_samples=torch.tensor(targets, device=self.device, dtype=torch.float32).unsqueeze(0),
+        )
+        ########################################################################
         return (
             goal1_mean_err_abs,
             local_goal1_errs,
             torch.mean(D, dim=1),
             torch.mean(w_bp, dim=1),
             y_radio_mat,  # [num],
-            None,  # self.y_test_pt[less_than[num] == 1],
+            xxx,  # self.y_test_pt[less_than[num] == 1],
         )
 
         num_dimensions = self.x_test.shape[1]
@@ -299,5 +312,5 @@ class Goal1Test:
             d.cpu().detach().numpy(),
             l.cpu().detach().numpy(),
             r.cpu().detach().numpy(),
-            p.cpu().detach().numpy() if p else None,
+            p.cpu().detach().numpy() if p is not None else None,
         )
