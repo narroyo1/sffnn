@@ -17,6 +17,33 @@ GOAL1_TEST_POINTS = 50
 GOAL1_SAMPLES_PER_TEST_POINT = 800
 
 
+def get_angles(unit_vectors):
+    """
+    This function gets the angles of the give unit vectors. The range of the result
+    is [-pi, pi].
+    Note: unit_vectors shall be a tensor of unit vectors.
+    """
+    epsilon = 1e-8
+    # Clamp the input to avoid nans.
+    angles = torch.acos(torch.clamp(unit_vectors[:, :, 0], -1 + epsilon, 1 - epsilon))
+    # Add sign information.
+    angles[unit_vectors[:, :, 1] < 0.0] = -angles[unit_vectors[:, :, 1] < 0.0]
+    # Add sign information and use [0, 2 * pi] range.
+    # angles[unit_vectors[:, :, 1] < 0.0] = 2 * np.pi - angles[unit_vectors[:, :, 1] < 0.0]
+
+    return angles
+
+
+def angle_differences(vectors_to, vectors_from):
+    angles = torch.atan2(vectors_to[:, :, 1], vectors_to[:, :, 0]) - torch.atan2(
+        vectors_from[:, :, 1], vectors_from[:, :, 0]
+    )
+    angles[angles < 0.0] += 2 * np.pi
+    angles[angles > np.pi] = -2 * np.pi + angles[angles > np.pi]
+
+    return angles
+
+
 class Goal1Test:
     """
     This class implements the goal 1 test on the model. That is it checks that
@@ -41,38 +68,26 @@ class Goal1Test:
             torch.sort(self.x_test_pt[:, i])[1] for i in range(self.x_test_pt.shape[1])
         ]
 
-    @staticmethod
-    def get_angles(vectors):
-        epsilon = 1e-8
-        # https://github.com/pytorch/pytorch/issues/8069
-        # dot_prods = dot_product_batch(D_nom, Dx)
-        # angles = torch.acos(torch.clamp(dot_prods, -1 + epsilon, 1 - epsilon))
-        angles = torch.acos(torch.clamp(vectors[:, :, 0], -1 + epsilon, 1 - epsilon))
-        # Add sign information.
-        angles[vectors[:, :, 1] < 0.0] = -angles[vectors[:, :, 1] < 0.0]
-        # Add sign information and use [0, 2 * pi] range.
-        # angles[vectors[:, :, 1] < 0.0] = 2 * np.pi - angles[vectors[:, :, 1] < 0.0]
+    def compute_projections(self, samples, current_uv, nominals, radios, predict_mat):
+        from trainer import get_unit_vector_and_magnitude, assert_unit_vector
 
-        return angles
+        assert_unit_vector(current_uv)
 
-    def calculate_targets(self, samples, D_curr, D_nom, radios, predict_mat):
-        from trainer import get_unit_vector_and_magnitude
-
-        targets = samples.unsqueeze(1) + D_curr * radios.view(-1, 1, 1)
+        targets = samples.unsqueeze(1) + current_uv * radios.view(-1, 1, 1)
 
         y_radio_mat = self.model.get_sample_preds(
             x_pt=self.x_test_pt, z_samples=targets,
         )
 
-        difference = y_radio_mat - predict_mat
-        Dx, _ = get_unit_vector_and_magnitude(difference)
+        differences = y_radio_mat - predict_mat
+        # differences_uv, _ = get_unit_vector_and_magnitude(differences)
 
-        err_angles1 = self.get_angles(D_nom)
-        err_angles2 = self.get_angles(Dx)
-        err_angles = err_angles1 - err_angles2
-        # err_angles += 2 * np.pi
-        # err_angles = err_angles % 2 * np.pi
-        # err_angles[err_angles > np.pi] = -2 * np.pi + err_angles[err_angles > np.pi]
+        # ranges: [-pi, pi]
+        # nominals_angles = get_angles(nominals)  # angle_differences
+        # ranges: [-pi, pi]
+        # differences_angles = get_angles(differences_uv)
+        # ranges: [-2 * pi, 2 * pi]
+        err_angles = angle_differences(nominals, differences)
         print(
             "sum err_angles",
             torch.sum(torch.abs(err_angles)),
@@ -84,7 +99,6 @@ class Goal1Test:
     def rotate_vectors(self, vectors, angles):
         # angles[angles > np.pi] = -2 * np.pi + angles[angles > np.pi]
         # angles[angles < -np.pi] = -2 * np.pi + angles[angles < -np.pi]
-        angles *= 0.5
         Dxx = torch.zeros(vectors.shape, device=self.device)
         Dxx[:, :, 0] = (
             torch.cos(angles) * vectors[:, :, 0] - torch.sin(angles) * vectors[:, :, 1]
@@ -95,24 +109,39 @@ class Goal1Test:
 
         return Dxx
 
-    def get_projection(self, filtered_predict_mat, filtered_samples, filtered_radios):
+    def approximate_projected_radios(
+        self, filtered_predict_mat, filtered_samples, filtered_radios
+    ):
         from trainer import get_unit_vector_and_magnitude
 
-        difference = self.y_test_pt - filtered_predict_mat
-        D, _ = get_unit_vector_and_magnitude(difference)
+        differences = self.y_test_pt - filtered_predict_mat
+        differences_uv, _ = get_unit_vector_and_magnitude(differences)
 
-        y_radio_mat, err_angles = self.calculate_targets(
-            filtered_samples, D, D, filtered_radios, filtered_predict_mat
+        y_radio_mat, err_angles = self.compute_projections(
+            filtered_samples,
+            differences_uv,
+            differences,
+            filtered_radios,
+            filtered_predict_mat,
         )
 
-        Dxx = D
-        for _ in range(51):
-            Dxx = self.rotate_vectors(Dxx, err_angles)
+        current = differences_uv
+        multiplier = 0.5
+        for i in range(510):
+            angles = err_angles * multiplier
+            current = self.rotate_vectors(current, angles)
+            if (i + 1) % 80 == 0:
+                print("multiplier", multiplier)
+                multiplier *= 0.5
 
-            y_radio_mat, err_angles = self.calculate_targets(
-                filtered_samples, Dxx, D, filtered_radios, filtered_predict_mat
+            y_radio_mat, err_angles = self.compute_projections(
+                filtered_samples,
+                current,
+                differences,
+                filtered_radios,
+                filtered_predict_mat,
             )
-            if torch.max(torch.abs(err_angles)) < 0.0005:
+            if torch.max(torch.abs(err_angles)) < 0.00001:
                 break
 
         return y_radio_mat
@@ -129,7 +158,7 @@ class Goal1Test:
         filtered_predict_mat = y_predict_mat[radios_filter]
         filtered_samples = self.z_samples.samples[radios_filter]
 
-        y_radio_mat = self.get_projection(
+        y_radio_mat = self.approximate_projected_radios(
             filtered_predict_mat, filtered_samples, filtered_radios
         )
 
@@ -158,7 +187,7 @@ class Goal1Test:
 
         from trainer import get_unit_vector_and_magnitude
 
-        w_bp, D = self.scalar_calculator.calculate_scalars1(
+        w_bp, D = self.scalar_calculator.calculate_scalars(
             self.y_test_pt - y_predict_mat,
             self.z_samples.samples,
             self.z_samples.outer_level,
@@ -212,28 +241,42 @@ class Goal1Test:
         # The local errors for every dimension will be returned in this variable.
         local_goal1_errs = []
         ########################################################################
-        # import random
-        # num = random.randint(0, y_radio_mat.shape[0])
+        """
+        import random
+        num = random.randint(0, y_radio_mat.shape[0])
         num = torch.argmax(ratios)
-        angle = np.linspace(-np.pi, np.pi, 720)
-        a = (self.z_samples.z_sample_spacing / 2.0 * np.cos(angle)).flatten()
-        b = (self.z_samples.z_sample_spacing / 2.0 * np.sin(angle)).flatten()
+        print("num", num)
+        """
+        angle = np.linspace(-np.pi, np.pi, 5)
+        angle = angle[:-1]
+        #angle = np.linspace(-np.pi, np.pi, 720)
+        #a = (self.z_samples.z_sample_spacing / 2.0 * np.cos(angle)).flatten()
+        #b = (self.z_samples.z_sample_spacing / 2.0 * np.sin(angle)).flatten()
+        a = (0.5 * np.cos(angle)).flatten()
+        b = (0.5 * np.sin(angle)).flatten()
 
         xx = np.column_stack((a, b))
         f = filtered_samples.repeat((xx.shape[0], 1))
         f = f.cpu().detach().numpy()
-        targets = f + xx.repeat(32, axis=0)
+        targets = f + xx.repeat(filtered_samples.shape[0], axis=0)
         xxx = self.model.get_sample_preds(
-            x_pt=torch.zeros((targets.shape[0], 1), device=self.device), z_samples=torch.tensor(targets, device=self.device, dtype=torch.float32).unsqueeze(0),
+            x_pt=torch.zeros((targets.shape[0], 1), device=self.device),
+            z_samples=torch.tensor(
+                targets, device=self.device, dtype=torch.float32
+            ).unsqueeze(0),
         )
+        #xxx = self.model.get_sample_preds(
+        #    x_pt=torch.zeros((targets.shape[0], 1), device=self.device), z_samples=torch.tensor(targets, device=self.device, dtype=torch.float32).unsqueeze(0),
+        #)
         ########################################################################
         return (
             goal1_mean_err_abs,
             local_goal1_errs,
-            torch.mean(D, dim=1),
-            torch.mean(w_bp, dim=1),
-            y_radio_mat,  # [num],
+            D,  # torch.mean(D, dim=1),
+            w_bp,  # torch.mean(w_bp, dim=1),
+            None,  # y_radio_mat,  # [num],
             xxx,  # self.y_test_pt[less_than[num] == 1],
+            ratios,radios_filter
         )
 
         num_dimensions = self.x_test.shape[1]
@@ -304,13 +347,17 @@ class Goal1Test:
         """
 
         # Second test: Test training goal 1.
-        global_goal1_err, local_goal1_errs, d, l, r, p = self.test_goal1(y_predict_mat)
+        global_goal1_err, local_goal1_errs, d, l, r, p, rs, fil = self.test_goal1(
+            y_predict_mat
+        )
 
         return (
             global_goal1_err,
             local_goal1_errs,
             d.cpu().detach().numpy(),
             l.cpu().detach().numpy(),
-            r.cpu().detach().numpy(),
+            r.cpu().detach().numpy() if r is not None else None,
             p.cpu().detach().numpy() if p is not None else None,
+            rs.cpu().detach().numpy() if rs is not None else None,
+            fil.cpu().detach().numpy() if rs is not None else None,
         )

@@ -196,7 +196,7 @@ class MovementScalarCalculator:
         w_bp = 1 / (2 * area_pos)
         w_bp[
             outer_level0
-        ] = 1.0  # crossdist[outer_level0] * z_samples.outer_level_scalar
+        ] = 0.1  # crossdist[outer_level0] * z_samples.outer_level_scalar
         w_bp[outer_level1] = 0.0
 
         # w_bp[~outer_level] = w_bp[~outer_level] * (
@@ -264,7 +264,7 @@ class MovementScalarCalculator:
         # area_pos = 0.333 * dist ** 3
         # area_pos = 0.333 * t_pos ** 3
         ###########################################
-        #area_pos = t_pos ** 2
+        # area_pos = t_pos ** 2
         ###########################################
         area_pos = np.pi * 0.5 * t_pos ** 2
         ###########################################
@@ -298,7 +298,7 @@ class MovementScalarCalculator:
         w_bp = 1 / (2 * area_pos)
         w_bp[
             outer_level0
-        ] = 0.005  # torch.mean(w_bp[~torch.isinf(w_bp)])  # 1.0  # crossdist[outer_level0] * z_samples.outer_level_scalar
+        ] = 0.1  # torch.mean(w_bp[~torch.isinf(w_bp)])  # 1.0  # crossdist[outer_level0] * z_samples.outer_level_scalar
         w_bp[outer_level1] = 0.0
 
         # w_bp[~outer_level] = w_bp[~outer_level] * (
@@ -378,7 +378,7 @@ class Trainer:
         # dimensions: (z-samples, data points, output dimensions)
         y_predict_mat = self.model.get_z_sample_preds(x_pt=x_pt, z_samples=z_samples)
 
-        w_bp, D = self.scalar_calculator.calculate_scalars1(
+        w_bp, D = self.scalar_calculator.calculate_scalars(
             y_pt - y_predict_mat, z_samples, outer_level
         )
         w_bp = w_bp.view((w_bp.shape[0] * w_bp.shape[1], 1))

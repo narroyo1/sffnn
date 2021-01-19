@@ -96,7 +96,7 @@ class Tester:
                 x_pt=self.x_test_pt, z_samples=self.z_samples.samples,
             )
 
-            global_goal1_err, local_goal1_errs, d, l, r, p = self.goal1_test.step(
+            global_goal1_err, local_goal1_errs, d, l, r, p, rs, fil = self.goal1_test.step(
                 y_predict_mat
             )
 
@@ -116,7 +116,7 @@ class Tester:
 
             y_predict_mat_d = y_predict_mat.cpu().detach().numpy()
             self.plotter.plot_datasets_zlines(
-                y_predict_mat_d, self.x_orderings_np, d, l, r, p
+                y_predict_mat_d, self.x_orderings_np, d, l, r, p, rs, fil
             )
 
         if self.goal2_test:

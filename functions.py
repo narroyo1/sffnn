@@ -82,13 +82,13 @@ def fn_x2_2d(x_np, y_np, *, multiplier=2.0):
 
 
 def fn_circle(x_np, y_np, *, radius=10.0):
-    length = np.sqrt(np.random.uniform(0, radius, (x_np.shape[0],)))
+    length = np.sqrt(np.random.uniform(0, radius ** 2, (x_np.shape[0],)))
     # length = np.random.uniform(0, radius, (x_np.shape[0],))
     angle = np.pi * np.random.uniform(0, 2, (x_np.shape[0],))
 
     # result = np.zeros((x_np.shape[0], 2))
     y_np[:, 0] += length * np.cos(angle)
-    y_np[:, 1] += length * np.sin(angle) * 0.5
+    y_np[:, 1] += length * np.sin(angle) * 0.05
 
     return x_np, y_np
 

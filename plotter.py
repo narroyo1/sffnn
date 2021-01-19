@@ -137,7 +137,7 @@ class Plotter:
 
         pyplot.show()
 
-    def plot_datasets_zlines(self, y_predict_mat, orderings, d, l, r, p):
+    def plot_datasets_zlines(self, y_predict_mat, orderings, d, l, r, p, rs, fil):
         """
         This method plots the test dataset along with the zlines.
         """
@@ -170,6 +170,7 @@ class Plotter:
             y_label_pos = y_predict_mat[:, orderings[dimension][-1]]
             x_label_pos = self.x_test[orderings[dimension][-1]]
 
+            """
             axe.scatter(
                 # self.x_test[:, dimension],
                 self.y_test[:, 0],
@@ -185,19 +186,31 @@ class Plotter:
                 marker="o",
                 s=self.options.get("zline_s", 0.1),
             )
+            """
 
-            for i in range(r.shape[0]):
-                axe.scatter(
-                    r[i, :, 0],
-                    r[i, :, 1],
-                    marker=".",
-                    s=self.options.get("zline_s", 0.01),
-                )
+            if r is not None:
+                for i in range(r.shape[0]):
+                    axe.scatter(
+                        r[i, :, 0],
+                        r[i, :, 1],
+                        marker=".",
+                        s=self.options.get("zline_s", 0.01),
+                    )
 
             if p is not None:
                 axe.scatter(
-                    p[:, :, 0], p[:, :, 1], marker=".", s=self.options.get("zline_s", 0.01),
+                    p[:, :, 0],
+                    p[:, :, 1],
+                    marker="x",
+                    s=25.0,
+                    c="b"
                 )
+                #axe.arrow(
+                #    y_predict_mat[:, -1, 0],
+                #    y_predict_mat[:, -1, 1],
+                #p[:, :, 0],
+                #p[:, :, 1],
+                #)
             # for i in range(c.shape[0]):
             #    axe.annotate(
             #        c[i], (y_predict_mat[i, -1, 0], y_predict_mat[i, -1, 1]), fontsize=8
@@ -205,13 +218,37 @@ class Plotter:
             # continue
             if self.maxl is None:
                 self.maxl = np.max(l)
+            self.maxl = np.max(l) * 0.5
 
+            import random
+
+            num = random.randint(0, d.shape[0] - 1)
+            print("num", num)
             for i in range(d.shape[0]):
-                axe.arrow(
-                    y_predict_mat[i, -1, 0],
-                    y_predict_mat[i, -1, 1],
-                    d[i, 0] * l[i] / self.maxl,
-                    d[i, 1] * l[i] / self.maxl,
+                print(
+                    f"num {i} x {y_predict_mat[i, -1, 0]}, y {y_predict_mat[i, -1, 1]}"
+                )
+                if i != num and i != 27 and i != 30:
+                    continue
+                xx = d[:, :, 0] * l
+                yy = d[:, :, 1] * l
+                print(
+                    f"num {i} left {np.sum(xx[i, xx[i] < 0])} right {np.sum(xx[i, xx[i] > 0])} down {np.sum(yy[i, yy[i] < 0])} up {np.sum(yy[i, yy[i] > 0])}"
+                )
+                for j in range(d.shape[1]):
+                    axe.arrow(
+                        y_predict_mat[i, -1, 0],
+                        y_predict_mat[i, -1, 1],
+                        xx[i, j] / self.maxl,
+                        yy[i, j] / self.maxl,
+                    )
+
+            for j, label in enumerate(rs):
+                jx = np.nonzero(fil)[0][j]
+                axe.annotate(
+                    round(label, 2),
+                    (y_predict_mat[jx, -1, 0], y_predict_mat[jx, -1, 1]),
+                    fontsize=12,
                 )
             axe.set_title(f"{np.sum(l)/l.shape[0]}")
             continue

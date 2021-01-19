@@ -60,15 +60,18 @@ class ZSamples:
             z_sample_spacing = (
                 self.z_samples_radio * 2 / (z_samples_per_dimension[0] - 1)
             )
-            z_samples = self.clip_samples(z_samples, self.z_samples_radio)
-            # z_samples = self.rescale_samples(z_samples, self.z_samples_radio)
-            radios = self.calculate_radios(
-                z_samples, self.z_samples_radio, z_sample_spacing
-            )
-            self.z_sample_spacing = z_sample_spacing
+            # z_samples = self.clip_samples(z_samples, self.z_samples_radio)
+            z_samples = self.rescale_samples(z_samples, self.z_samples_radio)
             outer_level = self.get_outer_level(z_samples, self.z_samples_radio)
         else:
             z_samples = experiment["z_samples"]
+            z_sample_spacing = 1.5
+            outer_level = [False, False, False]
+
+        self.z_sample_spacing = z_sample_spacing
+        radios = self.calculate_radios(
+            z_samples, self.z_samples_radio, z_sample_spacing
+        )
 
         self.samples = to_tensor(z_samples, device)
         self.radios = to_tensor(radios, device)
@@ -79,8 +82,8 @@ class ZSamples:
             "z_sample_labels",
             ["$z_{{{}}}$".format(i) for i in range(z_samples.shape[0])],
         )
-        self.selection_size = int(
-            z_samples.shape[0] * experiment.get("selection_size", 1.0)
+        self.selection_size = (
+            int(z_samples.shape[0] * experiment.get("selection_size", 1.0)) + 1
         )
 
         self.outer_level_scalar = experiment.get("outer_level_scalar")
@@ -89,15 +92,23 @@ class ZSamples:
     def calculate_radios(z_samples, z_samples_radio, z_sample_spacing):
         distance_from_center = np.sqrt(np.sum(z_samples ** 2, axis=1))
         distance_to_circle = z_samples_radio - distance_from_center
-        radios = np.minimum(z_sample_spacing / 2.0, distance_to_circle)
-        # radios = np.minimum(z_sample_spacing * 1.0, distance_to_circle)
+        # radios = np.minimum(z_sample_spacing / 2.0, distance_to_circle)
+        radios = np.minimum(z_sample_spacing, distance_to_circle)
 
         return radios
 
     def selection(self):
-        # return self.samples, self.outer_level
         import torch
 
+        lengths = torch.sqrt(torch.rand(self.selection_size, device=self.device)) * self.z_samples_radio
+        angles = torch.rand(self.selection_size, device=self.device) * 2.0 * np.pi
+
+        a = lengths * torch.cos(angles)
+        b = lengths * torch.sin(angles)
+
+        return torch.hstack((a.unsqueeze(1), b.unsqueeze(1))), lengths > self.z_samples_radio * 0.95
+        ##############################################################################
+        # return self.samples, self.outer_level
         indices = np.random.choice(
             self.samples.shape[0], self.selection_size, replace=False
         )
