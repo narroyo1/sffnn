@@ -100,13 +100,19 @@ class ZSamples:
     def selection(self):
         import torch
 
-        lengths = torch.sqrt(torch.rand(self.selection_size, device=self.device)) * self.z_samples_radio
+        lengths = (
+            torch.sqrt(torch.rand(self.selection_size, device=self.device))
+            * self.z_samples_radio
+        )
         angles = torch.rand(self.selection_size, device=self.device) * 2.0 * np.pi
 
         a = lengths * torch.cos(angles)
         b = lengths * torch.sin(angles)
 
-        return torch.hstack((a.unsqueeze(1), b.unsqueeze(1))), lengths > self.z_samples_radio * 0.95
+        return (
+            torch.hstack((a.unsqueeze(1), b.unsqueeze(1))),
+            lengths > self.z_samples_radio * 0.95,
+        )
         ##############################################################################
         # return self.samples, self.outer_level
         indices = np.random.choice(

@@ -150,13 +150,16 @@ class MovementScalarCalculator:
 
         return triangle + segment
 
-    def calculate_scalars(self, difference, z_samples, outer_level):
+    def calculate_scalars(self, y_pt, z_y_match, z_samples, outer_level):
         """
         Calculate the movement scalars for every difference.
         """
 
         # Get the unit vector of the differences.
-        D, _ = get_unit_vector_and_magnitude(difference)
+        # D, _ = get_unit_vector_and_magnitude(difference)
+        D, _ = get_unit_vector_and_magnitude(
+            z_y_match.unsqueeze(0) - z_samples.unsqueeze(1)
+        )
 
         # Get the unit vectors of the slots of each difference.
         D1, D2, D3 = self.get_slot_unit_vectors(D)
@@ -196,7 +199,7 @@ class MovementScalarCalculator:
         w_bp = 1 / (2 * area_pos)
         w_bp[
             outer_level0
-        ] = 0.1  # crossdist[outer_level0] * z_samples.outer_level_scalar
+        ] = 5.0  # crossdist[outer_level0] * z_samples.outer_level_scalar
         w_bp[outer_level1] = 0.0
 
         # w_bp[~outer_level] = w_bp[~outer_level] * (
@@ -312,6 +315,16 @@ class MovementScalarCalculator:
         return w_bp, D
 
 
+def angle_differences(vectors_to, vectors_from):
+    angles = torch.atan2(vectors_to[:, 1], vectors_to[:, 0]) - torch.atan2(
+        vectors_from[:, 1], vectors_from[:, 0]
+    )
+    angles[angles < 0.0] += 2 * np.pi
+    angles[angles > np.pi] = -2 * np.pi + angles[angles > np.pi]
+
+    return angles
+
+
 class Trainer:
     """
     This class implements a mechanism to train a neural network that produces
@@ -369,17 +382,104 @@ class Trainer:
         # pylint: disable=unused-argument
         self.scheduler.step()
 
-    def batch(self, x_pt, y_pt):
+    def rotate_vectors(self, vectors, angles):
+        # angles[angles > np.pi] = -2 * np.pi + angles[angles > np.pi]
+        # angles[angles < -np.pi] = -2 * np.pi + angles[angles < -np.pi]
+        Dxx = torch.zeros(vectors.shape, device=self.device)
+        Dxx[:, 0] = (
+            torch.cos(angles) * vectors[:, 0] - torch.sin(angles) * vectors[:, 1]
+        )
+        Dxx[:, 1] = (
+            torch.sin(angles) * vectors[:, 0] + torch.cos(angles) * vectors[:, 1]
+        )
+
+        return Dxx
+
+    def calculate_z_match(self, x_pt, y_pt):
+        z_pt = torch.zeros(y_pt.shape, device=self.device)
+        inc = torch.ones(y_pt.shape, device=self.device)
+        turn = torch.zeros(y_pt.shape, device=self.device)
+        sign = None
+        with torch.no_grad():
+            for _ in range(113):# exit when you're good, selection without borders at first
+                y_predict_mat = self.model.forward_z(x_pt, z_pt)
+
+                differences = y_pt - y_predict_mat
+                prev_sign = sign
+                sign = (((differences > 0) + 0) * 2) - 1
+                if prev_sign is not None:
+                    bb = torch.logical_and(sign == prev_sign, turn == 0.0)
+                    inc[bb] *= 2.0
+                    inc = torch.clamp(inc, 0, 1000000)
+                    turn[sign != prev_sign] = 1.0
+                    inc[sign != prev_sign] *= 0.5
+                z_pt += inc * sign
+                #z_pt = torch.clamp(z_pt, -10.0, 10.0)
+                total_diffs = torch.sqrt(torch.sum(differences ** 2, dim=1))
+        print(torch.sum(total_diffs), torch.max(total_diffs))
+
+        return z_pt
+
+    def calculate_z_match1(self, x_pt, y_pt):
+
+        z_pt = torch.zeros(y_pt.shape, device=self.device)
+        z_pt1 = torch.zeros(y_pt.shape, device=self.device)
+        z_pt1[:, 0] = 1.0
+        inc = torch.ones(y_pt.shape[0], device=self.device)
+        inc[:] = 8.0
+        lengths = torch.ones(y_pt.shape[0], device=self.device)
+        sign = None
+        multiplier = 0.5
+
+        with torch.no_grad():
+            for _ in range(139):
+                y_predict_mat = self.model.forward_z(x_pt, z_pt)
+                if torch.isnan(y_predict_mat).any():
+                    assert False
+
+                differences = y_pt - y_predict_mat
+                err_angles = angle_differences(y_pt, y_predict_mat)
+
+                angles = err_angles * multiplier
+                z_pt1 = self.rotate_vectors(z_pt1, angles)
+                assert_unit_vector(z_pt1)
+                #continue
+
+                prev_sign = sign
+                diffs1 = torch.sum(y_predict_mat ** 2, dim=1)
+                diffs2 = torch.sum(y_pt ** 2, dim=1)
+                diffs = diffs2 - diffs1
+                sign = diffs / torch.abs(diffs)
+                sign[diffs == 0] = 0
+                if torch.isnan(sign).any():
+                    assert False
+                if prev_sign is not None:
+                    # inc[sign == prev_sign] *= 2.0
+                    inc[sign != prev_sign] *= 0.5
+                lengths += inc * sign
+                lengths = torch.clamp(lengths, 0.0, 900.0)
+                z_pt = z_pt1 * lengths.unsqueeze(1)
+
+        total_diff = torch.sum(torch.sqrt(torch.sum(differences ** 2, dim=1)))
+        print(total_diff, torch.sum(torch.abs(err_angles)),
+            torch.max(torch.abs(err_angles)))
+
+        return z_pt
+
+    def batch(self, x_pt, y_pt):#, step):
         """
         This method is called once for every training batch in an epoch.
         """
-        z_samples, outer_level = self.z_samples.selection()
+        z_y_match = self.calculate_z_match(x_pt, y_pt)
+
+        # Get the z-samples to be used for this batch.
+        z_samples, outer_level = self.z_samples.selection()#percentage)
         # Calculate the prediction matrix using the batch data and the z-samples.
         # dimensions: (z-samples, data points, output dimensions)
         y_predict_mat = self.model.get_z_sample_preds(x_pt=x_pt, z_samples=z_samples)
 
         w_bp, D = self.scalar_calculator.calculate_scalars(
-            y_pt - y_predict_mat, z_samples, outer_level
+            y_pt, z_y_match, z_samples, outer_level
         )
         w_bp = w_bp.view((w_bp.shape[0] * w_bp.shape[1], 1))
 

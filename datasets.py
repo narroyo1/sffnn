@@ -195,8 +195,8 @@ class DataSets:
         q_hi = pandas_dataframe[column].quantile(0.95)
 
         pandas_dataframe = pandas_dataframe[
-            (pandas_dataframe[column] < q_hi)  # & (pandas_dataframe[column] > q_low)
-        ]
+            (pandas_dataframe[column] < q_hi)
+        ]  # & (pandas_dataframe[column] > q_low)
         training_set = pandas_dataframe.loc[
             :, ["DEPARTURE_DELAY", "ARRIVAL_DELAY"]
         ].values

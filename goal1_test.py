@@ -187,6 +187,7 @@ class Goal1Test:
 
         from trainer import get_unit_vector_and_magnitude
 
+        """
         w_bp, D = self.scalar_calculator.calculate_scalars(
             self.y_test_pt - y_predict_mat,
             self.z_samples.samples,
@@ -202,6 +203,7 @@ class Goal1Test:
             torch.std(tm, dim=0),
             torch.max(tm, dim=0),
         )
+        """
         """
         # total_movement = D * w_bp.unsqueeze(2)
         _, tm = get_unit_vector_and_magnitude(total_movement)
@@ -249,9 +251,9 @@ class Goal1Test:
         """
         angle = np.linspace(-np.pi, np.pi, 5)
         angle = angle[:-1]
-        #angle = np.linspace(-np.pi, np.pi, 720)
-        #a = (self.z_samples.z_sample_spacing / 2.0 * np.cos(angle)).flatten()
-        #b = (self.z_samples.z_sample_spacing / 2.0 * np.sin(angle)).flatten()
+        # angle = np.linspace(-np.pi, np.pi, 720)
+        # a = (self.z_samples.z_sample_spacing / 2.0 * np.cos(angle)).flatten()
+        # b = (self.z_samples.z_sample_spacing / 2.0 * np.sin(angle)).flatten()
         a = (0.5 * np.cos(angle)).flatten()
         b = (0.5 * np.sin(angle)).flatten()
 
@@ -265,18 +267,19 @@ class Goal1Test:
                 targets, device=self.device, dtype=torch.float32
             ).unsqueeze(0),
         )
-        #xxx = self.model.get_sample_preds(
+        # xxx = self.model.get_sample_preds(
         #    x_pt=torch.zeros((targets.shape[0], 1), device=self.device), z_samples=torch.tensor(targets, device=self.device, dtype=torch.float32).unsqueeze(0),
-        #)
+        # )
         ########################################################################
         return (
             goal1_mean_err_abs,
             local_goal1_errs,
-            D,  # torch.mean(D, dim=1),
-            w_bp,  # torch.mean(w_bp, dim=1),
+            None,  # D,  # torch.mean(D, dim=1),
+            None,  # w_bp,  # torch.mean(w_bp, dim=1),
             None,  # y_radio_mat,  # [num],
             xxx,  # self.y_test_pt[less_than[num] == 1],
-            ratios,radios_filter
+            ratios,
+            radios_filter,
         )
 
         num_dimensions = self.x_test.shape[1]
@@ -354,8 +357,8 @@ class Goal1Test:
         return (
             global_goal1_err,
             local_goal1_errs,
-            d.cpu().detach().numpy(),
-            l.cpu().detach().numpy(),
+            d.cpu().detach().numpy() if d is not None else None,
+            l.cpu().detach().numpy() if l is not None else None,
             r.cpu().detach().numpy() if r is not None else None,
             p.cpu().detach().numpy() if p is not None else None,
             rs.cpu().detach().numpy() if rs is not None else None,

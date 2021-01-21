@@ -198,50 +198,46 @@ class Plotter:
                     )
 
             if p is not None:
-                axe.scatter(
-                    p[:, :, 0],
-                    p[:, :, 1],
-                    marker="x",
-                    s=25.0,
-                    c="b"
-                )
-                #axe.arrow(
+                axe.scatter(p[:, :, 0], p[:, :, 1], marker="x", s=25.0, c="b")
+                # axe.arrow(
                 #    y_predict_mat[:, -1, 0],
                 #    y_predict_mat[:, -1, 1],
-                #p[:, :, 0],
-                #p[:, :, 1],
-                #)
+                # p[:, :, 0],
+                # p[:, :, 1],
+                # )
             # for i in range(c.shape[0]):
             #    axe.annotate(
             #        c[i], (y_predict_mat[i, -1, 0], y_predict_mat[i, -1, 1]), fontsize=8
             #    )
             # continue
-            if self.maxl is None:
-                self.maxl = np.max(l)
-            self.maxl = np.max(l) * 0.5
+            if l is not None:
+                if self.maxl is None:
+                    self.maxl = np.max(l)
+                self.maxl = np.max(l) * 0.5
 
-            import random
+                import random
 
-            num = random.randint(0, d.shape[0] - 1)
-            print("num", num)
-            for i in range(d.shape[0]):
-                print(
-                    f"num {i} x {y_predict_mat[i, -1, 0]}, y {y_predict_mat[i, -1, 1]}"
-                )
-                if i != num and i != 27 and i != 30:
-                    continue
-                xx = d[:, :, 0] * l
-                yy = d[:, :, 1] * l
-                print(
-                    f"num {i} left {np.sum(xx[i, xx[i] < 0])} right {np.sum(xx[i, xx[i] > 0])} down {np.sum(yy[i, yy[i] < 0])} up {np.sum(yy[i, yy[i] > 0])}"
-                )
-                for j in range(d.shape[1]):
-                    axe.arrow(
-                        y_predict_mat[i, -1, 0],
-                        y_predict_mat[i, -1, 1],
-                        xx[i, j] / self.maxl,
-                        yy[i, j] / self.maxl,
-                    )
+                num = random.randint(0, d.shape[0] - 1)
+                print("num", num)
+                for i in range(d.shape[0]):
+                    # print(
+                    #    f"num {i} x {y_predict_mat[i, -1, 0]}, y {y_predict_mat[i, -1, 1]}"
+                    # )
+                    if i != num and i != 27 and i != 30:
+                        continue
+                    xx = d[:, :, 0] * l
+                    yy = d[:, :, 1] * l
+                    # print(
+                    #    f"num {i} left {np.sum(xx[i, xx[i] < 0])} right {np.sum(xx[i, xx[i] > 0])} down {np.sum(yy[i, yy[i] < 0])} up {np.sum(yy[i, yy[i] > 0])}"
+                    # )
+                    for j in range(d.shape[1]):
+                        axe.arrow(
+                            y_predict_mat[i, -1, 0],
+                            y_predict_mat[i, -1, 1],
+                            xx[i, j] / self.maxl,
+                            yy[i, j] / self.maxl,
+                        )
+                axe.set_title(f"{np.sum(l)/l.shape[0]}")
 
             for j, label in enumerate(rs):
                 jx = np.nonzero(fil)[0][j]
@@ -250,7 +246,6 @@ class Plotter:
                     (y_predict_mat[jx, -1, 0], y_predict_mat[jx, -1, 1]),
                     fontsize=12,
                 )
-            axe.set_title(f"{np.sum(l)/l.shape[0]}")
             continue
 
             for j, label in enumerate(self.z_sample_labels):

@@ -88,7 +88,7 @@ def fn_circle(x_np, y_np, *, radius=10.0):
 
     # result = np.zeros((x_np.shape[0], 2))
     y_np[:, 0] += length * np.cos(angle)
-    y_np[:, 1] += length * np.sin(angle) * 0.05
+    y_np[:, 1] += length * np.sin(angle)  # * 0.05
 
     return x_np, y_np
 
