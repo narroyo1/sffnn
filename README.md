@@ -1,4 +1,4 @@
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/narroyo1/sffnn/blob/master/main.py)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/narroyo1/sffnn/blob/master/main.ipynb)
 
 # Approximating stochastic functions
 ## A generic approach for training probabilistic machine learning models
